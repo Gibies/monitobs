@@ -1,0 +1,10 @@
+keys: information
+obsname: hloswind
+gdasname: 
+bufrmtyp: 
+obsubtyp: 
+elemcnt: 
+OBSTORE: HLOSwind
+longname: HLOS_Wind
+satinstsnsr: aeolus-hloswind
+

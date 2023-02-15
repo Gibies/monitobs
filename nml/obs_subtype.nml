@@ -1,0 +1,109 @@
+subtype	stname	descreption
+10000	surface	Surface
+10100	landsynop	Land Synop
+10200	shipsynop
+10300	buoy
+10400	--	--
+10500	srew
+10600	radar
+10700	wavenet
+10800	mobsynop
+10900	openroad
+11000	airquality
+11100	metar
+11200	sferics
+11300	atdnet
+20000	satellite	 Satellite measured
+20100	usaura
+20200	usauwa
+20300	seawinds
+20400	aatsr
+20500	esauwi
+20600	ukmosst
+20700	--	--
+20800	--	--
+20900	--	--
+21000	satob
+21100	tovs_global
+21200	tovs_local
+21300	--	--
+21400	atovs_global
+21500	atovs_local
+21600	ssmi
+21700	gpsiwv
+21800	atms
+21900	atmshr
+22000	goes_amw
+22001	--	--
+22002	goes_vis
+22003	goes_wv
+22100	esahrvw
+22200	esacmw
+22300	esacswvw
+22400	esahrwvw
+22500	goes_bufr
+22600	modis
+22800	airs
+22900	gpsro
+23000	saltssh
+23100	ssmis
+23200	amsub
+23300	nsst100
+23400	nsst50
+23500	jmawinds
+23600	msgwinds
+23700	ozonesat
+23800	mfsst
+23900	airs_rr
+24000	airs_wf
+24100	iasi_global
+24200	iasi_local
+24300	ascat
+24400	ghrsst
+24500	msgcsr
+24510	msgasr
+24600	msgrad
+24700	airsms
+24800	windsat
+24900	cmawinds
+25000	amsr
+25100	airsl
+25200	imdwinds
+25300	iasi_hires
+25400	meris
+25500	ascathr
+25600	msg_aod
+25700	esa_csr
+25800	goes_csr
+25900	kmawinds
+26000	crimss
+26100	crimsshr
+26200	coms_csr
+26300	jma_csr
+26330	goes_abi
+26400	ukwinds
+26600	sat_aod
+26700	ascatco
+26800	insat3d_im
+26900	insat3d_sd
+27000	fy3_mws
+27100	stereomv
+30000	aircraft	 Aircraft
+30100	amdars
+30200	aireps
+30300	tamdar
+30400	wisdom
+30500	mode_s
+40000	bogus	 Bogus
+40100	tcbogus
+40200	bogus
+50000	sonde	 Atmospheric profiles
+50100	temp
+50200	pilot
+50300	dropsonde
+50400	windprofiler
+50500	sonde
+60000	ocean	 Ocean profiles
+60100	bathy
+60200	tesac
+60300	buoyprofile

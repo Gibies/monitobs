@@ -1,0 +1,66 @@
+eleindex	elename	longname	elecode	odbvarno
+1	orog               
+2	pstar              
+3	t2                 
+4	rh2                
+5	u10                
+6	v10                
+7	ModelSurface       
+8	vis                
+9	WaveHeight        
+10	SeaHeight          
+11	SST                
+12	
+13	TskinSea           
+14	TropPres           
+15	
+16	pmsl               
+17	SeaIce             
+18	WAVE_HGHT         
+19	WIND_SPED          
+20	qt2                
+21	aerosol            
+22	PSurfParamA        
+23	PSurfParamB        
+24	CloudAmount        
+25	ConvCloudAmount    
+26	ConvCloudBaseLevel 
+27	ConvCloudTopLevel  
+28	SurfRainRate_conv  
+29	SurfSnowRate_conv  
+30	SeaSrfcHeight      
+31	MeanSeaHeight      
+32	
+33	
+34	
+35	
+36	
+37	
+38	
+39	
+40	
+41	
+42	SnowAmount         
+43	SurfRainRate_LS    
+44	SurfSnowRate_LS    
+45	SWradiation        
+46	BLheight         
+47	PrecipAcc6hr       
+48	LowCloudAmount     
+49	MedCloudAmount     
+50	LowCloudBase       
+51	
+52	
+53	
+54	
+55	
+56	ObukhovLength      
+57	FrictionVel        
+58	LapseRate          
+59	SO2_AQ             
+60	PM10_AQ            
+61	PM2p5_AQ           
+62	O3_AQ              
+63	NO2_AQ             
+64	CO_AQ              
+65	BLtype             

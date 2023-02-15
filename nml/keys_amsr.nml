@@ -1,0 +1,9 @@
+keys: information
+obsname: amsr
+gdasname: 
+bufrmtyp: 
+obsubtyp: 25000 
+elemcnt: 
+OBSTORE: AMSR
+longname: AMSR
+satinstsnsr: gcomw1-amsr 

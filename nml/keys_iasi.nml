@@ -1,0 +1,9 @@
+keys: information
+obsname: iasi
+gdasname: 
+bufrmtyp: 
+obsubtyp: 24100 
+elemcnt: 
+OBSTORE: IASI
+longname: IASI 
+satinstsnsr: metop1-iasi,metop3-iasi

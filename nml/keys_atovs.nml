@@ -1,0 +1,11 @@
+keys: information
+obsname: atovs
+gdasname: 
+bufrmtyp: 
+obsubtyp: 21400 
+elemcnt: 
+OBSTORE: ATOVS
+longname: ATOVS 
+SAID: 3_4_206_209_223_784
+satinstsnsr: metop1-atovs,metop3-atovs,noaa15-atovs,noaa18-atovs,noaa19-atovs
+snsr: hirs,amsua,mhs

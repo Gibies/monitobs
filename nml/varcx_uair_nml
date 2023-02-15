@@ -1,0 +1,51 @@
+eleindex	elename	longname	elecode	odbvarno
+1	theta             
+2	rh                
+3	u                 
+4	v                 
+5	q                 
+6	qc                
+7	cloud             
+8	Salt              
+9	t                 
+10	ql_layer           
+11	p                  
+12	ozone              
+13	qf_layer           
+14	RainRate_layer     
+15	cloud_layer        
+16	cloud_conv         
+17	qc_conv            
+18	rhtotal            
+19	
+20	
+21	
+22	
+23	
+24	
+25	
+26	
+27	
+28	
+29	qcf               
+30	qcl                
+31	cloud_bulk        
+32	w                  
+33	p_bar              
+34	Cf                 
+35	Cl                
+36	RichNumber        
+37	SoilMoisture      
+38	SoilTemp          
+39	ExnerA            
+40	qrain             
+41	Dust1             
+42	Dust2             
+43	Dust3             
+44	Dust4             
+45	Dust5             
+46	Dust6          
+47	AOD             
+48	aerosol_p        
+49	CDNC              
+50	RH_AMC             

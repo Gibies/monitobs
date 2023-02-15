@@ -1,0 +1,106 @@
+eleindex	elename	longname	elecode	odbvarno
+1	pstar
+2	temperature
+3	rh
+4	u
+5	v
+6	logvis
+7	tcwv
+8	windspeed
+9	lwp
+10	britemp
+11	tskin
+12	gpstzdelay
+13	
+14	
+15	cloud
+16	rainrate
+17	mwemiss
+18	tcozone
+19	satzenith
+20	scanpos
+21	surface
+22	elevation
+23	modelsurface
+24	modelorog
+25	chanword_ir
+26	chanword_mw
+27	stratt
+28	satid
+29	satazimth
+30	localazimuth
+31	solzenith
+32	solazimth
+33	
+34	iremiss
+35	cloudtopp 
+36	cloudfrac
+37	
+38	
+39	vnatovpp
+40	procoption
+41	
+42	
+43	
+44	amsusurface
+45	hirs_temp
+46	amsua1_temp
+47	amsua2_temp
+48	amsub_temp
+49	
+50	
+51	u10ambwind
+52	v10ambwind
+53	pcorrect
+54	NumChans
+55	ChanNum
+56	
+57	Emissivity
+58	QCinfo
+59	refrac
+60	z
+61	SBUVozone
+62	GeoBriTemp
+63	RadialVelocity
+64	RadarBeamElev
+65	RadarObRange
+66	RadarObAzim
+67	GPS_Station_Height
+68	clw
+69	RadIdent
+70	Reflectivity
+71	BendingAngle
+72	ImpactParam
+73	RO_Rad_Curv
+74	RO_geoid_und
+75	RadAltAboveMSL
+76	BriTempVarError
+77	AOD
+78	Theta
+79	RadNoiseLvl
+80	BiasPredictors
+81	LevelTime
+82	LevelLat
+83	LevelLon
+84	RainAccum
+85	CloudRTError
+86	CloudRTBias
+87	Refractivity
+88	snowrate
+89	ReflectivityR
+90	ReflectivityI
+91	CeilBackscatter
+92	CeilRange
+93	CeilSiteID
+94	CeilScanIdent
+95	airqal_consttype
+96	airqal_massdensity
+97	airqal_massdensityscale
+98	HLOSwind
+99	ProfileNo
+100	dWinddT
+101	dWinddP
+102	AzimuthCOG
+103	HeightCOG
+104	RadFlag
+105	ChannelNumber

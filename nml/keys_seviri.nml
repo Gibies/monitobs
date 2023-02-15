@@ -1,0 +1,18 @@
+keys: information
+obsgroup: 27
+obsname: seviri
+gdasname: 
+bufrmtyp: 
+obsubtyp: 24510
+elemcnt: 30 
+maxindx: 621
+hdrsize: 339
+lutsize: 128
+OBSTORE: SEVIRIClr
+HDRFILE: seviri_asr.hdr
+longname: MSG_SEVIRI
+satinstsnsr: msg2-seviri,msg4-seviri
+elemlist: [27,3,4,5,6,7,8,257,258,259,260,261,1,2,197,335,335,335,335,335,335,335,335,335,335,335,620,621,437,438]
+brightnessTemperature: [0,0,0,19,25,31,37,43,49,55,61]
+metdbsubtype: MSGASR
+SatID: 56,70

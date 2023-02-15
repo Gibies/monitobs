@@ -1,0 +1,15 @@
+keys: information
+obsgroup: 55
+obsname: mwri
+gdasname: 
+bufrmtyp: 
+obsubtyp: 29000 
+elemcnt: 35
+maxindx: 621
+hdrsize: 339
+lutsize: 128
+OBSTORE: MWRI
+longname: FY3_MWRI
+satinstsnsr: fy3_mwri
+elemlist: [27,9,3,4,5,6,7,8,257,258,259,260,261,1,2,15,16,197,135,11,538,130,131,512,512,512,512,512,512,512,512,512,512,437,438]
+brightnessTemperature: [1,2,3,4,5,6,7,8,9,10]

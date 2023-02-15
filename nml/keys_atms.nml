@@ -1,0 +1,9 @@
+keys: information
+obsname: atms
+gdasname: 
+bufrmtyp: 
+obsubtyp:
+elemcnt: 
+OBSTORE: ATMS
+longname: ATMS 
+satinstsnsr: snpp-atms,noaa20-atms

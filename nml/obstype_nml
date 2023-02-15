@@ -1,0 +1,324 @@
+10100 ObsTypeSynop  generic synop
+10101 ObsTypeSynopManual = 10101  ! => non-automatic synop
+10102 ObsTypeSynopAuto   = 10102  ! => automatic synop
+10200 ObsTypeShip        = 10200  ! => generic ship
+10201 ObsTypeShipManual  = 10201  ! => non-automatic ship
+10202 ObsTypeShipAuto    = 10202  ! => automatic ship
+10204 ObsTypePlatsRiggs  = 10204  ! => platform/rigg
+10210 ObsTypeShipMrdBuoy = 10210  ! => moored buoy in ship
+                                                   !    code
+10211 ObsTypeShpMrdBySpOb= 10211  ! => moored buoy super ob
+                                                   !    from ship code reports
+10212 ObsTypeShipDrifter = 10212  ! => drifting buoy in ship
+                                                   !    code
+10213 ObsTypeShpDrftSpOb = 10213  ! => drifting buoy super ob
+                                                   !    from ship code reports
+10300 ObsTypeBuoy        = 10300  ! => generic buoy
+10310 ObsTypeMooredBuoy  = 10310  ! => moored buoy in buoy
+                                                   !    code
+10311 ObsTypeMrdBuoySpOb = 10311  ! => moored buoy super ob
+10312 ObsTypeDrifter     = 10312  ! => drifting buoy in buoy
+                                                   !    code
+10313 ObsTypeDrfBuoySpOb = 10313  ! => drifting buoy super ob
+10400 ObsTypePrecip      = 10400  ! => Radar precipitation
+10401 ObsTypeGauge       = 10401  ! => Rain gauge accumulation
+10500 ObsTypeSrew        = 10500  ! => SREW precipitation
+
+10601 ObsTypeRadWind     = 10601  ! => Radar radial winds
+10602 ObsTypeRadRefl     = 10602  ! => Radar reflectivity
+10603 ObsTypeRadTRH      = 10603  ! => Radar 1DVar
+10604 ObsTypeRadopWind   = 10604  ! => Radar radial winds
+10605 ObsTypeRadop2Wind  = 10605  ! => Radar radial winds (RADOP2)
+10606 ObsTypeRadRefr     = 10606  ! => Radar radial refractivity
+10607 ObsTypeRadVel      = 10607  ! => Radar radial winds
+10608 ObsTypeRadRefl2    = 10608  ! => Radar reflectivity (ODIM HDF5)
+10700 ObsTypeWavenet     = 10700  ! => Wavenet ocean wave spectra
+10800 ObsTypeSynopMob    = 10800  ! => mobile synop
+10900 ObsTypeOpenRoad    = 10900  ! => OPENROAD data
+11000 ObsTypeAirQal      = 11000  ! => Air quality ob
+11001 ObsTypeAirQalEU    = 11001  ! => Air quality EU ob
+11100 ObsTypeMetar       = 11100  ! => generic metar
+11101 ObsTypeMetarManual = 11101  ! => non-automatic metar
+11102 ObsTypeMetarAuto   = 11102  ! => automatic metar
+11200 ObsTypeSferics     = 11200  ! => SFERICS lightning strikes
+11300 ObsTypeATDNET      = 11300  ! => SFERICS lightning strikes
+11400 ObsTypeWOW         = 11400  ! => WOW observations
+11501 ObsTypeGroundLidar = 11501  ! => Lidarnet ceilometer backscatter
+11600 ObsTypeSynopBufr   = 11600  ! => generic synop
+
+11700 ObsTypeBuoyBufr        = 11700  ! => buoy bufr
+11701 ObsTypeMooredBuoyBufr  = 11701  ! => moored buoy bufr
+11702 ObsTypeDrifterBuoyBufr = 11702  ! => drifting buoy bufr
+
+11800 ObsTypeShipBufr   = 11800  ! => BUFR ship
+
+! Satellite data
+20100 ObsTypeEsaura       = 20100   ! => ERS UARS(wave height)
+20101 ObsTypeEsauraSpOb   = 20101   ! => ERS UARS super ob
+20200 ObsTypeEsauwa       = 20200   ! => ERS ESA spectral wave
+20300 ObsTypeSeaWinds     = 20300   ! => Ku Band  scat winds
+20400 ObsTypeAATSRUnkn    = 20400   ! => ERS AATSR SST (unknown)
+20401 ObsTypeAATSRDay     = 20401   ! => ERS AATSR SST (day)
+20402 ObsTypeAATSRNight   = 20402   ! => ERS AATSR SST (night)
+20500 ObsTypeEsauwi       = 20500   ! => ERS scat winds
+
+20600 ObsTypeUKMOSSTu     = 20600   ! UKMOSST unknown
+20601 ObsTypeUKMOSSTd     = 20601   ! UKMOSST daytime
+20602 ObsTypeUKMOSSTn     = 20602   ! UKMOSST nighttime
+20603 ObsTypeUKMOSSTt     = 20603   ! UKMOSST twilight
+20700 ObsTypeALADIN       = 20700   ! => HLOS winds from Aeolus(ALADIN)
+
+21000 ObsTypeSatob        = 21000   ! => Satob
+                                                     ! ** Satob SSTs **
+21001 ObsTypeNoaaPo       = 21001   ! => NOAA plar orbitor
+21002 ObsTypeMeteoSat     = 21002   ! => MeteoSat SST satob
+21003 ObsTypeHimawari     = 21003   ! => Himawari SST satob
+21004 ObsTypeIndSat       = 21004   ! => Indian SST satob
+21005 ObsTypeGoesE        = 21005   ! => GOES E SST satob
+21006 ObsTypeGoesW        = 21006   ! => GOES W SST satob
+21007 ObsTypeAuoSat2      = 21007   ! => AutoSat 2 SST
+
+                                                     ! ** Satwinds **
+21010 ObsTYPEAMV          = 21010   ! => Combined AMV data
+21021 ObsTypeSatobIR      = 21021   ! => Satob - Infrared
+ ObsTypeSatobVIS     = 21022   ! => Satob - Visible
+ ObsTypeSatobWV      = 21023   ! => Satob - Water Vapour
+ ObsTypeSatobMC      = 21024   ! => Satob - Multi-channel
+ ObsTypeGoesamw      = 22000   ! => HD GOES Satob, infrared
+ ObsTypeGoesvis      = 22002   ! => HD GOES Satob, visible
+ ObsTypeGoeswv       = 22003   ! => HD GOES Satob, water vapour
+ ObsTypeEsahrvw      = 22100   ! => EUMETSAT - visible
+ ObsTypeEsacmw       = 22200   ! => EUMETSAT - combined (LR)
+ ObsTypeEsacmwir     = 22201   ! => EUMETSAT - infrared (LR)
+ ObsTypeEsacmwvis    = 22202   ! => EUMETSAT - visible (LR)
+ ObsTypeEsacmwwv     = 22203   ! => EUMETSAT - water vapour (LR)
+ ObsTypeEsacswvw     = 22300   ! => EUMETSAT - clear sky water vapour
+ ObsTypeEsahrwvw     = 22400   ! => EUMETSAT - cloudy water vapour
+ ObsTypeGoesbufr     = 22500   ! => NESDIS - unknown channel
+ ObsTypeGoesbufrIR   = 22501   ! => NESDIS - infrared 10.8
+ ObsTypeGoesbufrVIS  = 22502   ! => NESDIS - visible
+ ObsTypeGoesbufrWV   = 22503   ! => NESDIS - cloudy water vapour
+ ObsTypeGoesbufrCSWV = 22505   ! => NESDIS - clear sky water vapour
+ ObsTypeGoesbufrWV62 = 22531   ! => NESDIS - cloudy water vapour 6.2
+ ObsTypeGoesbufrWV73 = 22532   ! => NESDIS - cloudy water vapour 7.3
+ ObsTypeGoesbufrCSWV62 = 22551   ! => NESDIS - clear sky water vapour 6.2
+ ObsTypeGoesbufrCSWV73 = 22552   ! => NESDIS - clear sky water vapour 7.3
+ ObsTypeGoesbufrIR38 = 22511   ! => NESDIS - infrared 3.8
+ ObsTypeGoesbufrIR16 = 22515   ! => NESDIS - infrared 1.6
+ ObsTypeModis        = 22600   ! => MODIS - unknown channel
+ ObsTypeModisIR      = 22601   ! => MODIS - infrared 10.8
+ ObsTypeModisWV      = 22603   ! => MODIS - cloudy water vapour
+ ObsTypeModisMIXWV   = 22604   ! => MODIS - mixed water vapour
+ ObsTypeModisCSWV    = 22605   ! => MODIS - clear sky water vapour
+ ObsTypeModisIR38    = 22611   ! => MODIS - infrared 3.8
+ ObsTypeModisIR16    = 22615   ! => MODIS - infrared 1.6
+ ObsTypeJmawinds     = 23500   ! => JMA - unknown channel
+ ObsTypeJmawindsIR   = 23501   ! => JMA - infrared
+ ObsTypeJmawindsVIS  = 23502   ! => JMA - visible
+ ObsTypeJmawindsWV   = 23503   ! => JMA - cloudy water vapour
+ ObsTypeJmawindsCSWV = 23505   ! => JMA - clear sky water vapour
+ ObsTypeJmawindsMIXWV= 23507   ! => JMA - mixed water vapour
+ ObsTypeJmawindsIR38 = 23511   ! => JMA - infrared 3.8
+ ObsTypeJmawindsWV62 = 23531   ! => JMA - cloudy water vapour 6.2
+ ObsTypeJmawindsWV73 = 23532   ! => JMA - cloudy water vapour 7.3
+ ObsTypeJmawindsCSWV62 = 23551   ! => JMA - clear sky water vapour 6.2
+ ObsTypeJmawindsCSWV73 = 23552   ! => JMA - clear sky water vapour 7.3
+ ObsTypeMsgwinds     = 23600   ! => MSG - unknown channel
+ ObsTypeMsgIR38      = 23611   ! => MSG - infrared 3.8
+ ObsTypeMsgIR87      = 23612   ! => MSG - infrared 8.7
+ ObsTypeMsgIR108     = 23613   ! => MSG - infrared 10.8
+ ObsTypeMsgOZONE     = 23614   ! => MSG - infrared 9.7
+ ObsTypeMsgHRVIS     = 23621   ! => MSG - high res. visible
+ ObsTypeMsgVIS06     = 23622   ! => MSG - visible 0.6
+ ObsTypeMsgVIS08     = 23623   ! => MSG - visible 0.8
+ ObsTypeMsgWV62      = 23631   ! => MSG - cloudy water vapour 6.2
+ ObsTypeMsgWV73      = 23632   ! => MSG - cloudy water vapour 7.3
+ ObsTypeMsgCSWV62    = 23651   ! => MSG - clear sky water vapour 6.2
+ ObsTypeMsgCSWV73    = 23652   ! => MSG - clear sky water vapour 7.3
+ ObsTypeCmawinds     = 24900   ! => CMA - unknown channel
+ ObsTypeCmawindsIR   = 24901   ! => CMA - infrared
+ ObsTypeCmawindsVIS  = 24902   ! => CMA - visible
+ ObsTypeCmawindsWV   = 24903   ! => CMA - cloudy water vapour
+ ObsTypeCmawindsCSWV = 24905   ! => CMA - clear sky water vapour
+ ObsTypeCmawindsMIXWV= 24907   ! => CMA - mixed water vapour
+ ObsTypeCmawindsIR38 = 24911   ! => CMA - infrared 3.8
+ ObsTypeImdwinds     = 25200   ! => IMD - unknown channel
+ ObsTypeImdwindsIR   = 25201   ! => IMD - infrared
+ ObsTypeImdwindsVIS  = 25202   ! => IMD - visible
+ ObsTypeImdwindsWV   = 25203   ! => IMD - cloudy WV
+ ObsTypeImdwindsCSWV = 25205   ! => IMD - clear sky WV
+ ObsTypeImdwindsMIXWV= 25207   ! => IMD - mixed WV
+ ObsTypeImdwindsIR38 = 25211   ! => IMD - infrared 3.8
+ ObsTypeKmawinds     = 25900   ! => KMA - unknown channel
+ ObsTypeKmawindsIR   = 25901   ! => KMA - infrared
+ ObsTypeKmawindsVIS  = 25902   ! => KMA - visible
+ ObsTypeKmawindsWV   = 25903   ! => KMA - cloudy WV
+ ObsTypeKmawindsCSWV = 25905   ! => KMA - clear sky WV
+ ObsTypeKmawindsMIXWV= 25907   ! => KMA - mixed WV
+ ObsTypeKmawindsIR38 = 25911   ! => KMA - infrared 3.8
+ ObsTypeKmawindsIR112  = 25916 ! => KMA - infrared 11.2
+ ObsTypeKmawindsWV62   = 25931 ! => KMA - cloudy water vapour 6.2
+ ObsTypeKmawindsWV73   = 25932 ! => KMA - cloudy water vapour 7.3
+ ObsTypeKmawindsCSWV62 = 25951 ! => KMA - clear sky water vapour 6.2
+ ObsTypeKmawindsCSWV73 = 25952 ! => KMA - clear sky water vapour 7.3
+
+ ObsTypeUkwinds      = 26400   ! => UK MSG - unknown channel
+ ObsTypeUkIR38       = 26411   ! => UK MSG - infrared 3.8
+ ObsTypeUkIR87       = 26412   ! => UK MSG - infrared 8.7
+ ObsTypeUkIR108      = 26413   ! => UK MSG - infrared 10.8
+ ObsTypeUkIR120      = 26415   ! => UK MSG - infrared 12.0
+ ObsTypeUkOZONE      = 26414   ! => UK MSG - infrared 9.7
+ ObsTypeUkHRVIS      = 26421   ! => UK MSG - high res. visible
+ ObsTypeUkVIS06      = 26422   ! => UK MSG - visible 0.6
+ ObsTypeUkVIS08      = 26423   ! => UK MSG - visible 0.8
+ ObsTypeUkWV62       = 26431   ! => UK MSG - cloudy water vapour 6.2
+ ObsTypeUkWV73       = 26432   ! => UK MSG - cloudy water vapour 7.3
+ ObsTypeUkCSWV62     = 26451   ! => UK MSG - clear sky water vapour 6.2
+ ObsTypeUkCSWV73     = 26452   ! => UK MSG - clear sky water vapour 7.3
+ ObsTypeStereomv     = 27100   ! => STEREOMV - unknown type
+ ObsTypeStereomvVIS06= 27122   ! => STEREOMV - MISR winds (VIS 0.6)
+
+ ObsTypeTOVS_G       = 21100   ! ** global TOVS **
+ ObsTypeTOVS_G2      = 21101   ! => products only
+ ObsTypeTOVS_G1D     = 21102   ! => radiances/products
+ ObsTypeTOVS_G1E     = 21103   ! => G1D with NESDIS rad's
+ ObsTypeTOVS_L       = 21200   ! ** local TOVS **
+ ObsTypeTOVS_L2      = 21201   ! => products only
+ ObsTypeTOVS_L1D     = 21202   ! => radiances/products
+
+ ObsTypeATOVS_G      = 21400   ! ** global ATOVS **
+ ObsTypeATOVS_G2     = 21401   ! => products only
+ ObsTypeATOVS_G1D    = 21402   ! => radiances/products
+ ObsTypeATOVS_L      = 21500   ! ** local ATOVS **
+ ObsTypeATOVS_L2     = 21501   ! => products only
+ ObsTypeATOVS_L1D    = 21502   ! => radiances/products
+ ObsTypeMWSFY3B      = 21450   ! => Global FY3B as ATOVS subtype
+
+ ObsTypeGpsiwv       = 21700   ! => Ground GPS
+
+ ObsTypeATMS         = 21800   ! => ATMS radiances
+ ObsTypeATMSHR       = 21900   ! => High res ATMS radiances
+
+ ObsTypeAIRS         = 22800   ! => AIRS Radiances
+
+ ObsTypeGPSRO        = 22900   ! => GPSRO
+
+ ObsTypeSAltSSH      = 23000   ! => Altimeter SSH
+ ObsTypeSAltSSHT     = 23001   ! => Altimeter SSH (real time)
+ ObsTypeSAltSSHS     = 23002   ! => Altimeter SSH with extra variables
+
+ ObsTypeSSMIS        = 23100   ! => SSMI/S
+
+ ObsTypeAMSUB        = 23200   ! => full res AMSUB
+
+ ObsTypeSBUVozone    = 23700   ! => SBUV ozone
+
+ ObsTypeAIRSRR       = 23900   ! => AIRS Reconstructed Radiances
+
+ ObsTypeAIRSWF       = 24000   ! => AIRS Warmest FOV Radiances
+ ObsTypeIASI_G       = 24100   ! => Global IASI
+ ObsTypeIASI_L       = 24200   ! => Local  IASI
+ ObsTypeASCAT        = 24300   ! => ASCAT BUFR
+ ObsTypeGHRSST       = 24400   ! => GHRSST
+ ObsTypeSEVIRIEUM    = 24500   ! => SEVIRI EUMETSAT
+                                                      !    radiance
+ ObsTypeSEVIRIAUTO   = 24600   ! => SEVIRI AUTOSAT
+                                                      !    radiance
+ ObsTypeSEVIRIAUTOUK = 24610   ! => SEVIRI AUTOSAT
+                                                      !    radiance for UK area
+ ObsTypeSEVIRIAUTOFD = 24650   ! => SEVIRI AUTOSAT
+                                                      !    radiance for full disc
+ ObsTypeSEVIRICTP    = 24660   ! => SEVIRI AUTOSAT
+                                                      !    MSGCTP data
+ ObsTypeSEVIRICTPUK  = 24670   ! => SEVIRI AUTOSAT
+                                                      !    MSGCTP data for UK area
+ ObsTypeSEVIRICTPFD  = 24680   ! => SEVIRI AUTOSAT
+                                                      !    MSGCTP data for full disc
+ ObsTypeAIRSMS       = 24700   ! => AIRS Clearest MODIS FOV
+ ObsTypeWINDSAT      = 24800   ! => WINDSAT BUFR
+ ObsTypeAMSR2        = 25000   ! => AMSR2 radiances
+ ObsTypeAIRSL        = 25100   ! => AIRS locally received data
+ ObsTypeIASI_H       = 25300   ! => High Res IASI
+ ObsTypeMERIS        = 25400   ! => MERIS
+ ObsTypeOLCI         = 25410   ! => OLCI
+ ObsTypeASCATHR      = 25500   ! => HiRes ASCAT BUFR
+ ObsTypeMSGAOD       = 25600   ! => SEVIRI AOD
+ ObsTypeMVIRICSR     = 25700   ! => MVIRI radiances
+ ObsTypeGOESImCSR    = 25800   ! => GOES Imager radiances
+                                                    ! 259xx defined further up
+ ObsTypeCrIS         = 26000   ! => CrIS+ATMS (global, thinned)
+ ObsTypeCrISFSR      = 26001   ! => CrIS FSR +ATMS (global, thinned)
+
+ ObsTypeCRISHR       = 26100   ! => CrIS+ATMS (UK, full res)
+ ObsTypeCRISFSRHR    = 26101   ! => CrIS FSR +ATMS (UK, full res)
+
+ ObsTypeCOMSCSR      = 26200   ! => COMS Imager radiances
+ ObsTypeMTSATImCSR   = 26300   ! => MTSAT Imager radiances
+ ObsTypeAHICSR       = 26310   ! => AHI radiances
+ ObsTypeAHIASR       = 26320   ! => AHI all-sky radiances
+ ObsTypeABICSR       = 26330   ! => ABI (GOES-16 onwards) radiances
+ ObsTypeSATAOD       = 26600   ! => Satellite AOD (Polar)
+ ObsTypeASCATCO      = 26700   ! => ASCAT coastal winds
+ ObsTypeIN3DImCSR    = 26800   ! => INSAT3D Imager radiances
+ ObsTypeIN3DSdCSR    = 26900   ! => INSAT3D Sounder radiances
+ ObsTypeMWSFY3       = 27000   ! => FY-3C/D MWTS-2 and MWHS-2 radiances
+ ObsTypeMWHSFY3      = 27001   ! => MWHS-2 radiances full resolution
+
+                                                    ! 271xx defined (satwinds - StereoMV)
+ ObsTypeOCNWINDS     = 27200   ! => Satellite ocean wind speed
+ ObsTypeSAPHIR       = 28000   ! => MT SAPHIR radiances
+ ObsTypeMWRI         = 29000   ! => MWRI radiances
+ ObsTypeGMIlow       = 29100   ! => GMI low freq channels
+ ObsTypeGMIhigh      = 29200   ! => GMI high freq channels
+
+ ObsTypeHIRAS        = 29300   ! => HIRAS 
+ ObsTypeHIRASFSR     = 29301   ! => HIRAS FSR 
+ ObsTypeHIRASHR      = 29302   ! => HIRAS (UK)
+ ObsTypeHIRASFSRHR   = 29303   ! => HIRAS FSR (UK)
+
+ ObsTypeGIIRS        = 29400   ! => GIIRS
+
+! Aircraft data
+ ObsTypeAmdar        = 30100  ! => Amdar
+ ObsTypeAirep        = 30200  ! => airep
+ ObsTypeTamdar       = 30300  ! => Tamdar
+ ObsTypeModeS        = 30500  ! => MODE-S
+ ObsTypeEmaddc       = 30600  ! => EMADDC
+
+! Bogus data
+ ObsTypeTCBogus      = 40100  ! => TC Bogus
+ ObsTypeBogus        = 40300  ! => Surface or sonde bogus
+
+! Atmospheric profile data
+ ObsTypeTemp         = 50100   ! => generic temp
+ ObsTypeTempLand     = 50101   ! => temp
+ ObsTypeTempShip     = 50102   ! => temp ship
+ ObsTypeTempMobile   = 50103   ! => temp mobile
+ ObsTypePilot        = 50200   ! => generic pilot
+ ObsTypePilotLand    = 50201   ! => pilot
+ ObsTypePilotShip    = 50202   ! => pilot ship
+ ObsTypePilotMobile  = 50203   ! => pilot mobile
+ ObsTypeDropSonde    = 50300   ! => drop sonde
+ ObsTypeWindProf     = 50400   ! => wind profiler
+ ObsTypeSonde        = 50500   ! => sonde (BUFR)
+ ObsTypeTSTSonde     = 50501   ! => sonde (BUFR)
+
+! Ocean profiles
+ ObsTypeBathy        = 60100   ! => Bathy
+ ObsTypeTesac        = 60200   ! => Tesac
+ ObsTypeArgo         = 60201   ! => ARGO floats
+ ObsTypeArgoBufr     = 60202   ! => ARGO floats (BUFR)
+ ObsTypeBuoyProf     = 60300   ! => Buoy profiles
+ ObsTypeOceanFB      = 60404   ! => NetCDF Ocean Ferrybox
+ ObsTypeOceanRE      = 60402   ! => NetCDF Ocean EXRE0206 EXRE0186
+ ObsTypeOceanTS      = 60403   ! => NetCDF Ocean FNCM FAC8862 FNHO FHZI HOWN VHW5167
+ ObsTypeCopTSMO      = 60405   ! => NetCDF Ocean moorings time series from Copernicus Marine Service
+
+! Sea Ice
+ ObsTypeSeaIce       = 60500   ! => Sea ice concentration (OSSEAICE)
+ ObsTypeHRSeaIce     = 60600   ! => Sea ice concentration (HRSEAICE)
+ ObsTypeSeaIceN      = 60700   ! => Sea ice concentration (OSSEAICN)
+
+! Ocean colour
+ ObsTypeOceanColour  = 61000   ! => Ocean colour
+

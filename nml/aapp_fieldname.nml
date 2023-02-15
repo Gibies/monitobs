@@ -1,0 +1,46 @@
+indx	elename	fieldname	datatype
+1	Latitude	latitude	rValues
+2	Longitude	longitude	rValues
+3	Year	year	iValues
+4	Month	month	iValues
+5	Day	day	iValues
+6	Hour	hour	iValues
+7	Minute	minute	iValues
+8	Second	second	iValues
+9	SatInst	satelliteInstruments	iVal
+10
+11	SolZen	solarZenithAngle	rValues
+12
+13
+14
+15	LandSeaInd	surfaceFlag	iValues
+16	SurfaceHeight	height	rValues
+17
+18
+19
+20
+21
+22
+23
+24
+25
+26
+27	SatID	satelliteIdentifier	iVal
+130	ScanLine	scanLineNumber	iValues
+131	ScanPosition	fieldOfViewNumber	iValues
+133	SatView		
+135	SolAzimth	solarAzimuth	rValues
+197	SatZenithAngle	satelliteZenithAngle	rValues
+257	ReceiptYear	typicalYear	iVal
+258	ReceiptMonth	typicalMonth	iVal
+259	ReceiptDay	typicalDay	iVal
+260	ReceiptHour	typicalHour	iVal
+261	ReceiptMinute	typicalMinute	iVal
+335	SEVIRIBrightnessTemp	brightnessTemperature	rValues
+437	ODBObsType
+438	ODBCodeType
+512	BrgtsTmpr1	brightnessTemperature	rValues
+513	BrgtsTmpr2	brightnessTemperature	rValues
+538	rotangle	geometricRotationalAngle	rVal	
+620	SEVIRICloudFreeToSurface	amountSegmentCloudFree	iValues
+621	SEVIRILowCloudCover	cloudAmountInSegment	iValues
