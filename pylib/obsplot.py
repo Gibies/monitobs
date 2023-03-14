@@ -156,8 +156,8 @@ def data_check(data):
 	print(data)
 	return(data)	
 
-def plot_cyl(datalist,figure,plot,colors,area,alpha,parallels,meridians,tagmark="",lblst=[],text="",textpos=(0.25, -0.20)):
-    plot = Basemap(projection='cyl', resolution='c', llcrnrlat= -90.,urcrnrlat= 90.,llcrnrlon=-180.,urcrnrlon=180.)
+def plot_cyl(datalist,figure,plot,colors,area,alpha,parallels,meridians,tagmark="",lblst=[],text="",textpos=(0.25, -0.20),display_count=True):
+    plot = Basemap(projection='cyl', resolution='c', llcrnrlat= 0.,urcrnrlat= 40.,llcrnrlon=60.,urcrnrlon=95.)
     plot.drawlsmask(land_color='wheat',ocean_color='lightblue',lakes=True)
     #map.bluemarble(scale=0.5);
     plot.drawcoastlines()
@@ -182,8 +182,9 @@ def plot_cyl(datalist,figure,plot,colors,area,alpha,parallels,meridians,tagmark=
 	print(idx,colors)
         plot = pyplot.scatter(x,y,s=area,c=colors[idx],alpha=alpha)
 	print(lblst[idx],len(data))
-        lbltxt=str(lblst[idx])+": "+str(len(data))
-        plot = pyplot.annotate(lbltxt,color=colors[idx],fontsize=5, xy=(lblxpos[idx], lblypos[idx]), xycoords='axes fraction')
+        if display_count==True:
+        	lbltxt=str(lblst[idx])+": "+str(len(data))
+        	plot = pyplot.annotate(lbltxt,color=colors[idx],fontsize=5, xy=(lblxpos[idx], lblypos[idx]), xycoords='axes fraction')
     plot = pyplot.annotate(tagmark,fontsize=5, xy=(0.01, 1.05), xycoords='axes fraction')
     plot = pyplot.annotate(text,fontsize=5, xy=textpos, xycoords='axes fraction')
     return(figure)
