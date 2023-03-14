@@ -67,14 +67,19 @@ def plot_keyfield(dataset,plotfile,tagmark="",lblst=[],text="",textpos=(0.25, -0
 
 def plot_latlon(data,plotfile,tagmark="",lblst=[],text="",textpos=(0.25, -0.20),fltrkey="subtype"):
     print(data)
-    keylist=data[fltrkey].unique()
-    print(keylist)
-    datalist=[None]*len(keylist)
-    print(datalist)
-    for i,key in enumerate(keylist):
-	print(i,key)
-	datalist[i]=data[data[fltrkey] == key]
-	print(datalist[i])
+    if fltrkey in data:
+    	keylist=data[fltrkey].unique()
+    	print(keylist)
+    	datalist=[None]*len(keylist)
+    	print(datalist)
+    	for i,key in enumerate(keylist):
+	   print(i,key)
+	   datalist[i]=data[data[fltrkey] == key]
+	   print(datalist[i])
+    else:
+	fltrkey=None
+	keylist=["data"]
+	datalist=[data]
     colors = ["b","g","y","r","violet","pink","purple","magenta"]
     cmap= matplotlib.colors.ListedColormap(colors)
     clevs=range(0,24,6)
@@ -174,6 +179,7 @@ def plot_cyl(datalist,figure,plot,colors,area,alpha,parallels,meridians,tagmark=
         x=numpy.array(data.Longitude.values)
         y=numpy.array(data.Latitude.values)
         if tagmark == "(b)" : print(x,y)
+	print(idx,colors)
         plot = pyplot.scatter(x,y,s=area,c=colors[idx],alpha=alpha)
 	print(lblst[idx],len(data))
         lbltxt=str(lblst[idx])+": "+str(len(data))
