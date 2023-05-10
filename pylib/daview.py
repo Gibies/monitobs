@@ -27,19 +27,7 @@ def errprint(*args, **kwargs):
     if diaglev > 0: print(*args, file=sys.stderr, **kwargs)
 
 import datadic
-#import subprocess
-#import Ngl
-#import Nio
-#import numpy
-#import pandas
-#import matplotlib
-#matplotlib.use('Agg')
-#import matplotlib.pyplot as pyplot
-#pyplot.switch_backend('agg')
-#import matplotlib.colors as colors
-#import matplotlib.cm as mplcm
-#from mpl_toolkits.basemap import Basemap, shiftgrid, addcyclic
-cmapfile=os.environ.get('CMAP',PALETTE+"/gibies_colourmap_20150117.rgb")
+import subprocess
 
 import obslib
 import pplib
@@ -68,6 +56,7 @@ import cartopy.crs as ccrs
 
 import xarray
 
+cmapfile=os.environ.get('CMAP',PALETTE+"/gibies_colourmap_20150117.rgb")
 
 def reshape_frame(data,data_field,series_field="date",height_field="height"):
     data=data[[series_field,height_field,data_field]]
