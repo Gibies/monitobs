@@ -1268,6 +1268,7 @@ def get_data(datainfo,vname=None):
     datainfo=get_slice_string(datainfo)
     slicestring=datainfo["slicestring"]
     data=get_var_data(infile,vname,slicestring)
+    print(data)
     dataset.update({"data":data})
     dataset.update(infile.variables[vname].attributes)
     dataset=fillval_mask(dataset)
@@ -1344,7 +1345,7 @@ def cyl_plot(dataset,plotinfo):
     res.mpGridLatSpacingF =  10.                  #-- grid lat spacing
     res.mpGridLonSpacingF =  10.                  #-- grid lon spacing
     res.mpLimitMode       = "LatLon"              #-- must be set using minLatF/maxLatF/minLonF/maxLonF
-       
+    print(dataset)   
     if "latitude" in dataset["dimnames"]:
        res.mpMinLatF = min(dataset["latitude"])
        res.mpMaxLatF = max(dataset["latitude"])
@@ -1435,13 +1436,16 @@ def get_subplot(dataset,plotinfo):
     plot1=cyl_plot(dataset,plotinfo)
     return(plot1)
 
-def data_filename(datafield,datadir,init_date,init_hour,fcst_hour,datainfo=None):
+def data_filename(datafield,datadir,init_date,init_hour,fcst_hour,datainfo=None,fname=None):
     if datainfo is None: datainfo=datadic.get_data_info(datafield)
     datainfo.update({"datadir":datadir})
     datainfo.update({"grid_type":"regular"})
-    fnprefix="ncum_imdaa_nearrealtime_12km_"
-    fnsufix="_"+str(init_date)+"_"+str(init_hour).zfill(2)+"z_hrofday.nc"
-    datainfo.update({"filename":fnprefix+str(datainfo["fnamekey"])+fnsufix})
+    if fname is None:
+    	fnprefix="ncum_imdaa_nearrealtime_12km_"
+    	fnsufix="_"+str(init_date)+"_"+str(init_hour).zfill(2)+"z_hrofday.nc"
+    	datainfo.update({"filename":fnprefix+str(datainfo["fnamekey"])+fnsufix})
+    else:
+	datainfo.update({"filename":fname})
     datainfo.update({"timeslice":"time|"+str(fcst_hour).zfill(2)})
     print(datainfo)
     return(datainfo)
@@ -1455,13 +1459,13 @@ def plot_filename(datafield,plotdir,init_date,fcst_hour,prefix="",sufix=""):
     plotinfo=gen_wks(plotinfo)
     return(plotinfo)
 
-def plot_data(field_list,datadir,plotdir,init_date,init_hour,fcst_hour):
+def plot_data(field_list,datadir,plotdir,init_date,init_hour,fcst_hour,fname=None):
     plotinfo=plot_filename(field_list[0],plotdir,init_date,fcst_hour,prefix="ncumda_g12_imdaa_",sufix="_"+str(fcst_hour).zfill(2)+"Z")
     print(plotinfo)
     plot = []
     for count,datafield in enumerate(field_list):
         plotinfo=datadic.get_plot_info(datafield,plotinfo)
-        datainfo=data_filename(datafield,datadir,init_date,init_hour,fcst_hour)
+        datainfo=data_filename(datafield,datadir,init_date,init_hour,fcst_hour,fname=fname)
         plotinfo=get_cmap(plotinfo)
         res=resof(plotinfo)
         plotinfo.update({"res":res})
@@ -1488,14 +1492,14 @@ def get_field_list():
     field_list=datadic.field_list
     return(field_list)
 
-def plot_all(datadir,plotdir,init_date,init_hour,fcst_lead,field_list=None):
+def plot_all(datadir,plotdir,init_date,init_hour,fcst_lead,field_list=None,fname=None):
     hoursofday=numpy.arange(init_hour,init_hour+fcst_lead,1)
     if field_list is None : field_list=get_field_list()
     for datafield in field_list:
         for fcst_hour in hoursofday:
             print(fcst_hour)
             print(datafield)
-            plotfile=plot_data([datafield],datadir,plotdir,init_date,init_hour,fcst_hour)
+            plotfile=plot_data([datafield],datadir,plotdir,init_date,init_hour,fcst_hour,fname)
     Ngl.end()
     return(plotfile)
 
