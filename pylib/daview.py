@@ -38,7 +38,7 @@ cmapfile=os.environ.get('CMAP',CYLCPATH+"/colourmaps/gibies_colourmap_20150115.r
 #def errprint(*args, **kwargs):
 #    if diaglev > 0: print(*args, file=sys.stderr, **kwargs)
 
-#import datadic
+import datadic
 #import subprocess
 #import Ngl
 #import Nio
