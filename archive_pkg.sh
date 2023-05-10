@@ -29,5 +29,5 @@ done
 options $(echo $@  | tr "=" " ")
 ###########################################################################################
 sh ${GITROOT}/update_pkg.sh 
-sh ${GITROOT}/addfileto_pkg.sh 
+sh ${GITROOT}/addfilesto_pkg.sh 
 ssh -x utility01 'cd '${GITROOT}'; git commit -a -m "Updated '${PKG_NAME}' for '$(echo ${MSGKEY} | tr "_" " " )'"; git push'
