@@ -34,7 +34,7 @@ def DataFrame(data=None, index=None, columns=None, dtype=None, copy=None):
 	return(pandas.DataFrame(data, index, columns, dtype, copy))
 
 def globlist(string):
-	return(glob.glob(string))
+	return(glob.glob(string)[::-1])
 
 def dic_print(dicid):
     for (key,val) in dicid.items():
