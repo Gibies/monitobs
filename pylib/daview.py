@@ -6,39 +6,27 @@ Created on Thu Jun 25 12:28:25 2020
 @author: gibies
 """
 
-import sys,os
-CURR_PATH=os.path.dirname(os.path.abspath(__file__))
-CYLCROOT=os.path.dirname(os.path.dirname(os.path.dirname(CURR_PATH)))
-CYLCPATH=os.environ.get('CYLCPATH',CYLCROOT)
-MONITOBS=os.environ.get('MONITOBS',CYLCPATH+"/modules/monitobs")
-LIB=os.environ.get('LIB',MONITOBS+"/pylib")
-sys.path.append(LIB)
-DIC=os.environ.get('DIC',MONITOBS+"/pydic")
-sys.path.append(DIC)
-NML=os.environ.get('NML',MONITOBS+"/nml")
-sys.path.append(NML)
-cmapfile=os.environ.get('CMAP',CYLCPATH+"/colourmaps/gibies_colourmap_20150115.rgb")
 #############################################################################################################################
 ###  Merged from imdaanowcast package
 #############################################################################################################################
-#from __future__ import print_function
-#import os,sys
-#CURR_PATH=os.path.dirname(os.path.abspath(__file__))
-#PKGHOME=os.environ.get('PKGHOME',os.path.dirname(CURR_PATH))
-#PKGNAME=os.path.basename(PKGHOME)
-#LIB=os.environ.get('LIB',PKGHOME+"/pylib")
-#sys.path.append(LIB)
-#DIC=os.environ.get('DIC',PKGHOME+"/pydic")
-#sys.path.append(DIC)
-#NML=os.environ.get('NML',PKGHOME+"/nml")
-#sys.path.append(NML)
-#PALETTE=os.environ.get('PYNGL_COLORMAPS',PKGHOME+"/palette")
+from __future__ import print_function
+import os,sys
+CURR_PATH=os.path.dirname(os.path.abspath(__file__))
+PKGHOME=os.environ.get('PKGHOME',os.path.dirname(CURR_PATH))
+PKGNAME=os.path.basename(PKGHOME)
+LIB=os.environ.get('LIB',PKGHOME+"/pylib")
+sys.path.append(LIB)
+DIC=os.environ.get('DIC',PKGHOME+"/pydic")
+sys.path.append(DIC)
+NML=os.environ.get('NML',PKGHOME+"/nml")
+sys.path.append(NML)
+PALETTE=os.environ.get('PYNGL_COLORMAPS',PKGHOME+"/palette")
 
-#diaglev=int(os.environ.get('GEN_MODE',0))
-#def errprint(*args, **kwargs):
-#    if diaglev > 0: print(*args, file=sys.stderr, **kwargs)
+diaglev=int(os.environ.get('GEN_MODE',0))
+def errprint(*args, **kwargs):
+    if diaglev > 0: print(*args, file=sys.stderr, **kwargs)
 
-#import datadic
+import datadic
 #import subprocess
 #import Ngl
 #import Nio
@@ -51,7 +39,7 @@ cmapfile=os.environ.get('CMAP',CYLCPATH+"/colourmaps/gibies_colourmap_20150115.r
 #import matplotlib.colors as colors
 #import matplotlib.cm as mplcm
 #from mpl_toolkits.basemap import Basemap, shiftgrid, addcyclic
-#cmapfile=os.environ.get('CMAP',PALETTE+"/gibies_colourmap_20150117.rgb")
+cmapfile=os.environ.get('CMAP',PALETTE+"/gibies_colourmap_20150117.rgb")
 
 import obslib
 import pplib
