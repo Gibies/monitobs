@@ -17,7 +17,6 @@ DIC=os.environ.get('DIC',MONITOBS+"/pydic")
 sys.path.append(DIC)
 NML=os.environ.get('NML',MONITOBS+"/nml")
 sys.path.append(NML)
-cmapfile=os.environ.get('CMAP',CYLCPATH+"/colourmaps/gibies_colourmap_20150115.rgb")
 #############################################################################################################################
 ###  Merged from imdaanowcast package
 #############################################################################################################################
@@ -32,7 +31,7 @@ cmapfile=os.environ.get('CMAP',CYLCPATH+"/colourmaps/gibies_colourmap_20150115.r
 #sys.path.append(DIC)
 #NML=os.environ.get('NML',PKGHOME+"/nml")
 #sys.path.append(NML)
-#PALETTE=os.environ.get('PYNGL_COLORMAPS',PKGHOME+"/palette")
+PALETTE=os.environ.get('PYNGL_COLORMAPS',PKGHOME+"/palette")
 
 #diaglev=int(os.environ.get('GEN_MODE',0))
 #def errprint(*args, **kwargs):
@@ -51,7 +50,7 @@ import datadic
 #import matplotlib.colors as colors
 #import matplotlib.cm as mplcm
 #from mpl_toolkits.basemap import Basemap, shiftgrid, addcyclic
-#cmapfile=os.environ.get('CMAP',PALETTE+"/gibies_colourmap_20150117.rgb")
+cmapfile=os.environ.get('CMAP',PALETTE+"/gibies_colourmap_20150117.rgb")
 
 import obslib
 import pplib
