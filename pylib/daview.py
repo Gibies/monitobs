@@ -18,6 +18,40 @@ sys.path.append(DIC)
 NML=os.environ.get('NML',MONITOBS+"/nml")
 sys.path.append(NML)
 cmapfile=os.environ.get('CMAP',CYLCPATH+"/colourmaps/gibies_colourmap_20150115.rgb")
+#############################################################################################################################
+###  Merged from imdaanowcast package
+#############################################################################################################################
+#from __future__ import print_function
+#import os,sys
+#CURR_PATH=os.path.dirname(os.path.abspath(__file__))
+#PKGHOME=os.environ.get('PKGHOME',os.path.dirname(CURR_PATH))
+#PKGNAME=os.path.basename(PKGHOME)
+#LIB=os.environ.get('LIB',PKGHOME+"/pylib")
+#sys.path.append(LIB)
+#DIC=os.environ.get('DIC',PKGHOME+"/pydic")
+#sys.path.append(DIC)
+#NML=os.environ.get('NML',PKGHOME+"/nml")
+#sys.path.append(NML)
+#PALETTE=os.environ.get('PYNGL_COLORMAPS',PKGHOME+"/palette")
+
+#diaglev=int(os.environ.get('GEN_MODE',0))
+#def errprint(*args, **kwargs):
+#    if diaglev > 0: print(*args, file=sys.stderr, **kwargs)
+
+#import datadic
+#import subprocess
+#import Ngl
+#import Nio
+#import numpy
+#import pandas
+#import matplotlib
+#matplotlib.use('Agg')
+#import matplotlib.pyplot as pyplot
+#pyplot.switch_backend('agg')
+#import matplotlib.colors as colors
+#import matplotlib.cm as mplcm
+#from mpl_toolkits.basemap import Basemap, shiftgrid, addcyclic
+#cmapfile=os.environ.get('CMAP',PALETTE+"/gibies_colourmap_20150117.rgb")
 
 import obslib
 import pplib
@@ -949,4 +983,548 @@ def plot_colourbutton():
    #fig2, ax2 = plt.subplots(212,figsize=(10,8))
    plot2=plt.subplot(212)
    return(sc1)
+
+
+#############################################################################################################################
+###  Merged from imdaanowcast package
+#############################################################################################################################
+
+def resof(plotinfo):
+    if "res" in plotinfo:
+        res=plotinfo["res"]
+    else:
+        res = Ngl.Resources()
+    return(res)
+
+def gen_wks(plotinfo):
+    plotfile=plotinfo["plotfile"]
+    wks_type=plotinfo["wks_type"]
+    wkres = Ngl.Resources()
+    wkres.wkColorMap = "gibies_colourmap_20150117"
+    wks = Ngl.open_wks(wks_type,plotfile,wkres)
+    plotinfo.update({"wks":wks})
+    return(plotinfo)
+
+
+def get_colrindx(colrdic):
+    if "colrindx" not in colrdic or colrdic["colrindx"] is None:
+    	try:colrmin=colrdic["colrmin"]
+	except:colrmin=0
+    	try:colrmax=colrdic["colrmax"]
+	except:colrmax=170
+	colrindx=numpy.arange(colrmin,colrmax,1)
+    else:
+    	colrindx=colrdic["colrindx"]
+    return(colrindx)
+
+def get_cmap(plotinfo):
+    colrindx=get_colrindx(plotinfo)
+    cmap = Ngl.read_colormap_file(cmapfile)[colrindx,:]
+    if "revcmap" in plotinfo and plotinfo["revcmap"]: cmap=cmap[::-1,:]
+    plotinfo.update({"cmap":cmap})
+    return(plotinfo)
+
+def print_rgb(colrdic):
+    if "cmap" not in colrdic: colrdic=get_cmap(colrdic)
+    cmap=colrdic["cmap"]
+    print(cmap)
+
+def truncate_colormap(cpallet, minval=0.0, maxval=1.0, n=100):
+    cmap=mplcm.get_cmap(cpallet)
+    new_cmap = colors.LinearSegmentedColormap.from_list(
+        'trunc({n},{a:.2f},{b:.2f})'.format(n=cmap.name, a=minval, b=maxval),
+        cmap(numpy.linspace(minval, maxval, n)))
+    return new_cmap
+
+def check_plot(plotinfo):
+    outfile=os.path.abspath(plotinfo["plotfile"]+"."+plotinfo["wks_type"])
+    outfile=subprocess.call("ls "+outfile, shell=True)
+    return(outfile)
+
+def test_ngl(plotinfo={}):
+    if "plotfile" not in plotinfo: plotinfo={"plotfile":"palette_check"}
+    if "wks_type" not in plotinfo: plotinfo.update({"wks_type":"png"})
+    outfile=os.path.abspath(plotinfo["plotfile"]+"."+plotinfo["wks_type"])
+    if "wks" not in plotinfo: plotinfo=gen_wks(plotinfo)
+    os.environ["NCARG_COLORMAPS"]=PALETTE
+    os.environ["PYNGL_COLORMAPS"]=PALETTE
+    cmapfile=subprocess.call("ls "+PALETTE+"/gibies_colourmap_20150117.rgb", shell=True)
+    
+    plot=Ngl.draw_colormap(plotinfo["wks"])
+    Ngl.end()
+    outfile=check_plot(plotinfo)
+    print(cmapfile,outfile)
+    return(outfile)
+
+def write_tlstring(plotinfo):
+    vpx = Ngl.get_float(plotinfo["plot"],"vpXF")
+    vpy = Ngl.get_float(plotinfo["plot"],"vpYF")
+    vpw = Ngl.get_float(plotinfo["plot"],"vpWidthF")
+    vph = Ngl.get_float(plotinfo["plot"],"vpHeightF")
+    if not "tlsres" in plotinfo:
+	plotinfo.update({"tlsres":Ngl.Resources()})
+	plotinfo["tlsres"].txFontHeightF = 0.014
+	plotinfo["tlsres"].txJust        = "CenterLeft"
+    if not "tlstring" in plotinfo: 
+ 	print("No string for Top Left corner")
+        plotinfo.update({"tlstring":"____"})
+    Ngl.text_ndc(plotinfo["wks"], plotinfo["tlstring"], vpx+0.05*vpw, vpy, plotinfo["tlsres"])
+    return(plotinfo)
+
+def write_trstring(plotinfo):
+    vpx = Ngl.get_float(plotinfo["plot"],"vpXF")
+    vpy = Ngl.get_float(plotinfo["plot"],"vpYF")
+    vpw = Ngl.get_float(plotinfo["plot"],"vpWidthF")
+    vph = Ngl.get_float(plotinfo["plot"],"vpHeightF")
+    if not "trsres" in plotinfo:
+	plotinfo.update({"trsres":Ngl.Resources()})
+	plotinfo["trsres"].txFontHeightF = 0.014
+	plotinfo["trsres"].txJust        = "CenterRight"
+    if not "trstring" in plotinfo: 
+ 	print("No string for Top Right corner")
+        plotinfo.update({"trstring":"____"})
+    Ngl.text_ndc(plotinfo["wks"], plotinfo["trstring"], vpx+0.95*vpw, vpy, plotinfo["trsres"])
+    return(plotinfo)
+
+def write_blstring(plotinfo):
+    vpx = Ngl.get_float(plotinfo["plot"],"vpXF")
+    vpy = Ngl.get_float(plotinfo["plot"],"vpYF")
+    vpw = Ngl.get_float(plotinfo["plot"],"vpWidthF")
+    vph = Ngl.get_float(plotinfo["plot"],"vpHeightF")
+    if not "blsres" in plotinfo:
+	plotinfo.update({"blsres":Ngl.Resources()})
+	plotinfo["blsres"].txFontHeightF = 0.014
+	plotinfo["blsres"].txJust        = "CenterLeft"
+    if not "blstring" in plotinfo: 
+ 	print("No string for Bottom Left corner")
+        plotinfo.update({"blstring":"____"})
+    Ngl.text_ndc(plotinfo["wks"], plotinfo["blstring"], vpx+0.05*vpw, vpy-1.2*vph, plotinfo["blsres"])
+    return(plotinfo)
+
+def write_brstring(plotinfo):
+    vpx = Ngl.get_float(plotinfo["plot"],"vpXF")
+    vpy = Ngl.get_float(plotinfo["plot"],"vpYF")
+    vpw = Ngl.get_float(plotinfo["plot"],"vpWidthF")
+    vph = Ngl.get_float(plotinfo["plot"],"vpHeightF")
+    if not "brsres" in plotinfo:
+	plotinfo.update({"brsres":Ngl.Resources()})
+	plotinfo["brsres"].txFontHeightF = 0.014
+	plotinfo["brsres"].txJust        = "CenterRight"
+    if not "brstring" in plotinfo: 
+ 	print("No string for Bottom Right corner")
+        plotinfo.update({"brstring":"____"})
+    Ngl.text_ndc(plotinfo["wks"], plotinfo["brstring"], vpx+0.95*vpw, vpy-1.2*vph, plotinfo["brsres"])
+    return(plotinfo)
+
+def write_info_text(plotinfo):
+    if "tlstring" in plotinfo : plotinfo=write_tlstring(plotinfo)
+    if "trstring" in plotinfo : plotinfo=write_trstring(plotinfo)
+    if "blstring" in plotinfo : plotinfo=write_blstring(plotinfo)
+    if "brstring" in plotinfo : plotinfo=write_brstring(plotinfo)
+    return(plotinfo)
+
+def add_info_string(plotinfo):
+    #-- add units and copyrights to wks
+    plot=plotinfo["plot"]
+    wks=plotinfo["wks"]
+    vpx = Ngl.get_float(plot,"vpXF")             #-- retrieve value of res.vpXF from plot
+    vpy = Ngl.get_float(plot,"vpYF")             #-- retrieve value of res.vpYF from plot
+    vpw = Ngl.get_float(plot,"vpWidthF")         #-- retrieve value of res.vpWidthF from plot
+    vph = Ngl.get_float(plot,"vpHeightF")        #-- retrieve value of res.vpHeightF from plot
+
+    print(plot,vpx,vpy,vpw,vph)
+
+    units = "test_unit"
+    txres = Ngl.Resources()
+    txres.txFontHeightF = 0.014                 #-- font size for left, center and right string
+    txres.txJust        = "CenterCenter"        #-- text justification
+    Ngl.text_ndc(wks, "["+units+"]", vpx-0.04, vpy, txres)  #-- add text to wks
+
+    txres.txFontHeightF = 0.012                 #-- font size for left, center and right string
+    Ngl.text_ndc(wks,"footnote", vpx+vpw-0.07, vpy-vph, txres) #-- plot copyright info
+    #plotinfo.update({"wks":wks})
+    return(plotinfo)
+
+
+def open_file(filename,mode="r",opt=None):
+    f = Nio.open_file(filename,mode=mode,options=opt)
+    return(f)
+
+def get_var_data(infile,varname,slicestring=":"):
+#    infile=open_file(filename)
+    var = infile.variables[varname]
+    print(var.dimensions)
+    data=var[slicestring]
+    return(data)
+
+def time_slice_data(datain,dimpos=0,dim_indx=0):
+    if dimpos is 0 : data=datain[dim_indx]
+    return(data)
+
+def level_slice_data(datain,dimpos=0,dim_indx=0):
+    if dimpos is 0 : data=datain[dim_indx]
+    return(data)
+
+
+def get_fillval(dataset,fillvalfix=-999.99):
+	try:fillval = dataset["_FillValue"]
+	except:fillval = fillvalfix
+	return(fillval)
+
+def set_fillval(dataset):
+	fillval=get_fillval(dataset)
+    	dataset.update({"_FillValue":fillval})
+	return(dataset)
+
+def get_mask(dataset):
+     if "data" in dataset:
+	data=dataset["data"]
+     else:
+	if "zonal_data" in dataset:
+	    data=dataset["zonal_data"]
+	else:
+	    if "merid_data" in dataset:
+		data=dataset["merid_data"]
+     mask=numpy.where(numpy.isnan(data))
+     dataset.update({"mask":mask})
+     return(dataset)
+
+def mask_data(dataset,itemlist):
+     for item in itemlist:
+	if item in dataset:
+	   data=dataset[item]
+	   mask=dataset["mask"]
+	   fillval=dataset["_FillValue"]	
+	   data[mask]=fillval
+	   dataset.update({item:data})
+     return(dataset)
+
+def fillval_mask(dataset):
+	dataset=set_fillval(dataset)
+	dataset=get_mask(dataset)
+	dataset=mask_data(dataset,["data","zonal_data","merid_data"])
+    	#data.fillna(fillval,inplace=True)
+	#data=numpy.nan_to_num(data,copy=True,nan=fillval,posinf=None,neginf=None)
+	return(dataset)
+
+def get_2d_lat(datainfo,dataset):
+    shape=dataset["data"].shape
+    datadir=datainfo["datadir"]
+    fname = datainfo["filename"]
+    datafile=datadir + "/" + fname
+    infile = Nio.open_file(datafile,"r")
+    latnam = datainfo["latvar"]
+    opt = datainfo["dimopt"]
+    if opt == 1:
+	lat = infile.variables[latnam][:]
+	lat2d=pplib.get_2dlat(lat,shape)
+    if opt == 2:
+    	lat2d = infile.variables[latnam][:,:]
+    dataset.update({"lat2d":lat2d})
+    return(dataset)
+
+def get_2d_lon(datainfo,dataset):
+    shape=dataset["data"].shape
+    datadir=datainfo["datadir"]
+    fname = datainfo["filename"]
+    datafile=datadir + "/" + fname
+    infile = Nio.open_file(datafile,"r")
+    lonnam = datainfo["lonvar"]
+    opt = datainfo["dimopt"]
+    if opt == 1:
+	lon = infile.variables[lonnam][:]
+	lon2d=pplib.get_2dlon(lon,shape)
+    if opt == 2:
+    	lon2d = infile.variables[lonnam][:,:]
+    dataset.update({"lon2d":lon2d})
+    return(dataset)
+
+def get_vardims(datainfo,dataset):
+    shape=dataset["data"].shape
+    datadir=datainfo["datadir"]
+    fname = datainfo["filename"]
+    datafile=datadir + "/" + fname
+    infile = Nio.open_file(datafile,"r")
+    dimlist=datainfo["dimnames"]
+    if len(shape) is not len(dimlist):
+       err_string="Data shape missmatch with number of dimention: "+str(len(shape))+" not equal to "+str(len(dimlist))+" "
+       print(err_string)
+    else:
+       for dimname in dimlist:
+           dataset.update({dimname:infile.variables[dimname][:]})
+    dataset.update({"dimnames":dimlist})
+    return(dataset)
+
+def get_slice_string(datainfo):
+    keylist=["timeslice","levslice","latslice","lonslice"]
+    slicestring=""
+    for key in keylist:
+        if key in datainfo: slicestring=slicestring+datainfo[key]+" "
+    if slicestring is "" : slicestring=":"
+    datainfo.update({"slicestring":slicestring})
+    print(datainfo["slicestring"])
+    return(datainfo)
+
+def get_data(datainfo,vname=None):
+    dataset={}
+    datadir=datainfo["datadir"]
+    fname = datainfo["filename"]
+    if vname is None : vname = datainfo["fvarname"]
+    if "grid_type" in datainfo:
+       grid_type = datainfo["grid_type"]
+    else:
+       grid_type = None
+    if "time_index" in datainfo: 
+	timindx = datainfo["time_index"]
+    else:
+	timindx = None
+    if "lev_index" in datainfo: 
+	levindx = datainfo["lev_index"]
+    else:
+	levindx = None
+    datafile=datadir + "/" + fname
+    infile = Nio.open_file(datafile,"r")
+    datainfo.update({"timedimname":infile.variables[vname].dimensions[datainfo["timepos"]]})
+    datainfo.update({"latdimname":infile.variables[vname].dimensions[datainfo["latpos"]]})
+    datainfo.update({"londimname":infile.variables[vname].dimensions[datainfo["lonpos"]]})
+    datainfo.update({"dimnames":[datainfo["latdimname"],datainfo["londimname"]]})
+    datainfo=get_slice_string(datainfo)
+    slicestring=datainfo["slicestring"]
+    data=get_var_data(infile,vname,slicestring)
+    dataset.update({"data":data})
+    dataset.update(infile.variables[vname].attributes)
+    dataset=fillval_mask(dataset)
+    dataset=get_vardims(datainfo,dataset)
+    if grid_type is None:
+       dataset = get_2d_lat(datainfo,dataset)
+       dataset = get_2d_lon(datainfo,dataset)
+    return(dataset)
+
+def get_vector_magnitude(dataset):
+    uwnd=dataset["zonal_data"]["data"]
+    vwnd=dataset["merid_data"]["data"]
+    usqr=uwnd.__pow__(2)
+    vsqr=vwnd.__pow__(2)
+    ssqr=usqr.__add__(vsqr)
+    speed=numpy.sqrt(ssqr)
+    dataset.update({"data":speed})
+    return(dataset)
+
+def get_vector_data(datainfo):
+    dataset={}
+    datadir=datainfo["datadir"]
+    fname = datainfo["filename"]
+    zonal_vname = datainfo["fvarname"][0]
+    zonal_data=get_data(datainfo,vname=zonal_vname)
+    merid_vname = datainfo["fvarname"][1]
+    merid_data=get_data(datainfo,vname=merid_vname)
+    dataset.update({"zonal_data":zonal_data})
+    dataset.update({"merid_data":merid_data})
+    for key in list(zonal_data.keys()):
+        if key is not "data" : dataset.update({key:dataset["zonal_data"][key]})
+    return(dataset)
+
+def vcmag(plotinfo):
+    res=resof(plotinfo)
+    if plotinfo["plot_type"] in ["vector","vector_scalar",]:
+    	if "cmap" in plotinfo : res.vcLevelPalette = plotinfo["cmap"]
+	res.vcMinFracLengthF     = 0.008   # Increase length of vector
+	res.vcRefLengthF         = 0.045
+	if "vcmag" in plotinfo : 
+           res.vcRefMagnitudeF      = plotinfo["vcmag"]
+        else :
+           res.vcRefMagnitudeF      = 2.0
+    plotinfo.update({"res":res})
+    return(plotinfo)
+
+def vcstyle(plotinfo):
+    res=resof(plotinfo)
+    if "vcstyle" in plotinfo : 
+       vcstyle=plotinfo["vcstyle"]
+    else : 
+       vcstyle="CurlyVector"
+    if vcstyle is "CurlyVector":
+        res.vcLineArrowThicknessF = 3.0
+	res.vcMonoLineArrowColor = False  
+    if vcstyle is "FillArrow" :
+        res.vcFillArrowsOn       = True
+        res.vcMonoFillArrowFillColor  =  False
+        res.vcFillArrowWidthF         = 0.1
+    res.vcGlyphStyle = vcstyle
+    plotinfo.update({"res":res})
+    return(plotinfo) 
+
+def cyl_plot(dataset,plotinfo):
+    wks=plotinfo["wks"]
+    res=resof(plotinfo)
+    res.nglDraw               = False               #-- don't draw individual plots
+    res.nglFrame              = False               #-- don't advance frame
+    res.mpDataBaseVersion      = "MediumRes"
+    res.mpFillOn              = True
+    res.mpFillColors = [0,-1,-1,-1]
+    res.mpFillAreaSpecifiers  = ["land"]
+    res.mpSpecifiedFillColors = ["gray65"]
+    res.mpGridLatSpacingF =  10.                  #-- grid lat spacing
+    res.mpGridLonSpacingF =  10.                  #-- grid lon spacing
+    res.mpLimitMode       = "LatLon"              #-- must be set using minLatF/maxLatF/minLonF/maxLonF
+       
+    if "latitude" in dataset["dimnames"]:
+       res.mpMinLatF = min(dataset["latitude"])
+       res.mpMaxLatF = max(dataset["latitude"])
+       if plotinfo["plot_type"] in ["contour","vector_scalar"]:
+          res.sfYCStartV = float(min(dataset["latitude"]))
+          res.sfYCEndV   = float(max(dataset["latitude"]))
+       if plotinfo["plot_type"] in ["vector","vector_scalar"]:
+          res.vfYCStartV = float(min(dataset["latitude"]))
+          res.vfYCEndV   = float(max(dataset["latitude"]))
+    else:
+       res.mpMinLatF    = -90
+       res.mpMaxLatF    = 90
+       
+    if "longitude" in dataset["dimnames"]:
+       res.mpMinLonF = min(dataset["longitude"])
+       res.mpMaxLonF = max(dataset["longitude"])
+       if plotinfo["plot_type"] in ["contour","vector_scalar"]:
+          res.sfXCStartV = float(min(dataset["longitude"]))   # Define where contour plot
+          res.sfXCEndV   = float(max(dataset["longitude"]))   # should lie on the map plot.
+       if plotinfo["plot_type"] in ["vector","vector_scalar"]:
+          res.vfXCStartV = float(min(dataset["longitude"]))   # Define where contour plot
+          res.vfXCEndV   = float(max(dataset["longitude"]))   # should lie on the map plot.
+    else:
+       res.mpMinLonF    = 0
+       res.mpMaxLonF    = 360
+      
+    if plotinfo["plot_type"] in ["vector","vector_scalar",]:
+        plotinfo=vcmag(plotinfo)
+        plotinfo=vcstyle(plotinfo)
+        res=resof(plotinfo)
+        res.vcMinDistanceF = 0.01
+	uwnd=dataset["zonal_data"]["data"]
+	vwnd=dataset["merid_data"]["data"]
+	print(uwnd.shape)
+	print(vwnd.shape)
+    if plotinfo["plot_type"] in ["vector_scalar",]:
+    	data=get_vector_magnitude(dataset)["data"]
+	print(data.shape)
+    	plotinfo["plot"]=Ngl.vector_scalar_map(wks, uwnd, vwnd, data, res)
+    if plotinfo["plot_type"] in ["vector",]:
+	res.vcMonoLineArrowColor = False  # Draw vectors in color.
+    	plotinfo["plot"]=Ngl.vector_map(wks, uwnd, vwnd, res)
+    if plotinfo["plot_type"] in ["contour",]:
+	data=dataset["data"]
+	print(data.shape)
+	plotinfo["plot"]=Ngl.contour_map(wks,data,res)
+    plotinfo=write_info_text(plotinfo)
+    return(plotinfo["plot"])
+	
+def get_subplot(dataset,plotinfo):
+    wks=plotinfo["wks"]
+    res=resof(plotinfo)
+#   lat2d=dataset["lat2d"]
+#   lon2d=dataset["lon2d"]
+    if "title" in plotinfo: 
+	title=plotinfo["title"]
+    else:
+	title=""
+    if "draworder" in plotinfo:
+    	res.mpFillDrawOrder   = plotinfo["draworder"]
+
+    if plotinfo["plot_type"] in ["contour","vector_scalar",]:
+    	res.cnFillOn = True
+        if "cnline" in plotinfo and plotinfo["cnline"] is not None :
+		res.cnLevelFlags = plotinfo["cnline"]
+        else:
+   		res.cnLineOn = False
+		res.cnLevelFlags = "NoLine"
+    		res.cnLineLabelsOn        = False
+    		res.cnInfoLabelOn         = False
+    	res.cnLevelSelectionMode = "ExplicitLevels"
+    	if "cnlev" in plotinfo : res.cnLevels 	= plotinfo["cnlev"]
+        if "cmap" in plotinfo :	res.cnFillPalette = plotinfo["cmap"]
+
+
+    res.lbOrientation  = "Horizontal"
+#    res.sfXArray     = lon2d
+#    res.sfYArray     = lat2d
+    res.sfMissingValueV = get_fillval(dataset)
+    res.gsnAddCyclic = False  
+    res.tiMainString = title
+    if "gsnLeftString" in plotinfo:
+    	res.gsnLeftString = plotinfo["gsnLeftString"]
+    else:
+	res.gsnLeftString = ""
+    plotinfo.update({"wks":wks})
+    plotinfo.update({"res":res})
+    plot1=cyl_plot(dataset,plotinfo)
+    return(plot1)
+
+def data_filename(datafield,datadir,init_date,init_hour,fcst_hour,datainfo=None):
+    if datainfo is None: datainfo=datadic.get_data_info(datafield)
+    datainfo.update({"datadir":datadir})
+    datainfo.update({"grid_type":"regular"})
+    fnprefix="ncum_imdaa_nearrealtime_12km_"
+    fnsufix="_"+str(init_date)+"_"+str(init_hour).zfill(2)+"z_hrofday.nc"
+    datainfo.update({"filename":fnprefix+str(datainfo["fnamekey"])+fnsufix})
+    datainfo.update({"timeslice":"time|"+str(fcst_hour).zfill(2)})
+    print(datainfo)
+    return(datainfo)
+
+def plot_filename(datafield,plotdir,init_date,fcst_hour,prefix="",sufix=""):
+    plotinfo={}
+    sufix="_"+str(fcst_hour).zfill(2)+"Z"
+    plotinfo.update({"plotfile":plotdir+"/"+prefix+datafield+sufix})
+    plotinfo.update({"wks_type":"png"})
+    plotinfo.update({"trstring":str(init_date)+"_"+str(fcst_hour).zfill(2)+"Z"})
+    plotinfo=gen_wks(plotinfo)
+    return(plotinfo)
+
+def plot_data(field_list,datadir,plotdir,init_date,init_hour,fcst_hour):
+    plotinfo=plot_filename(field_list[0],plotdir,init_date,fcst_hour,prefix="ncumda_g12_imdaa_",sufix="_"+str(fcst_hour).zfill(2)+"Z")
+    print(plotinfo)
+    plot = []
+    for count,datafield in enumerate(field_list):
+        plotinfo=datadic.get_plot_info(datafield,plotinfo)
+        datainfo=data_filename(datafield,datadir,init_date,init_hour,fcst_hour)
+        plotinfo=get_cmap(plotinfo)
+        res=resof(plotinfo)
+        plotinfo.update({"res":res})
+	if plotinfo["plot_type"] in ["contour"]:
+		dataset=get_data(datainfo)
+	else:
+		dataset=get_vector_data(datainfo)
+	plot1=get_subplot(dataset,plotinfo)
+	plot.append(plot1)
+    count=len(plot)
+    panelres                  =  Ngl.Resources()
+    panelres.nglPanelLabelBar =  False           #-- common labelbar
+    panelres.nglPanelYWhiteSpacePercent =  0        #-- reduce space between the panel plots
+    panelres.nglPanelXWhiteSpacePercent =  0        #-- reduce space between the panel plots
+    panelres.nglPanelTop      =  0.95               #-- top position of panel
+    #-- create the panel
+    Ngl.panel(plotinfo["wks"],plot,[count,1],panelres)
+    outfile=check_plot(plotinfo)
+    del plotinfo, datainfo, plot
+    print(outfile)
+    return(outfile)
+
+def get_field_list():
+    field_list=datadic.field_list
+    return(field_list)
+
+def plot_all(datadir,plotdir,init_date,init_hour,fcst_lead,field_list=None):
+    hoursofday=numpy.arange(init_hour,init_hour+fcst_lead,1)
+    if field_list is None : field_list=get_field_list()
+    for datafield in field_list:
+        for fcst_hour in hoursofday:
+            print(fcst_hour)
+            print(datafield)
+            plotfile=plot_data([datafield],datadir,plotdir,init_date,init_hour,fcst_hour)
+    Ngl.end()
+    return(plotfile)
+
+
+def umff_to_grib2(infile,outfile=None):
+    if outfile is None: outfile=infile.split(".",1)[0]+".grib2"
+    file_cubes=iris.load(infile)
+    iris.save(file_cubes,outfile)
 
