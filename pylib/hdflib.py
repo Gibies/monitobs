@@ -53,8 +53,10 @@ def scale_data(data,scale,formula):
 		formula=""
 	if "Scale * Value" in formula:
 		data = numpy.multiply(data,scale)
-	else:
-		print("Formula not handled")
+		formula=""
+	if formula is not "":
+		print("Warnning: Formula not handled")
+		print("Formula: "+formula)
 	return(data)
 
 def shape_data(data1,shape1=None):
@@ -65,47 +67,56 @@ def shape_data(data1,shape1=None):
 		tracklen=shape1[0]
 		scanwdth=shape1[1]
 	shpold=data1.shape
+	if len(shpold) == 1:
+		data1 = numpy.expand_dims(data1,axis=1)
+	shpold=data1.shape
 	if shpold[1] == tracklen: 
 		data1=numpy.swapaxes(data1,0,1)
-	if shpold[0] == 1 : 
-		data=numpy.tile(data1,scanwdth)
-	else:
-		data=data1
+	shpold=data1.shape
+	if shpold[1] == 1 : 
+		data1=numpy.tile(data1,scanwdth)
+	data=data1
 	return(data)
 
 def get_var_data(filename,grpnam,varnam,dims=None):
     with h5py.File(filename, "r") as f:
         dataptr = f.get(grpnam+"/"+varnam)
         data1 = numpy.array(dataptr)
-    	#data1 = numpy.ma.masked_object(data1,int(32767))
-    	#data1 = numpy.ma.masked_object(data1,int(65535))
         if str(data1.dtype) == "int16": 
-		data1 = obslib.mask_array(data1, 32767)
+		data1 = obslib.mask_array(data1)	#, 32767)
 	else: 
 		print(data1.dtype)
         if str(data1.dtype) == "uint16": 
-		data1 = obslib.mask_array(data1, 65535)
+		data1 = obslib.mask_array(data1)	#, 65535)
 	else: 
 		print(data1.dtype)
 	scale=get_grp_attrs_val(filename,grpnam,varnam+" Scale")
 	formula=get_grp_attrs_val(filename,grpnam,"Formula to derive value of a Parameter")
 	data1=scale_data(data1,scale,formula)
 	data=shape_data(data1,dims)
-	if dims[0] == data.shape[0] and dims[1] == data.shape[1]: 
-		data=data.flatten()
-		print(data)
+	shpdata=data.shape
+	if len(shpdata) == 3 and dims[0] == shpdata[0] and dims[1] == shpdata[1]:
+	   data=data.reshape((shpdata[0]*shpdata[1],shpdata[2]))
 	else:
-		print("Shape missmatch",dims,data.shape)
+		if len(shpdata) == 2 and dims[0] == shpdata[0] and dims[1] == shpdata[1]: 
+			data=data.flatten()
+		else:
+			print("Shape missmatch",dims,shpdata)
+			print("Warnning: "+str(shpdata))
+	print(data.shape)
 	return(data)
 
 def frame_var_data(filename,grpnam,varnam,dims=(1720,144),data=None):
 	data1=get_var_data(filename,grpnam,varnam,dims=dims)
 	#print(data1)
-	if data is None:
-		data=pandas.DataFrame({varnam:data1})
-	else:
-		print(data1)
-		data[varnam]=data1
+	print(data1.shape)
+	if data is None: data=pandas.DataFrame()
+	if len(data1.shape) == 1 : data[varnam]=data1
+	if len(data1.shape) == 2 :
+		chnls = range(1,(data1.shape[1]+1),1)
+		print(chnls)
+		for indx in chnls:
+			data[varnam+"_"+str(indx)]=data1[:,(indx-1)]
 	return(data)
 
 def frame_data(filename,varnml,elist=None):
