@@ -23,6 +23,7 @@ import numpy
 import struct
 import datetime
 import glob
+from itertools import chain
 NAN_VAL_INT=-32768
 NAN_VAL=-1.07374182e+09
 
@@ -460,28 +461,6 @@ def odb_dt_to_pydate(date, time):
   second = int(time[4:6])
   return(datetime.datetime(year,month,day,hour,minute,second))
 
-def pandas_dtfmt(data,dtfmt,fldnamlst=None,fldtype=None):
-    if fldnamlst is None: fldnamlst = data.columns
-    if "Year" in fldnamlst : 
-	fldnam = "Year"
-	data[fldnam]=pandas.to_datetime(data[fldnam], format=dtfmt).dt.year
-    if "Month" in fldnamlst : 
-	fldnam = "Month"
-	data[fldnam]=pandas.to_datetime(data[fldnam], format=dtfmt).dt.month
-    if "Day" in fldnamlst : 
-	fldnam = "Day"
-	data[fldnam]=pandas.to_datetime(data[fldnam], format=dtfmt).dt.day
-    if "Hour" in fldnamlst : 
-	fldnam = "Hour"
-	data[fldnam]=pandas.to_datetime(data[fldnam], format=dtfmt).dt.hour
-    if "Minutes" in fldnamlst : 
-	fldnam = "Minutes"
-	data[fldnam]=pandas.to_datetime(data[fldnam], format=dtfmt).dt.minute
-    if "Seconds" in fldnamlst : 
-	fldnam = "Seconds"
-	data[fldnam]=pandas.to_datetime(data[fldnam], format=dtfmt).dt.second
-    return(data)
-
 def getdatetime(DT,data,idx=1):
     if "Year" in data.columns.values:
         Year=data.Year.values[idx-1]
@@ -517,6 +496,48 @@ def get_date_info(data):
 	DT=pydate(None,year,month,day,hour)	
 	return(DT)
 
+def pandas_dtfmt(data,dtfmt,fldnamlst=None,fldtype=None):
+    if fldtype is not None : 
+    	fldnamlst=list(chain(fldtype["year"],fldtype["month"],fldtype["day"],fldtype["hour"],fldtype["minute"],fldtype["second"]))
+    else :
+	fldtype = {"year":[],"month":[],"day":[],"hour":[],"minute":[],"second":[]}
+    	if fldnamlst is None: fldnamlst = data.columns
+	if "Year" in fldnamlst : 
+		fldnam = "Year"
+		fldtype["year"].append(fldnam)
+	if "Month" in fldnamlst : 
+		fldnam = "Month"
+		fldtype["month"].append(fldnam)
+	if "Day" in fldnamlst : 
+		fldnam = "Day"
+		fldtype["day"].append(fldnam)
+	if "Hour" in fldnamlst : 
+		fldnam = "Hour"
+		fldtype["hour"].append(fldnam)
+	if "Minutes" in fldnamlst : 
+		fldnam = "Minutes"
+		fldtype["minute"].append(fldnam)
+	if "Seconds" in fldnamlst : 
+		fldnam = "Seconds"
+		fldtype["second"].append(fldnam)
+	fldnamlst=list(chain(fldtype["year"],fldtype["month"],fldtype["day"],fldtype["hour"],fldtype["minute"],fldtype["second"]))
+    for fldnam in fldnamlst:
+	if fldnam in fldtype["year"]:
+		data[fldnam]=pandas.to_datetime(data[fldnam], format=dtfmt).dt.year
+	if fldnam in fldtype["month"]:
+		data[fldnam]=pandas.to_datetime(data[fldnam], format=dtfmt).dt.month
+	if fldnam in fldtype["day"]:
+		data[fldnam]=pandas.to_datetime(data[fldnam], format=dtfmt).dt.day
+	if fldnam in fldtype["hour"]:
+		data[fldnam]=pandas.to_datetime(data[fldnam], format=dtfmt).dt.hour
+	if fldnam in fldtype["minute"]:
+		data[fldnam]=pandas.to_datetime(data[fldnam], format=dtfmt).dt.minute
+	if fldnam in fldtype["second"]:
+		data[fldnam]=pandas.to_datetime(data[fldnam], format=dtfmt).dt.second
+    return(data)
+
+def pandas_strcrop(data,field,chaaa,chzzz):
+	data[field]=data[field].str[int(chaaa):int(chzzz)].values
 
 def get_numerics(string_data):
     numeric_data=[]
