@@ -17,7 +17,7 @@ sys.path.append(OBSDIC)
 OBSNML=os.environ.get('OBSNML',PKGHOME+"/nml")
 sys.path.append(OBSNML)
 
-import obsdic
+#import obsdic
 import pandas
 import numpy
 import struct
@@ -39,6 +39,10 @@ def globlist(string):
 def dic_print(dicid):
     for (key,val) in dicid.items():
        print(key+" : "+str(val))
+
+def printall(array1):
+	with numpy.printoptions(threshold=numpy.inf):
+		print(array1)
 
 ########Golden key for binary write 20221027########################
 def binary_write(data,pos,obsfile,binwidth=8):
@@ -231,6 +235,16 @@ def nan_sort(a):
     temp = a.copy()
     temp= numpy.ma.masked_where(temp ==-3.2768e+04, temp)
     return temp.sort()
+
+def mask_array(a,missing=numpy.nan):
+    temp = a.copy()
+    if str(temp.dtype) == "int16": temp = numpy.ma.masked_where(temp==32767, temp)
+    if str(temp.dtype) == "uint16": temp = numpy.ma.masked_where(temp==65535, temp)
+    temp = numpy.ma.masked_where(temp==missing, temp)
+    temp = temp.astype('float64')
+    arry = numpy.ma.filled(temp, numpy.nan)
+    #temp = numpy.ma.masked_object(temp,missing)
+    return(arry)
 
 def binsort(a,binmin=numpy.NINF,binmax=numpy.inf,missing=numpy.nan):
     temp = a.copy()
@@ -445,6 +459,28 @@ def odb_dt_to_pydate(date, time):
   minute = int(time[2:4])
   second = int(time[4:6])
   return(datetime.datetime(year,month,day,hour,minute,second))
+
+def pandas_dtfmt(data,dtfmt,fldnamlst=None,fldtype=None):
+    if fldnamlst is None: fldnamlst = data.columns
+    if "Year" in fldnamlst : 
+	fldnam = "Year"
+	data[fldnam]=pandas.to_datetime(data[fldnam], format=dtfmt).dt.year
+    if "Month" in fldnamlst : 
+	fldnam = "Month"
+	data[fldnam]=pandas.to_datetime(data[fldnam], format=dtfmt).dt.month
+    if "Day" in fldnamlst : 
+	fldnam = "Day"
+	data[fldnam]=pandas.to_datetime(data[fldnam], format=dtfmt).dt.day
+    if "Hour" in fldnamlst : 
+	fldnam = "Hour"
+	data[fldnam]=pandas.to_datetime(data[fldnam], format=dtfmt).dt.hour
+    if "Minutes" in fldnamlst : 
+	fldnam = "Minutes"
+	data[fldnam]=pandas.to_datetime(data[fldnam], format=dtfmt).dt.minute
+    if "Seconds" in fldnamlst : 
+	fldnam = "Seconds"
+	data[fldnam]=pandas.to_datetime(data[fldnam], format=dtfmt).dt.second
+    return(data)
 
 def getdatetime(DT,data,idx=1):
     if "Year" in data.columns.values:
