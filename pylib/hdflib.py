@@ -106,26 +106,39 @@ def get_var_data(filename,grpnam,varnam,dims=None):
 	print(data.shape)
 	return(data)
 
-def frame_var_data(filename,grpnam,varnam,dims=(1720,144),data=None):
+def frame_var_data(filename,grpnam,varnam,elenam,dims=(1720,144),data=None):
 	data1=get_var_data(filename,grpnam,varnam,dims=dims)
 	#print(data1)
 	print(data1.shape)
 	if data is None: data=pandas.DataFrame()
-	if len(data1.shape) == 1 : data[varnam]=data1
+	if len(data1.shape) == 1 : data[elenam]=data1
 	if len(data1.shape) == 2 :
 		chnls = range(1,(data1.shape[1]+1),1)
 		print(chnls)
 		for indx in chnls:
-			data[varnam+"_"+str(indx)]=data1[:,(indx-1)]
+			data[elenam+"_"+str(indx)]=data1[:,(indx-1)]
 	return(data)
 
-def frame_data(filename,varnml,elist=None):
+def frame_data(filename,varnml,elist=None,dtfmt='%Y-%jT%H:%M:%S.%f'):
 	varlstinfo=pandas.read_table(varnml)
-	if elist is None: elist=varlstinfo.varname.values
+	if elist is None: elist=varlstinfo.indx.values
 	print(varlstinfo)
 	data=pandas.DataFrame()
-	for varnam in elist:
-		grpnam=varlstinfo.query("varname == @varnam").grpname.values[0]
-		print(filename,grpnam,varnam)
-		data=frame_var_data(filename,grpnam,varnam,data=data)
+	for indx in elist:
+		grpnam=varlstinfo.query("indx == @indx").grpname.values[0]
+		varnam=varlstinfo.query("indx == @indx").varname.values[0]
+		elenam=varlstinfo.query("indx == @indx").elename.values[0]
+		print(filename,grpnam,varnam,elenam)
+		data=frame_var_data(filename,grpnam,varnam,elenam,data=data)
+	#data.Year=data.Year.str[0:4].values
+	#data["jday"]=data.Day.str[5:8].values
+	data.Year=pandas.to_datetime(data['Month'], format=dtfmt).dt.year
+	data.Month=pandas.to_datetime(data['Month'], format=dtfmt).dt.month
+	data.Day=pandas.to_datetime(data['Day'], format=dtfmt).dt.day
+	data.Hour=pandas.to_datetime(data['Hour'], format=dtfmt).dt.hour
+	data.Minutes=pandas.to_datetime(data['Minutes'], format=dtfmt).dt.minute
+	data.Seconds=pandas.to_datetime(data['Seconds'], format=dtfmt).dt.second
+	#data.Hour=data.Hour.str[9:11].values
+	#data.Minutes=data.Minutes.str[12:14].values
+	#data.Seconds=data.Seconds.str[15:17].values
 	return(data)
