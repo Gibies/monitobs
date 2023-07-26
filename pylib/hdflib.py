@@ -131,15 +131,4 @@ def frame_data(filename,varnml,elist=None,dtfmt='%Y-%jT%H:%M:%S.%f'):
 		print(filename,grpnam,varnam,elenam)
 		data=frame_var_data(filename,grpnam,varnam,elenam,data=data)
 	data=obslib.pandas_dtfmt(data,dtfmt)
-	#data.Year=data.Year.str[0:4].values
-	#data["jday"]=data.Day.str[5:8].values
-	#data.Year=pandas.to_datetime(data['Year'], format=dtfmt).dt.year
-	#data.Month=pandas.to_datetime(data['Month'], format=dtfmt).dt.month
-	#data.Day=pandas.to_datetime(data['Day'], format=dtfmt).dt.day
-	#data.Hour=pandas.to_datetime(data['Hour'], format=dtfmt).dt.hour
-	#data.Minutes=pandas.to_datetime(data['Minutes'], format=dtfmt).dt.minute
-	#data.Seconds=pandas.to_datetime(data['Seconds'], format=dtfmt).dt.second
-	#data.Hour=data.Hour.str[9:11].values
-	#data.Minutes=data.Minutes.str[12:14].values
-	#data.Seconds=data.Seconds.str[15:17].values
 	return(data)
