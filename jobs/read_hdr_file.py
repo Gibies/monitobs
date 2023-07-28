@@ -24,16 +24,10 @@ if len(sys.argv) > 1:
 else:
 	pathstring="/home/umprod/cylc-run/PS43_Hybrid/share/cycle/20221104T0000Z/glu_obstore/MWRI.obstore"
 inputfile=obsmod.globlist(pathstring)[0]
+maxindx=512
 
 
-if "fixhdr" in inputfile:
-	ftype="fixhdr"
-else: ftype=inputfile.split(".")[1]
-
-with open(inputfile, "rb") as obsfile:
-    hdr_info=obstore.obstore_read_batch_header(obsfile,maxindx=512,ftype=ftype)
-if not ftype in ["fixhdr"]:
-	hdr_info["elist"]=obstore.frame_batch_elist(hdr_info)
+hdr_info=obstore.obs_hdr_read(inputfile,maxindx=maxindx)
 for itm in ["alpha","beeta","gamma","elist"]:
 	if itm in hdr_info: print(hdr_info[itm])
 

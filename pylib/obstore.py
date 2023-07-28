@@ -1353,6 +1353,20 @@ def obstore_read_file(inpath,obstype,nmlpath=OBSNML,filevar=None,maxindx=MAXINDX
     dataset={"obsgroup":obsgroup, "subtype":subtypegroup, "data":datagroup }
     return(dataset)
 
+#############202307#####################################################################################
+def obs_hdr_read(inputfile,maxindx=MAXINDX):
+	if "fixhdr" in inputfile:
+		ftype="fixhdr"
+	else: ftype=inputfile.split(".")[1]
+
+	with open(inputfile, "rb") as obsfile:
+	    hdr_info=obstore_read_batch_header(obsfile,maxindx=512,ftype=ftype)
+	if not ftype in ["fixhdr"]:
+		hdr_info["elist"]=frame_batch_elist(hdr_info)
+	hdrinfo={}
+	for itm in ["alpha","beeta","gamma","elist"]:
+		if itm in hdr_info: hdrinfo[itm]=hdr_info[itm]
+	return(hdrinfo)
 #############202210#####################################################################################
 
 def assign_subtype(data,nmlfile):
