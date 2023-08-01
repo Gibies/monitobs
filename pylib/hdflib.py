@@ -173,23 +173,32 @@ def get_var_data(filename,grpnam,varnam,dims=None,prefix=''):
 	print(data.shape)
 	return(data)
 
-def frame_var_data(filename,grpnam,varnam,elenam,dims,data=None):
-	if grpnam in hdf_keylst(filename): data1=get_var_data(filename,grpnam,varnam,dims=dims)
-	else : 
-		print(hdf_locate(varnam,filename))
-		data1=None
-	#print(data1)
-	print(data1.shape)
+def frame_const_data(const,elenam,dims,data=None,fillval=numpy.nan):
 	if data is None: data=pandas.DataFrame()
-	if len(data1.shape) == 1 : data[elenam]=data1
-	if len(data1.shape) == 2 :
-		chnls = range(1,(data1.shape[1]+1),1)
-		print(chnls)
-		for indx in chnls:
-			data[elenam+"_"+str(indx)]=data1[:,(indx-1)]
+	if elenam in const:
+		data1=[const[elenam]]*(dims[0]*dims[1])
+	else :
+		data1=[fillval]*(dims[0]*dims[1])
+	data[elenam]=data1
 	return(data)
 
-def frame_data(filename,varnml,elist=None,dtfmt='%Y-%jT%H:%M:%S.%f',refvar="Latitude",dims=None):
+def frame_var_data(filename,grpnam,varnam,elenam,dims,data=None,const={},fillval=numpy.nan):
+	if grpnam in hdf_keylst(filename): 
+		data1=get_var_data(filename,grpnam,varnam,dims=dims)
+		#print(data1)
+		print(data1.shape)
+		if data is None: data=pandas.DataFrame()
+		if len(data1.shape) == 1 : data[elenam]=data1
+		if len(data1.shape) == 2 :
+			chnls = range(1,(data1.shape[1]+1),1)
+			print(chnls)
+			for indx in chnls:
+				data[elenam+"_"+str(indx)]=data1[:,(indx-1)]
+	else : 
+		data=frame_const_data(const,elenam,dims,data,fillval)
+	return(data)
+
+def frame_data(filename,varnml,elist=None,dtfmt='%Y-%jT%H:%M:%S.%f',const={},dims=None,refvar="Latitude"):
 	if dims is None: dims=hdf_var_dims(filename,refvar)
 	varlstinfo=pandas.read_table(varnml)
 	if elist is None: elist=varlstinfo.indx.values
@@ -200,6 +209,9 @@ def frame_data(filename,varnml,elist=None,dtfmt='%Y-%jT%H:%M:%S.%f',refvar="Lati
 		varnam=varlstinfo.query("indx == @indx").varname.values[0]
 		elenam=varlstinfo.query("indx == @indx").elename.values[0]
 		print(filename,grpnam,varnam,elenam)
-		data=frame_var_data(filename,grpnam,varnam,elenam,dims,data=data)
+		if elenam in const:
+			data=frame_const_data(const,elenam,dims,data)
+		else:
+			data=frame_var_data(filename,grpnam,varnam,elenam,dims,data,const)
 	data=obslib.pandas_dtfmt(data,dtfmt)
 	return(data)
