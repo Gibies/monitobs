@@ -29,6 +29,11 @@ diaglev=int(os.environ.get('GEN_MODE',0))
 MAXINDX=int(os.environ.get('MAXINDX',fixheader.MAXINDX))
 HDRSIZE=int(os.environ.get('HDRSIZE',fixheader.HDRSIZE))
 LUTSIZE=int(os.environ.get('LUTSIZE',fixheader.LUTSIZE))
+HBpos=int(os.environ.get('HBpos',fixheader.HBpos))
+HBlen=int(os.environ.get('HBlen',fixheader.HBlen))
+HCpos=int(os.environ.get('HCpos',fixheader.HCpos))
+HClen=int(os.environ.get('HClen',fixheader.HClen))
+
 TREF=19700101
 HLFTW=3
 NAN_VAL_INT=-32768
@@ -318,9 +323,18 @@ def obstore_get_pos(obsfile,p1,p2,p3=None,fmtkey="q"):
     else :
        nrow = 1
     return(pos,tcol,nrow)
+
+def obstore_set_hdrpos(obsfile,hdrbetpos=HBpos,hdrbetlen=HBlen,hdrgampos=HCpos,hdrgamlen=HClen):
+    bin_write(obsfile,100,">1q",hdrbetpos)
+    bin_write(obsfile,101,">1q",hdrbetlen)
+    bin_write(obsfile,105,">1q",hdrgampos)
+    bin_write(obsfile,106,">1q",hdrgamlen)
+    hdrsize = int(hdrgampos) + int(hdrgamlen) - 1
+    return(hdrsize)
     
 def obstore_set_batchpos(obsfile,numbatch,batch_data_offset=0,batch_data_length=0,hdrsize=339,maxindx=MAXINDX,lutsize=128):
     #print(hdrsize)
+    hdrsize=obstore_set_hdrpos(obsfile)
     ldc_begin=int(hdrsize)+1
     bin_write(obsfile,110,">1q",ldc_begin)
     ldc_ncols=int(maxindx)
@@ -459,12 +473,14 @@ def obstore_read_subhead_segment(obsfile,sec_nam,irow=1,icol=1,ilen=None,batchid
 	nrow = 1
     if not sec_nam in ["hdralp","hdrbet","hdrgam","hdrldc","hdrrdc","hdrcdc","hdrlut"] :
     	(pos,tcol,nrow)=binpos(obsfile,sec_nam)
+    print(sec_nam,sec_tag,pos,tcol,nrow)
     if ilen is not None : size = ilen
     else : size = tcol
     if batchid is not None: irow=batchid
     if sec_nam in ["alpha", "beeta", "gamma", "hdralp","hdrbet","hdrgam"] : irow = 1
     pointer=pos+((irow-1)*tcol)+(icol-1)
     hdrinfo=obstore_read_bin8(obsfile,pointer,size,sec_nam=sec_nam)
+    if sec_nam == "alpha" : print(hdrinfo[100:150])
     return(hdrinfo)
     
 def obstore_read_LookUpTable(obsfile,batchid=1,lutsize=128):
@@ -493,6 +509,7 @@ def obstore_read_batch_header(obsfile,batchid=1,lutsize=128,maxindx=None,ftype="
     for indx in range(len(sec_lst)) :
 	sec_nam=sec_lst[indx]
 	sec_tag=sec_nam.replace("hdr","")
+	print(sec_tag)
     	hdr_info[sec_tag]=obstore_read_subhead_segment(obsfile,sec_nam,batchid=batchid,maxindx=maxindx,lutsize=lutsize)
 	#print(hdr_info[sec_tag])
     return(hdr_info)
@@ -1354,18 +1371,18 @@ def obstore_read_file(inpath,obstype,nmlpath=OBSNML,filevar=None,maxindx=MAXINDX
     return(dataset)
 
 #############202307#####################################################################################
-def obs_hdr_read(inputfile,maxindx=MAXINDX):
+def obs_hdr_read(inputfile,batchid=1,lut_size=128,maxindx=MAXINDX):
 	if "fixhdr" in inputfile:
 		ftype="fixhdr"
 	else: ftype=inputfile.split(".")[1]
-
+	print(ftype)
 	with open(inputfile, "rb") as obsfile:
-	    hdr_info=obstore_read_batch_header(obsfile,maxindx=512,ftype=ftype)
+	    infodic=obstore_read_batch_header(obsfile,batchid,lut_size,maxindx,ftype=ftype)
 	if not ftype in ["fixhdr"]:
-		hdr_info["elist"]=frame_batch_elist(hdr_info)
+		infodic["elist"]=frame_batch_elist(infodic)
 	hdrinfo={}
 	for itm in ["alpha","beeta","gamma","elist"]:
-		if itm in hdr_info: hdrinfo[itm]=hdr_info[itm]
+		if itm in infodic: hdrinfo[itm]=infodic[itm]
 	return(hdrinfo)
 #############202210#####################################################################################
 

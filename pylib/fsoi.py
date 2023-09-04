@@ -31,10 +31,11 @@ diaglev=int(os.environ.get('GEN_MODE',0))
 def errprint(*args, **kwargs):
     print(*args, file=sys.stderr, **kwargs)
 
-def read_fsoi(fsoi_info_string,outpath,workdir,yyyymmdd,hh,freq_cutoff=None,stnlst_path=stnlst_path,varnml=varnml):
-    fsoi_data=None
+def read_fsoi(fsoi_info_string,outpath,workdir,yyyymmdd,hh,freq_cutoff=None,stnlst_path=stnlst_path,varnml=varnml,fltr=None):
+    data=obslib.DataFrame()
     outfile=None
     clmnhdr=None
+    colspecs=None
     infile_list=glob.glob(fsoi_info_string)
     if len(infile_list) == 0 : errprint("Error: No input file found at " +fsoi_info_string)
     else : print(infile_list)
@@ -46,7 +47,9 @@ def read_fsoi(fsoi_info_string,outpath,workdir,yyyymmdd,hh,freq_cutoff=None,stnl
     with open(checklist,"w") as cklst:
         cklst.write("obstype\tfilelist\n")
     for infile in infile_list:
-        if clmnhdr is None : clmnhdr=["num", "obval", "inova", "sens", "lat", "lon", "obpres", "group_type", "subtype", "idt_ob", "obserr", "bkgerr", "obstype_callsign_chnlno"]
+        #if clmnhdr is None : clmnhdr=["num", "obval", "inova", "sens", "lat", "lon", "obpres", "group_type", "subtype", "idt_ob", "obserr", "bkgerr", "obstype_callsign_chnlno"]
+        if clmnhdr is None : clmnhdr=["num", "obval", "inova", "sens", "lat", "lon", "obpres", "group_type", "subtype", "idt_ob", "obserr", "bkgerr", "obsidtyinfo"]
+	if colspecs is None : colspecs=[(1,8),(9,24),(25,40),(41,57),(58,64),(65,71),(72,82),(83,86),(87,92),(93,99),(100,114),(115,121),(122,150)]
         if checklist is None : checklist=workpath+"/checklist"
         infldr=infile.rsplit("/",1)[0]
         fname=infile.rsplit("/",1)[1]
@@ -55,10 +58,12 @@ def read_fsoi(fsoi_info_string,outpath,workdir,yyyymmdd,hh,freq_cutoff=None,stnl
         ftstr=str(ftime)
         print(ftstr)
         if ftstr == str(yyyymmdd)+str(hh) :
-           fsoi_data=pandas.read_fwf(infile, skiprows=None, header=None, names=clmnhdr, converters={"obstype_callsign_chnlno":str})
+           fsoi_data=pandas.read_fwf(infile,  colspecs=colspecs, skiprows=None, header=None, names=clmnhdr, converters={"obstype_callsign_chnlno":str})
 	else:
 	   print("No data found due to date missmatch")
-    return(fsoi_data)
+        data=data.append(fsoi_data)
+    if fltr is not None : data=data[data["obsidtyinfo"].str.contains(fltr)]
+    return(data)
 
 def fsoi_obstype_list(data):
     obstype_list=[]

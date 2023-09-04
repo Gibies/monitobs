@@ -19,6 +19,10 @@ sys.path.append(OBSNML)
 MAXINDX=int(os.environ.get('MAXINDX',622))
 HDRSIZE=int(os.environ.get('HDRSIZE',339))
 LUTSIZE=int(os.environ.get('LUTSIZE',128))
+HBpos=int(os.environ.get('HBpos',257))
+HBlen=int(os.environ.get('HBlen',49))
+HCpos=int(os.environ.get('HCpos',306))
+HClen=int(os.environ.get('HClen',34))
 
 headerlist=['fix1','fix2','fix3','fix4','fix5','fix6','fix7','fix8','fix9','fix10',
             'fix11','fix12','fix13','fix14','fix15','fix16','fix17','fix18','fix19','fix20',
@@ -168,13 +172,13 @@ headerdic={
         'fix97':-32768,
         'fix98':-32768,
         'fix99':-32768,
-        'HBpos':257,
-        'HBlen':49,
+        'HBpos':HBpos,
+        'HBlen':HBlen,
         'fix102':-32768,
         'fix103':-32768,
         'fix104':-32768,
-        'HCpos':306,       
-        'HClen':34,        
+        'HCpos':HCpos,       
+        'HClen':HClen,        
         'fix107':-32768,
         'fix108':-32768,
         'fix109':-32768,

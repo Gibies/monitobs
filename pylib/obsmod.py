@@ -32,7 +32,7 @@ import ecbufr
 #import fsoi
 #import symobs
 #import obsplot
-#import sqlobs
+import sqlobs
 #import sqlodb
 #import obsgui
 import matplotlib
