@@ -1588,7 +1588,6 @@ def obstore_write_data(obsfile,nmlfile,elist,data,batchindx=1,maxindx=MAXINDX,fi
     #print(elenams[0])
     diagout_name=diagout
     for idx,element in enumerate(elenams):
-	if batchindx > 1 : diagflg = 1
     	if diagflg > 0 : 
 		diagout=diagout_name+"_"+str(batchindx)+"_"+str(idx+1)
         if element in elem_name_list:
@@ -1633,7 +1632,6 @@ def obstore_write_batches(DT,obsfile,nmlfile,obsgroup,subtypegroup,elistgroup,da
     return(filedata)
     
 def obstore_create_file(obstore_info,diagflg=0,callsignflag=False,filedata=None):
-    diagflg=1
     obstype = obstore_info["obstype"]
     obsgroup = int(obstore_info["obsgroup"])
     subtypegroup = obstore_info["subtypegroup"]
