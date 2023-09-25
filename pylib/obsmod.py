@@ -26,13 +26,13 @@ import obslib
 import obsdic
 import obstore
 import ecbufr
-import ncbufr
-import varobs
-import varcx
-import fsoi
-import symobs
-import obsplot
-import sqlobs
+#import ncbufr
+#import varobs
+#import varcx
+#import fsoi
+#import symobs
+#import obsplot
+#import sqlobs
 #import sqlodb
 #import obsgui
 import matplotlib
@@ -62,8 +62,8 @@ def DataFrame():
 def reset_index(data):
 	return(obslib.reset_index(data))
 
-def ecbufr_decode_files(inpath,Tnode,slctstr,nmlfile):
-	return(ecbufr.bufr_decode_files(inpath,Tnode,slctstr,nmlfile))
+def ecbufr_decode_files(inpath,Tnode,slctstr,nmlfile,eleindxmaptbl=None,elemlist=None,subtype=None):
+	return(ecbufr.bufr_decode_files(inpath,Tnode,slctstr,nmlfile,eleindxmaptbl,elemlist=elemlist,subtype=subtype))
 
 def ncbufr_decode_files(inpath,Tnode,slctstr,nmlfile):
 	return(ncbufr.bufr_decode_files(inpath,Tnode,slctstr,nmlfile))
@@ -424,6 +424,6 @@ def obstore_create_file(obstore_info):
 	obsmod.obs_frame(datagroup,subtypegroup,outpath,filename=obstype,option=1)
 
 
-def obstore_write(data,nmlfile,outpath,btchcnt=None,cntmax=None,DT=None,diagflag=0):
-	outfile=obstore.obstore_write(data,nmlfile,outpath,btchcnt=btchcnt,cntmax=cntmax,DT=DT,diagflag=diagflag)
+def obstore_write(data,keynmlfile,outpath,btchcnt=None,cntmax=None,DT=None,diagflag=0,missing_value=-1073741824.00000):
+	outfile=obstore.obstore_write(data,keynmlfile,outpath,btchcnt=btchcnt,cntmax=cntmax,DT=DT,diagflag=diagflag,missing_value=missing_value)
 	return(outfile)

@@ -24,25 +24,27 @@ if len(sys.argv) > 1:
 else:
 	pathstring="/home/umprod/cylc-run/PS43_Hybrid/share/cycle/20221104T0000Z/glu_obstore/MWRI.obstore"
 inputfile=obsmod.globlist(pathstring)[0]
+#maxindx=512
+maxindx=621
+hdr_info=obstore.obs_hdr_read(inputfile,maxindx=maxindx)
+for itm in ["alpha","beeta","gamma","elist"]:
+	if itm in hdr_info: print(hdr_info[itm])
 
-
-with open(inputfile, "rb") as obsfile:
-	(alpha,beeta,gamma,LDC,RDC,CDC,LUT)=obstore.obstore_read_batch_header(obsfile)
-print(alpha)
-print(beeta)
-print(gamma)
-print(LDC)
-print(RDC)
-print(CDC)
-print(LUT)
+#print(alpha)
+#print(beeta)
+#print(gamma)
+#print(LDC)
+#print(RDC)
+#print(CDC)
+#print(LUT)
 
 #with open(inputfile, "rb") as obsfile:
 #	data=obstore.obstore_read_data_record(obsfile,1,[1,2,3])
 #print(data)
 
-nmlfile=OBSNML+"/obs_index_nml"
-indx=1
-elenams=["Latitude","Longitude"]
-with open(inputfile, "rb") as obsfile:
-	data=obstore.frame_data_batch(obsfile,nmlfile,indx,elenams,maxindx=512)
-print(data)
+#nmlfile=OBSNML+"/obs_index_nml"
+#indx=1
+#elenams=["Latitude","Longitude"]
+#with open(inputfile, "rb") as obsfile:
+#	data=obstore.frame_data_batch(obsfile,nmlfile,indx,elenams,maxindx=512)
+#print(data)

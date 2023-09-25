@@ -21,10 +21,16 @@ import fixheader
 import obstore
 import numpy
 import itertools
-MAXINDX=int(os.environ.get('MAXINDX',622))
-HDRSIZE=int(os.environ.get('HDRSIZE',339))
-LUTSIZE=int(os.environ.get('LUTSIZE',128))
-
+MAXINDX=int(os.environ.get('MAXINDX',fixheader.MAXINDX))
+HDRSIZE=int(os.environ.get('HDRSIZE',fixheader.HDRSIZE))
+LUTSIZE=int(os.environ.get('LUTSIZE',fixheader.LUTSIZE))
+HBpos=int(os.environ.get('HBpos',fixheader.HBpos))
+HBlen=int(os.environ.get('HBlen',fixheader.HBlen))
+HCpos=int(os.environ.get('HCpos',fixheader.HCpos))
+HClen=int(os.environ.get('HClen',fixheader.HClen))
+HDR20=fixheader.HDR20
+HDRgam=fixheader.HDRgam
+FIXHDR=fixheader.FIXHDR
 
 #def getalphaheader(alphalen):
 #    alpha=numpy.empty(shape=[alphalen])
@@ -271,6 +277,9 @@ def write_obsheader(obsfile,nmlfile,obsgroup,maxindx=MAXINDX,callsignflag=False)
     obstore.obstore_write_formatted(itertools.chain(alpha,beeta,gama),datafmt,obsfile)
     obstore.obstore_write_obsgroup(obsgroup,obsfile)
     hdrlen=len(alpha)+len(beeta)+len(gama)
+    obslib.binary_write(FIXHDR,1,obsfile)
+    obslib.binary_write(HDR20,1,obsfile)
+    obslib.binary_write(HDRgam,306,obsfile)
     return(hdrlen)
 
 def write_batchheader(outfile,batchcount=1,header_offset=339,obs_index_max=512,lut_ncols=128):

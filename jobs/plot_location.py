@@ -46,7 +46,7 @@ else :
 
 maxindx=630	#438	#512
 #obstypelist=["surface","sonde","aircraft","goesabi","fy3mws","satwind","grndgps","seviri","mwri"]
-obstypelist=["mwri"]
+obstypelist=["scatwind"]
 subtypelist=None
 plotpath="/home/"+USER+"/plots/obstore"
 

@@ -1,28 +1,28 @@
 
-
 import sys,os
+USER=os.environ.get('USER',"myhome")
 CURR_PATH=os.path.dirname(os.path.abspath(__file__))
-CYLCROOT=os.path.dirname(os.path.dirname(os.path.dirname(CURR_PATH)))
-CYLCPATH=os.environ.get('CYLCPATH',CYLCROOT)
-HOMEDIR=os.environ.get('HOMEDIR',CYLCPATH+"/modules/monitobs")
-OBSLIB=os.environ.get('OBSLIB',HOMEDIR+"/pylib")
-OBSDIC=os.environ.get('OBSLIB',HOMEDIR+"/pydic")
-OBSNML=os.environ.get('OBSNML',HOMEDIR+"/nml")
+PKGHOME=os.path.dirname(CURR_PATH)
+OBSLIB=os.environ.get('OBSLIB',PKGHOME+"/pylib")
 sys.path.append(OBSLIB)
+OBSDIC=os.environ.get('OBSDIC',PKGHOME+"/pydic")
 sys.path.append(OBSDIC)
+OBSNML=os.environ.get('OBSNML',PKGHOME+"/nml")
 sys.path.append(OBSNML)
+
 import fsoi
 import obslib
 import obsmod
 
 USER=os.environ.get('USER',"")
 SCRATCH='/scratch/'+USER
+CYLCPATH=SCRATCH+'/test'
 
 taskname=os.environ.get('CYLC_TASK_NAME',"glu_fsoi_plot")
 varnml=os.environ.get('VarNml',OBSNML+"/varobs_nml")
 #stnlst_path=os.environ.get('StnLstDir',CYLCPATH+"/share/data/etc/stationlists/atmos")
-cylctime=os.environ.get('CYLC_TASK_CYCLE_POINT',"20210801T0000Z")
-inputdir=os.environ.get('INPUTDIR',CYLCPATH+"/share/data/fsoimpact")
+cylctime=os.environ.get('CYLC_TASK_CYCLE_POINT',"20230902T1200Z")
+inputdir=os.environ.get('INPUTDIR',"/home/umprod/cylc-run/op_trunk/share/cycle")
 outputdir=os.environ.get('OUTPUTDIR',CYLCPATH+"/share/cycle/"+cylctime+"/fsoi_plots")
 wrkdir=os.environ.get('WRKDIR',SCRATCH+"/work/"+taskname)
 
@@ -38,9 +38,15 @@ outfile=outputdir+"/data_"+subtype+"_"+yyyymmdd+"T"+hh+"00Z.fso"
 print(infile,outfile)
 print(search_string,outputdir,wrkdir,yyyymmdd,hh)
 
-data=fsoi.read_fsoi(infile,outputdir,wrkdir,yyyymmdd,hh)
-nmldata=fsoi.fsoi_station_nml(data)
-print(nmldata)
+data=fsoi.read_fsoi(infile,outputdir,wrkdir,yyyymmdd,hh,fltr=None)
+
+print(data)
+
+
+
+
+#nmldata=fsoi.fsoi_station_nml(data)
+#print(nmldata)
 
 #subtype_list=[20700]
 #for subtype in subtype_list:

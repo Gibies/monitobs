@@ -12,6 +12,10 @@ Created on Wed Oct 12 15:45:39 2021
 from __future__ import print_function
 import traceback
 import sys,os
+from eccodes import *
+import pandas
+import numpy
+import collections
 CURR_PATH=os.path.dirname(os.path.abspath(__file__))
 PKGHOME=os.path.dirname(CURR_PATH)
 OBSLIB=os.environ.get('OBSLIB',PKGHOME+"/pylib")
@@ -21,11 +25,8 @@ sys.path.append(OBSDIC)
 OBSNML=os.environ.get('OBSNML',PKGHOME+"/nml")
 sys.path.append(OBSNML)
 ECBUFRNML=OBSNML+"/ecbufr_fieldname.nml"
+AAPP_NML=OBSNML+"/aapp_fieldname.nml"
 import obslib
-from eccodes import *
-import pandas
-import numpy
-import collections
 
 def read_elist(ibufr):
     iterid = codes_keys_iterator_new(ibufr)
@@ -42,10 +43,10 @@ def read_elist(ibufr):
 		break
     codes_keys_iterator_delete(ibufr)
 
-def get_dtype(elename,ecbufrnml=ECBUFRNML):
+def get_dtype(elename,eleindxmaptbl=ECBUFRNML):
 	elename=elename.split('#')[-1]
 	#print(elename)
-	dtype=pandas.read_table(ecbufrnml).query("fieldname == @elename").datatype.values[0]
+	dtype=pandas.read_table(eleindxmaptbl).query("fieldname == @elename").datatype.values[0]
 	#print(dtype)
 	return(dtype)
 
@@ -54,18 +55,24 @@ def rename_field(data):
     print(fieldlist)
     return(data)
      
-def get_ecbufr_fieldlist(elemlist=None,nmlfile=None,ecbufrnml=ECBUFRNML):
-	if elemlist is None : elemlist=obslib.get_key_info(nmlfile,key="elemlist")
-	elemlist=numpy.fromstring(elemlist[1:-1],sep=',',dtype=int)
+def get_ecbufr_fieldlist(elemlist=None,nmlfile=None,eleindxmaptbl=ECBUFRNML,subtyp=None):
+	if elemlist is None : 
+		if subtyp is None: 
+			elemlist=obslib.get_key_info(nmlfile,key="elemlist")
+		else:
+			elemlist=obslib.get_key_info(nmlfile,key="elemlist_"+str(subtyp))
+	if isinstance(elemlist, str): elemlist=numpy.fromstring(elemlist[1:-1],sep=',',dtype=int)
 	elist=pandas.DataFrame(collections.Counter(elemlist).items(),columns=["elem","elcnt"])
+	elist=elist.sort_values(by=['elem'])
 	obs_fieldlist=[]
 	ecb_fieldlist=[]
 	obsindxlist=[]
 	levlist=[]
+        #print(elist)
 	for elem in elist.elem:
 		#print(elem)
-		fieldname=pandas.read_table(ecbufrnml).query("indx == @elem").fieldname.values[0]
-		elename=pandas.read_table(ecbufrnml).query("indx == @elem").elename.values[0]
+		fieldname=pandas.read_table(eleindxmaptbl).query("indx == @elem").fieldname.values[0]
+		elename=pandas.read_table(eleindxmaptbl).query("indx == @elem").elename.values[0]
 		count=elist.query("elem == @elem").elcnt.values[0]
 		#print(count)
 		if count == 1 :
@@ -96,12 +103,12 @@ def get_ecbufr_fieldlist(elemlist=None,nmlfile=None,ecbufrnml=ECBUFRNML):
 	return(fieldlist)
 
 
-def read_element(ibufr,field,count,data,ecbufrnml=ECBUFRNML):
+def read_element(ibufr,field,count,data,eleindxmaptbl=ECBUFRNML):
 	elename=field.elename
 	fieldname=field.fieldname
-	dtype=get_dtype(fieldname,ecbufrnml)
+	dtype=get_dtype(fieldname,eleindxmaptbl)
 	#print(elename,fieldname)
-	if dtype in [ "iVal", ] : 
+	if dtype in [ "iVal", "rVal" ] : 
 		data1=codes_get(ibufr,fieldname)
 		data1=[data1]*count
 	else :
@@ -113,7 +120,7 @@ def read_element(ibufr,field,count,data,ecbufrnml=ECBUFRNML):
 	data[elename]=data1
 	return(data)
 
-def message_read(ibufr,fieldlist=None):
+def message_read(ibufr,fieldlist=None,eleindxmaptbl=ECBUFRNML):
     codes_set(ibufr, 'unpack', 1)
     count=codes_get(ibufr, 'numberOfSubsets')
     data=pandas.DataFrame(index=range(1,(count+1),1))
@@ -123,11 +130,11 @@ def message_read(ibufr,fieldlist=None):
 	fieldlist = ['year', 'month', 'latitude', 'longitude', ]
    
     for indx,field in fieldlist.iterrows() :
-	data=read_element(ibufr,field,count,data)
+	data=read_element(ibufr,field,count,data,eleindxmaptbl=eleindxmaptbl)
     return(data)
 
-def bufr_decode(input_file,nmlfile):
-    fieldlist=get_ecbufr_fieldlist(nmlfile=nmlfile)
+def bufr_decode(input_file,nmlfile,eleindxmaptbl=ECBUFRNML,elemlist=None,subtype=None):
+    fieldlist=get_ecbufr_fieldlist(nmlfile=nmlfile,eleindxmaptbl=eleindxmaptbl,elemlist=elemlist,subtyp=subtype)
     f = open(input_file, 'rb')
     data=pandas.DataFrame()
     while 1 :
@@ -136,16 +143,17 @@ def bufr_decode(input_file,nmlfile):
     	if ibufr is None: break
     	codes_set(ibufr, 'unpack', 1)
     	#print ('Decoding message number '+str(ibufr))
-        data1=message_read(ibufr,fieldlist)
+        data1=message_read(ibufr,fieldlist,eleindxmaptbl=eleindxmaptbl)
     	data=data.append(data1, ignore_index=True)
 	data=obslib.reset_index(data)
     	codes_release(ibufr)
-    subtype=obslib.get_key_info(nmlfile,"obsubtyp")
+    if subtype is None: subtype=obslib.get_key_info(nmlfile,"obsubtyp")
     data=data.assign(subtype=[int(subtype)]*len(data))
     f.close()
     return(data)
 
-def bufr_decode_files(inpath,Tnode,slctstr,nmlfile,):
+def bufr_decode_files(inpath,Tnode,slctstr,nmlfile,eleindxmaptbl=None,elemlist=None,subtype=None):
+	if eleindxmaptbl is None : eleindxmaptbl=ECBUFRNML
 	searchstring=inpath+"/"+slctstr
 	infiles=obslib.globlist(searchstring)
 	if len(infiles) == 0: print("File not found: "+searchstring)
@@ -153,8 +161,8 @@ def bufr_decode_files(inpath,Tnode,slctstr,nmlfile,):
 	data=obslib.DataFrame()
 	for infile in infiles[:] :
 		print(infile)
-		data1=bufr_decode(infile,nmlfile)
-		data=data.append(data1)
+		data1=bufr_decode(infile,nmlfile,eleindxmaptbl=eleindxmaptbl,elemlist=elemlist,subtype=subtype)
+		data=data.append(data1.copy())
 	data=obslib.reset_index(data)
 	#print(data)
 	return(data)

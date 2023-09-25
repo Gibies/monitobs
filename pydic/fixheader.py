@@ -16,9 +16,14 @@ OBSDIC=os.environ.get('OBSDIC',PKGHOME+"/pydic")
 sys.path.append(OBSDIC)
 OBSNML=os.environ.get('OBSNML',PKGHOME+"/nml")
 sys.path.append(OBSNML)
-MAXINDX=int(os.environ.get('MAXINDX',622))
+MAXINDX=int(os.environ.get('MAXINDX',621))
 HDRSIZE=int(os.environ.get('HDRSIZE',339))
 LUTSIZE=int(os.environ.get('LUTSIZE',128))
+HBpos=int(os.environ.get('HBpos',257))
+HBlen=int(os.environ.get('HBlen',49))
+HCpos=int(os.environ.get('HCpos',306))
+HClen=int(os.environ.get('HClen',34))
+
 
 headerlist=['fix1','fix2','fix3','fix4','fix5','fix6','fix7','fix8','fix9','fix10',
             'fix11','fix12','fix13','fix14','fix15','fix16','fix17','fix18','fix19','fix20',
@@ -68,6 +73,7 @@ headerdic_ukmo={
         'fix11':-32768,
         'fix12':-32768,
 	}
+#20, 1, 5, 0, 10, 2, -32768, 1, 3, -32768, -32768, 802, -32768, -32768, -32768, -32768, -32768, -32768, -32768, -32768
 headerdic={
         'fix1':20,
         'fix2':1,
@@ -414,3 +420,26 @@ headerdic={
         'fix340':-1073741824.0,
         }
 
+def get_hdr20():
+	keylist=['fix1','fix2','fix3','fix4','fix5','fix6','fix7','fix8','fix9','fix10','fix11','fix12','fix13','fix14','fix15','fix16','fix17','fix18','fix19','fix20']
+	val=[]
+	for key in keylist:
+		val.append(headerdic[key])
+	return(val)
+
+def get_hdrgam():
+	keylist=['fix306','fix307','fix308','fix309','fix310','fix311','fix312','fix313','fix314','fix315','fix316','fix317','fix318','fix319','fix320','fix321','fix322','fix323','fix324','fix325','fix326','fix327','fix328','fix329','fix330','fix331','fix332','fix333','fix334','fix335','fix336','fix337','fix338','fix339','fix340']
+	val=[]
+	for key in keylist:
+		val.append(float(headerdic[key]))
+	return(val)
+
+def get_fixhdr():
+	val=[]
+	for key in headerlist:
+		val.append(headerdic[key])
+	return(val)
+
+HDR20=get_hdr20()
+HDRgam=get_hdrgam()
+FIXHDR=get_fixhdr()
