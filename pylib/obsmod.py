@@ -32,7 +32,7 @@ import ecbufr
 #import fsoi
 #import symobs
 #import obsplot
-import sqlobs
+#import sqlobs
 #import sqlodb
 #import obsgui
 import matplotlib
@@ -424,6 +424,6 @@ def obstore_create_file(obstore_info):
 	obsmod.obs_frame(datagroup,subtypegroup,outpath,filename=obstype,option=1)
 
 
-def obstore_write(data,nmlfile,outpath,btchcnt=None,cntmax=None,DT=None,diagflag=0):
-	outfile=obstore.obstore_write(data,nmlfile,outpath,btchcnt=btchcnt,cntmax=cntmax,DT=DT,diagflag=diagflag)
+def obstore_write(data,keynmlfile,outpath,btchcnt=None,cntmax=None,DT=None,diagflag=0,missing_value=-1073741824.00000):
+	outfile=obstore.obstore_write(data,keynmlfile,outpath,btchcnt=btchcnt,cntmax=cntmax,DT=DT,diagflag=diagflag,missing_value=missing_value)
 	return(outfile)

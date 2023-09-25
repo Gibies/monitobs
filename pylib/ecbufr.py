@@ -55,12 +55,12 @@ def rename_field(data):
     print(fieldlist)
     return(data)
      
-def get_ecbufr_fieldlist(elemlist=None,nmlfile=None,eleindxmaptbl=ECBUFRNML,subtype=None):
+def get_ecbufr_fieldlist(elemlist=None,nmlfile=None,eleindxmaptbl=ECBUFRNML,subtyp=None):
 	if elemlist is None : 
 		if subtyp is None: 
 			elemlist=obslib.get_key_info(nmlfile,key="elemlist")
 		else:
-			elemlist=obslib.get_key_info(nmlfile,key="elemlist_"+subtyp)
+			elemlist=obslib.get_key_info(nmlfile,key="elemlist_"+str(subtyp))
 	if isinstance(elemlist, str): elemlist=numpy.fromstring(elemlist[1:-1],sep=',',dtype=int)
 	elist=pandas.DataFrame(collections.Counter(elemlist).items(),columns=["elem","elcnt"])
 	elist=elist.sort_values(by=['elem'])
@@ -134,7 +134,7 @@ def message_read(ibufr,fieldlist=None,eleindxmaptbl=ECBUFRNML):
     return(data)
 
 def bufr_decode(input_file,nmlfile,eleindxmaptbl=ECBUFRNML,elemlist=None,subtype=None):
-    fieldlist=get_ecbufr_fieldlist(nmlfile=nmlfile,eleindxmaptbl=eleindxmaptbl,elemlist=elemlist)
+    fieldlist=get_ecbufr_fieldlist(nmlfile=nmlfile,eleindxmaptbl=eleindxmaptbl,elemlist=elemlist,subtyp=subtype)
     f = open(input_file, 'rb')
     data=pandas.DataFrame()
     while 1 :

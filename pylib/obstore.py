@@ -17,7 +17,7 @@ sys.path.append(OBSDIC)
 OBSNML=os.environ.get('OBSNML',PKGHOME+"/nml")
 sys.path.append(OBSNML)
 import obslib
-import obsdic
+#import obsdic
 import obsheader
 import fixheader
 import numpy
@@ -33,7 +33,9 @@ HBpos=int(os.environ.get('HBpos',fixheader.HBpos))
 HBlen=int(os.environ.get('HBlen',fixheader.HBlen))
 HCpos=int(os.environ.get('HCpos',fixheader.HCpos))
 HClen=int(os.environ.get('HClen',fixheader.HClen))
-
+HDR20=fixheader.HDR20
+HDRgam=fixheader.HDRgam
+FIXHDR=fixheader.FIXHDR
 TREF=19700101
 HLFTW=3
 NAN_VAL_INT=-32768
@@ -323,8 +325,9 @@ def obstore_get_pos(obsfile,p1,p2,p3=None,fmtkey="q"):
     else :
        nrow = 1
     return(pos,tcol,nrow)
-
-def obstore_set_hdrpos(obsfile,hdrbetpos=HBpos,hdrbetlen=HBlen,hdrgampos=HCpos,hdrgamlen=HClen):
+    
+def obstore_set_hdrpos(obsfile,hdrbetpos=HBpos,hdrbetlen=HBlen,hdrgampos=HCpos,hdrgamlen=HClen,HDR20=HDR20):
+    obslib.binary_write(HDR20,1,obsfile)	#	bin_write(obsfile,1,"",HDR20)
     bin_write(obsfile,100,">1q",hdrbetpos)
     bin_write(obsfile,101,">1q",hdrbetlen)
     bin_write(obsfile,105,">1q",hdrgampos)
@@ -473,14 +476,12 @@ def obstore_read_subhead_segment(obsfile,sec_nam,irow=1,icol=1,ilen=None,batchid
 	nrow = 1
     if not sec_nam in ["hdralp","hdrbet","hdrgam","hdrldc","hdrrdc","hdrcdc","hdrlut"] :
     	(pos,tcol,nrow)=binpos(obsfile,sec_nam)
-    print(sec_nam,sec_tag,pos,tcol,nrow)
     if ilen is not None : size = ilen
     else : size = tcol
     if batchid is not None: irow=batchid
     if sec_nam in ["alpha", "beeta", "gamma", "hdralp","hdrbet","hdrgam"] : irow = 1
     pointer=pos+((irow-1)*tcol)+(icol-1)
     hdrinfo=obstore_read_bin8(obsfile,pointer,size,sec_nam=sec_nam)
-    if sec_nam == "alpha" : print(hdrinfo[100:150])
     return(hdrinfo)
     
 def obstore_read_LookUpTable(obsfile,batchid=1,lutsize=128):
@@ -509,7 +510,6 @@ def obstore_read_batch_header(obsfile,batchid=1,lutsize=128,maxindx=None,ftype="
     for indx in range(len(sec_lst)) :
 	sec_nam=sec_lst[indx]
 	sec_tag=sec_nam.replace("hdr","")
-	print(sec_tag)
     	hdr_info[sec_tag]=obstore_read_subhead_segment(obsfile,sec_nam,batchid=batchid,maxindx=maxindx,lutsize=lutsize)
 	#print(hdr_info[sec_tag])
     return(hdr_info)
@@ -562,6 +562,11 @@ def obstore_read_data(obsfile):
     data = obsfile.read(data_len*8)
     val = struct.unpack(">"+str(data_len)+"d", data)
     return(val)
+
+def read_data(input_file):
+    with open(input_file, "rb") as obsfile:
+	data=obstore_read_data(obsfile)
+    return(data)
     
 def obstore_erase_data(obsfile):
     pos = obstore_read_header(obsfile,160,1)
@@ -1033,7 +1038,7 @@ def obstore_erase_data_element(obsfile,nmlfile,indx,element,maxindx=MAXINDX):
         record_pos=range(1,obs_count+1,1)
         return(obstore_erase_element(obsfile,indx,elist,element,pos_data,record_pos,tcols))
 
-def obstore_read_data_record(obsfile,indx,record_pos,nmlfile=NML_OBS_INDX):
+def obstore_read_data_record(obsfile,indx=1,record_pos=[1],nmlfile=NML_OBS_INDX):
     elist = obstore_read_batch_elements(obsfile,indx,nmlfile)
     subtype=obstore_read_index_subtype(obsfile,indx)
     (indx,pos_data,obs_count,tcols,data_len,data_end)=obstore_read_batchinfo(obsfile,indx)
@@ -1370,20 +1375,6 @@ def obstore_read_file(inpath,obstype,nmlpath=OBSNML,filevar=None,maxindx=MAXINDX
     dataset={"obsgroup":obsgroup, "subtype":subtypegroup, "data":datagroup }
     return(dataset)
 
-#############202307#####################################################################################
-def obs_hdr_read(inputfile,batchid=1,lut_size=128,maxindx=MAXINDX):
-	if "fixhdr" in inputfile:
-		ftype="fixhdr"
-	else: ftype=inputfile.split(".")[1]
-	print(ftype)
-	with open(inputfile, "rb") as obsfile:
-	    infodic=obstore_read_batch_header(obsfile,batchid,lut_size,maxindx,ftype=ftype)
-	if not ftype in ["fixhdr"]:
-		infodic["elist"]=frame_batch_elist(infodic)
-	hdrinfo={}
-	for itm in ["alpha","beeta","gamma","elist"]:
-		if itm in infodic: hdrinfo[itm]=infodic[itm]
-	return(hdrinfo)
 #############202210#####################################################################################
 
 def assign_subtype(data,nmlfile):
@@ -1442,8 +1433,10 @@ def obstore_file_data_write(obsfile,filedata,textfile=None,datfile=None):
     #print(filedata)
     pos=filedata.index[0]
     data=numpy.array(filedata["data"].values)
+    data=data.astype(float)
     if textfile is not None: obslib.obs_frame_ascii(filedata,textfile,0) 
     if datfile is not None :
+	print(datfile)
 	with file(datfile, "w") as datout:
 		fmt0 = '%15.6f'
     	   	numpy.savetxt(datout, X=data, delimiter="\n",fmt=fmt0)
@@ -1453,24 +1446,24 @@ def obstore_file_data_write(obsfile,filedata,textfile=None,datfile=None):
 	status=-1
     return(status)
     
-def file_data_create(dpos,dlen=1,fmtflg="data",filedata=None,data=NAN_VAL,fillval=NAN_VAL):
+def file_data_create(dpos,dlen=1,fmtflg="data",filedata=None,data=NAN_VAL,fillval=NAN_VAL,elenam=""):
     index=range(dpos,(dpos+dlen+1))
-    if filedata is None : filedata=obslib.DataFrame(columns=["pos","len","data","fmtflg"],index=index)
+    if filedata is None : filedata=obslib.DataFrame(columns=["pos","len","data","fmtflg","elenam"],index=index)
     filedata=filedata.fillna(fillval)
     filedata["pos"]=index
     filedata=filedata.set_index("pos")
     return(filedata)
 
-def file_data_append(endpos,dpos=1,dlen=1,fmtflg="data",filedata=None,data=NAN_VAL,fillval=NAN_VAL):
+def file_data_append(endpos,dpos=1,dlen=1,fmtflg="data",filedata=None,data=NAN_VAL,fillval=NAN_VAL,elenam=""):
     if type(dpos) is list : dpos=dpos[0]
     if filedata is None : filedata=file_data_create(dpos)
     newpos=filedata.index[-1]+1
     newlen=endpos-newpos+1
-    newdf=file_data_create(newpos,newlen,fillval=fillval)
+    newdf=file_data_create(newpos,newlen,fillval=fillval,elenam=elenam)
     filedata = filedata.append(newdf)
     return(filedata)
 
-def file_data_modify(dpos,dlen=1,fmtflg="data",filedata=None,data=NAN_VAL,diagflg=0,diagout=None):
+def file_data_modify(dpos,dlen=1,fmtflg="data",filedata=None,data=NAN_VAL,diagflg=0,diagout=None,elenam=""):
     #index1=pandas.Series(dpos,index=range(1,len(dpos)+1))
     index=pandas.Series(dpos,index=range(1,len(dpos)+1))
     #print(index)
@@ -1484,6 +1477,7 @@ def file_data_modify(dpos,dlen=1,fmtflg="data",filedata=None,data=NAN_VAL,diagfl
 	data_new.loc[index]["pos"] = index
 	data_new["len"] = dlen
 	data_new["fmtflg"] = fmtflg
+	data_new["elenam"] = elenam
 	filedata.loc[index] = numpy.nan
 	filedata = filedata.combine_first(data_new.loc[index])
     elif type(data) is list :
@@ -1492,6 +1486,7 @@ def file_data_modify(dpos,dlen=1,fmtflg="data",filedata=None,data=NAN_VAL,diagfl
 	data_new.loc[index]["pos"] = index
 	data_new["len"] = dlen
 	data_new["fmtflg"] = fmtflg
+	data_new["elenam"] = elenam
 	filedata.loc[index] = numpy.nan
 	filedata = filedata.combine_first(data_new.loc[index])
     elif type(data) is not pandas.DataFrame and type(data) is pandas.Series :
@@ -1500,6 +1495,7 @@ def file_data_modify(dpos,dlen=1,fmtflg="data",filedata=None,data=NAN_VAL,diagfl
 	data_new.loc[index]["pos"] = index
 	data_new["len"] = dlen
 	data_new["fmtflg"] = fmtflg
+	data_new["elenam"] = elenam
 	filedata.loc[index] = numpy.nan
 	filedata = filedata.combine_first(data_new.loc[index])
     elif len(data.columns) == 1 :
@@ -1508,6 +1504,7 @@ def file_data_modify(dpos,dlen=1,fmtflg="data",filedata=None,data=NAN_VAL,diagfl
 	data_new.loc[index]["pos"] = index
 	data_new["len"] = dlen
 	data_new["fmtflg"] = fmtflg
+	data_new["elenam"] = elenam
 	filedata.loc[index] = numpy.nan
 	filedata = filedata.combine_first(data_new.loc[index])
     else :
@@ -1536,7 +1533,7 @@ def obstore_erase_element(obsfile,batchindx,elist,element,pos_data,record_pos,tc
 	if rdc < 0 : rdc = 0
 	dpos=numpy.array([pos_data+((i)*tcols)+(cdc-1)+j*rdc for i in range(0,len(record_pos))])
 	#print(dpos)
-	filedata=file_data_modify(dpos,data=fillval,filedata=filedata,diagflg=diagflg,diagout=diagout)
+	filedata=file_data_modify(dpos,data=fillval,filedata=filedata,diagflg=diagflg,diagout=diagout,elenam=element)
     return(filedata)
                 
 def obstore_write_element(obsfile,batchindx,elist,element,pos_data,record_pos,tcols,data,maxindx=MAXINDX,option=0,fillval=NAN_VAL,filedata=None,diagflg=0,diagout=None):
@@ -1550,7 +1547,7 @@ def obstore_write_element(obsfile,batchindx,elist,element,pos_data,record_pos,tc
     if type(data) is int or type(data) is float:
 	dpos=[pos_data+((i)*tcols)+(cdc-1) for i in range(0,len(record_pos))]
 	#print(dpos)
-	filedata=file_data_modify(dpos,data=data,filedata=filedata,diagflg=diagflg,diagout=diagout)
+	filedata=file_data_modify(dpos,data=data,filedata=filedata,diagflg=diagflg,diagout=diagout,elenam=element)
     else:
 	for j,lev in enumerate(data.columns):
                 if type(lev) is str:
@@ -1569,13 +1566,13 @@ def obstore_write_element(obsfile,batchindx,elist,element,pos_data,record_pos,tc
                         packed_data=fmtstr.pack(data_one)
                         if diaglev > 50: errprint(k,data_one,packed_data)
 			dpos=[pos_data+((i)*tcols)+(cdc-1) for i in range(0,len(record_pos))]
-			filedata=file_data_modify(dpos,data=data_one,filedata=filedata,diagflg=diagflg,diagout=diagout)
+			filedata=file_data_modify(dpos,data=data_one,filedata=filedata,diagflg=diagflg,diagout=diagout,elenam=element)
                 else:
                     	if diaglev > 500: print(data_one, element, "Case C")
 		    	if rdc < 0 : rdc = 0
 			dpos=numpy.array([pos_data+((i)*tcols)+(cdc-1)+j*rdc for i in range(0,len(record_pos))])
 			#print(dpos)
-			filedata=file_data_modify(dpos,data=data_one,filedata=filedata,diagflg=diagflg,diagout=diagout)
+			filedata=file_data_modify(dpos,data=data_one,filedata=filedata,diagflg=diagflg,diagout=diagout,elenam=element)
     #print("Write_element to dataframe finished")
     return(filedata)
 
@@ -1611,7 +1608,7 @@ def obstore_write_data(obsfile,nmlfile,elist,data,batchindx=1,maxindx=MAXINDX,fi
     return(filedata)
 
 def obstore_write_batches(DT,obsfile,nmlfile,obsgroup,subtypegroup,elistgroup,datagroup,batchcount=1,hdrsize=HDRSIZE,maxindx=MAXINDX,lutsize=LUTSIZE,filedata=None,diagflg=0,diagout=None,HlfTW=HLFTW,Tref=TREF,callsignflag=False):
-    hdrsize=obsheader.write_obsheader(obsfile,nmlfile,obsgroup,maxindx=maxindx,callsignflag=callsignflag)
+    #hdrsize=obsheader.write_obsheader(obsfile,nmlfile,obsgroup,maxindx=maxindx,callsignflag=callsignflag)
     print("File Header size is "+str(hdrsize))
     datapos=obstore_set_batchpos(obsfile,batchcount,batch_data_offset=0,hdrsize=hdrsize,maxindx=maxindx,lutsize=lutsize)    
     print("Data start position is "+str(datapos))
@@ -1676,7 +1673,12 @@ def obstore_create_file(obstore_info,diagflg=0,callsignflag=False,filedata=None)
 	textfile=None
 	diagout=None
     print("Writting "+str(batchcount)+" batches of data to "+ output_file)
+    obslib.mkdir(output_file.rsplit("/",1)[0])
     with open(output_file, "wb+") as obsfile:
+	hdrsize=obsheader.write_obsheader(obsfile,nmlfile,obsgroup,maxindx=maxindx,callsignflag=callsignflag)
+    	#obslib.binary_write(FIXHDR,1,obsfile)
+    	#obslib.binary_write(HDR20,1,obsfile)
+    	#obslib.binary_write(HDRgam,306,obsfile)
 	#############################################################################
 	with file(outpath+"/totobs.dat", "w") as datout:
 		fmt01 = '%15.0i'
@@ -1697,7 +1699,10 @@ def obstore_create_file(obstore_info,diagflg=0,callsignflag=False,filedata=None)
     print("Writting to "+output_file+ " is completed")
     return(output_file)
 
-def obstore_write(data,keyinfofile,outpath,btchcnt=None,obstore_info=None,cntmax=None,DT=None,Tref=None,HlfTW=None,diagflag=0,callsignflag=False):
+def obstore_write(data,keyinfofile,outpath,btchcnt=None,obstore_info=None,cntmax=None,DT=None,Tref=None,HlfTW=None,diagflag=0,callsignflag=False,missing_value=-1073741824.00000):
+	data = data[data[["Latitude", "Longitude"]].notnull().all(1)]
+	data = data.replace(numpy.nan,missing_value)
+	print(data)
 	infokeylist=["obsgroup","maxindx","hdrsize","lutsize"]
 	obstore_info=obslib.get_key_dic(keyinfofile,infokeylist,obstore_info)
 	obstore_info["obstype"]=obslib.get_key_info(keyinfofile,"obsname")
@@ -1715,7 +1720,9 @@ def obstore_write(data,keyinfofile,outpath,btchcnt=None,obstore_info=None,cntmax
 	if len(subtype_list) > 1 : btchcnt=len(subtype_list)
 	if btchcnt > len(subtype_list) or btchcnt == 1 :
 		batch_obs_cnt=uniform_batch(data,btchcnt)
-		elemlist=obslib.get_key_list_info(keyinfofile,"elemlist")
+		elistkey="elemlist_"+str(subtype_list[0])
+		print(elistkey)
+		elemlist=obslib.get_key_list_info(keyinfofile,elistkey)
 		nmlfile=obstore_info["nmlfile"]
 		elist=obstore_create_element_table(nmlfile,elemlist)
 		print(elist)
@@ -1725,7 +1732,8 @@ def obstore_write(data,keyinfofile,outpath,btchcnt=None,obstore_info=None,cntmax
 		#print(btchindx,subtype)
 		data1=data[data.subtype==subtype]
 		batch_obs_cnt=batch_obs_cnt+[len(data1)]
-		elemlist=obslib.get_key_list_info(keyinfofile,subtype)
+		elistkey="elemlist_"+str(subtype)
+		elemlist=obslib.get_key_list_info(keyinfofile,elistkey)
 		nmlfile=obstore_info["nmlfile"]
 		elist=obstore_create_element_table(nmlfile,elemlist)
 		print(elist)
@@ -1752,4 +1760,37 @@ def obstore_write(data,keyinfofile,outpath,btchcnt=None,obstore_info=None,cntmax
 		obstore_info["timewindowhalf"] = HLFTW
 	output_file=obstore_create_file(obstore_info,diagflag,callsignflag=callsignflag)
 	return(output_file)
+
+#############202307#####################################################################################
+def obs_hdr_read(inputfile,maxindx=int(MAXINDX),batchid=1,debug=False):
+	batchid=int(batchid)
+	if "fixhdr" in inputfile:
+		ftype="fixhdr"
+	else: ftype=inputfile.split(".")[1]
+
+	print(maxindx)
+	with open(inputfile, "rb") as obsfile:
+	    hdr_info=obstore_read_batch_header(obsfile,maxindx=maxindx,ftype=ftype,batchid=batchid)
+	if not ftype in ["fixhdr"]:
+		if debug: 
+			for i,val in enumerate(hdr_info["cdc"],1): 
+				print(i,val)
+		hdr_info["elist"]=frame_batch_elist(hdr_info)
+	hdrinfo={}
+	for itm in ["alpha","beeta","gamma","elist","lut"]:
+		if itm in hdr_info: hdrinfo[itm]=hdr_info[itm]
+	return(hdrinfo)
+
+def read_data_record(inputfile,maxindx=MAXINDX,batchid=1,recno=1):
+	hdr_info=obs_hdr_read(inputfile,maxindx=maxindx,batchid=batchid)
+	elemcnt=hdr_info["elist"].LDC.sum(axis=0)
+	recpos=(recno-1)*elemcnt
+	recend=(recno)*elemcnt
+	data_rec=read_data(inputfile)[recpos:recend]
+	return(data_rec)
+
+def read_binfile_strip(inputfile,pos=1,size=1,fmtkey="q"):
+    with open(inputfile, "rb") as obsfile:
+	datastrip=obstore_read_header(obsfile,pos,size,fmtkey=fmtkey)
+    return(datastrip)
 

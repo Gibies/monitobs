@@ -8,7 +8,6 @@ OBSDIC=os.environ.get('OBSDIC',PKGHOME+"/pydic")
 sys.path.append(OBSDIC)
 OBSNML=os.environ.get('OBSNML',PKGHOME+"/nml")
 sys.path.append(OBSNML)
-print(OBSLIB)
 import obslib
 import pandas
 import numpy
@@ -147,7 +146,6 @@ def get_var_data(filename,grpnam,varnam,dims=None,prefix=''):
     print(fpath)
     with h5py.File(filename, "r") as f:
         dataptr = f.get(fpath)
-        #dataptr = f.get(grpnam+"/"+varnam)
         data1 = numpy.array(dataptr)
         if str(data1.dtype) == "int16": 
 		data1 = obslib.mask_array(data1)	#, 32767)
@@ -198,7 +196,8 @@ def frame_var_data(filename,grpnam,varnam,elenam,dims,data=None,const={},fillval
 		data=frame_const_data(const,elenam,dims,data,fillval)
 	return(data)
 
-def frame_data(filename,varnml,elist=None,dtfmt='%Y-%jT%H:%M:%S.%f',const={},dims=None,refvar="Latitude"):
+def frame_data(filename,varnml,elist=None,dtfmt='%Y-%jT%H:%M:%S.%f',const={},dims=None,refvar="Latitude",fillval=numpy.nan):
+	filename=obslib.globlist(filename)[0]
 	if dims is None: dims=hdf_var_dims(filename,refvar)
 	varlstinfo=pandas.read_table(varnml)
 	if elist is None: elist=varlstinfo.indx.values
@@ -209,9 +208,20 @@ def frame_data(filename,varnml,elist=None,dtfmt='%Y-%jT%H:%M:%S.%f',const={},dim
 		varnam=varlstinfo.query("indx == @indx").varname.values[0]
 		elenam=varlstinfo.query("indx == @indx").elename.values[0]
 		print(filename,grpnam,varnam,elenam)
-		if elenam in const:
-			data=frame_const_data(const,elenam,dims,data)
-		else:
-			data=frame_var_data(filename,grpnam,varnam,elenam,dims,data,const)
+		data=frame_var_data(filename,grpnam,varnam,elenam,dims,data,const,fillval)
 	data=obslib.pandas_dtfmt(data,dtfmt)
 	return(data)
+
+def datetime(filename,varnml,dtfmt='%Y-%jT%H:%M:%S.%f',indx=0):
+	filename=obslib.globlist(filename)[0]
+	varlstinfo=pandas.read_table(varnml)
+	elist=[3,4,5,6,7,8]
+	data=pandas.DataFrame()
+	grpnam=varlstinfo.query("indx == @elist[0]").grpname.values[0]
+	varnam=varlstinfo.query("indx == @elist[0]").varname.values[0]
+	fpath=hdf_locate(varnam,filename)
+    	with h5py.File(filename, "r") as f:
+        	dataptr = f.get(fpath)
+        	data1 = numpy.array(dataptr).flatten()[indx]
+	datetime=obslib.datetimeframe(data1,dtfmt)
+	return(datetime)

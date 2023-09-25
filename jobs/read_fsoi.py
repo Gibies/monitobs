@@ -38,7 +38,7 @@ outfile=outputdir+"/data_"+subtype+"_"+yyyymmdd+"T"+hh+"00Z.fso"
 print(infile,outfile)
 print(search_string,outputdir,wrkdir,yyyymmdd,hh)
 
-data=fsoi.read_fsoi(infile,outputdir,wrkdir,yyyymmdd,hh,fltr="ATMS-15")
+data=fsoi.read_fsoi(infile,outputdir,wrkdir,yyyymmdd,hh,fltr=None)
 
 print(data)
 

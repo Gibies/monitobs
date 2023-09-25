@@ -514,11 +514,11 @@ def pandas_dtfmt(data,dtfmt,fldnamlst=None,fldtype=None):
 	if "Hour" in fldnamlst : 
 		fldnam = "Hour"
 		fldtype["hour"].append(fldnam)
-	if "Minutes" in fldnamlst : 
-		fldnam = "Minutes"
+	if "Minute" in fldnamlst : 
+		fldnam = "Minute"
 		fldtype["minute"].append(fldnam)
-	if "Seconds" in fldnamlst : 
-		fldnam = "Seconds"
+	if "Second" in fldnamlst : 
+		fldnam = "Second"
 		fldtype["second"].append(fldnam)
 	fldnamlst=list(chain(fldtype["year"],fldtype["month"],fldtype["day"],fldtype["hour"],fldtype["minute"],fldtype["second"]))
     for fldnam in fldnamlst:
@@ -535,6 +535,28 @@ def pandas_dtfmt(data,dtfmt,fldnamlst=None,fldtype=None):
 	if fldnam in fldtype["second"]:
 		data[fldnam]=pandas.to_datetime(data[fldnam], format=dtfmt).dt.second
     return(data)
+
+def datetimeframe(datain,dtfmt):
+        data1 = numpy.array(datain).flatten()
+	fldnam="date"
+	data=pandas.DataFrame(data1,columns=[fldnam])
+	dfnew=DataFrame()
+	dfnew["year"]=pandas.to_datetime(data[fldnam], format=dtfmt).dt.year
+	dfnew["month"]=pandas.to_datetime(data[fldnam], format=dtfmt).dt.month
+	dfnew["day"]=pandas.to_datetime(data[fldnam], format=dtfmt).dt.day
+	dfnew["hour"]=pandas.to_datetime(data[fldnam], format=dtfmt).dt.hour
+	dfnew["minute"]=pandas.to_datetime(data[fldnam], format=dtfmt).dt.minute
+	dfnew["second"]=pandas.to_datetime(data[fldnam], format=dtfmt).dt.second
+	return(dfnew)
+
+def dtextract(dtframe,indx=0):
+	year=int(dtframe.year.values[indx])
+	month=int(dtframe.month.values[indx])
+	day=int(dtframe.day.values[indx])
+	hour=int(dtframe.hour.values[indx])
+	minute=int(dtframe.minute.values[indx])
+	second=int(dtframe.second.values[indx])
+	return(datetime.datetime(year,month,day,hour,minute,second))
 
 def pandas_strcrop(data,field,chaaa,chzzz):
 	data[field]=data[field].str[int(chaaa):int(chzzz)].values
@@ -653,9 +675,15 @@ def getodbname(nmlfile,opsname):
 
 def get_subtype_name(nmlfile,subtype):
     with open(nmlfile, "r") as nml:
-        try:name = str(pandas.read_table(nml, skiprows=None, header=0).query("subtype == @subtype").stname.values[0])
+        try:name = str(pandas.read_table(nml, skiprows=None, header=0).query("subtype == @subtype").obstypnam.values[0])
         except:name=str(subtype)
     return(name)
+
+def get_subtype_code(nmlfile,obstypnam):
+    with open(nmlfile, "r") as nml:
+        try:stypcode = int(pandas.read_table(nml, skiprows=None, header=0).query("obstypnam == @obstypnam").subtype.values[0])
+        except:stypcode=int(0)
+    return(stypcode)
 
 def dfheader(data):
     cnt=len(data.columns.values)
@@ -855,10 +883,14 @@ def clock_24_hour(hour):
     if hour < 0 or hour > 24 : clock_24_hour(hour)
     return(hour)
 
-def get_key_info(nmlfile,key="elemlist"):
+def get_key_info(nmlfile,key="obsgroup"):
     print(nmlfile)
     nmlinfo=pandas.read_csv(nmlfile, delimiter=': ',engine='python')
-    keyinfo=nmlinfo.query("keys == @key").information.values[0]
+    if key in nmlinfo["keys"].values:
+    	keyinfo=nmlinfo.query("keys == @key").information.values[0]
+    else:
+	print("Key '"+str(key)+"' not found")
+	print(nmlinfo["keys"].values)
     return(keyinfo)
 
 def get_key_list_info(nmlfile,key):
@@ -878,6 +910,17 @@ def get_key_dic(keyinfofile,keylist,infodic=None):
 	srcdic=obsdic.obstype[obstype]
 	infodic=srcdic.copy()
    return(infodic)
+
+def get_elist(obstypnam,obstypnml,keynml):
+	subtype=get_subtype_code(obstypnml,obstypnam)
+	elist=get_key_list_info(keynml,["elemlist_"+str(subtype)])
+	elist=list(elist)
+	return(elist)
+
+def datframe_add_subtype(data,obstypnam,obstypnml):
+	subtype=get_subtype_code(obstypnml,obstypnam)
+	data=data.assign(subtype=[int(subtype)]*len(data))
+	return(data)
 
 def reset_index(data,index=None):
     if index is None :
