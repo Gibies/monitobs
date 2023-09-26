@@ -1,5 +1,4 @@
 #!/bin/bash
-set -x
 SELF=$(realpath ${0})
 TASKNAME=${SELF##*/}
 export GITROOT=${SELF%/site*}
