@@ -44,13 +44,13 @@ print(rdc)
 print(cdc)
 print(lut)
 
-#with open(inputfile, "rb") as obsfile:
-#	data=obstore.obstore_read_data_record(obsfile,1,[1,2,3])
-#print(data)
+with open(inputfile, "rb") as obsfile:
+	data=obstore.obstore_read_data_record(obsfile,1,[1,2,3])
+print(data)
 
 nmlfile=OBSNML+"/obs_index_nml"
 indx=1
 elenams=["Latitude","Longitude"]
 with open(inputfile, "rb") as obsfile:
 	data=obstore.frame_data_batch(obsfile,nmlfile,indx,elenams,maxindx=512)
-print(data)
+#print(data)
