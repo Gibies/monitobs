@@ -25,16 +25,24 @@ else:
 	pathstring="/home/umprod/cylc-run/PS43_Hybrid/share/cycle/20221104T0000Z/glu_obstore/MWRI.obstore"
 inputfile=obsmod.globlist(pathstring)[0]
 
+print(inputfile)
 
 with open(inputfile, "rb") as obsfile:
-	(alpha,beeta,gamma,LDC,RDC,CDC,LUT)=obstore.obstore_read_batch_header(obsfile)
+	hdr_info=obstore.obstore_read_batch_header(obsfile)
+alpha=hdr_info["alpha"]
+beeta=hdr_info["beeta"]
+gamma=hdr_info["gamma"]
+ldc=hdr_info["ldc"]
+rdc=hdr_info["rdc"]
+cdc=hdr_info["cdc"]
+lut=hdr_info["lut"]
 print(alpha)
 print(beeta)
 print(gamma)
-print(LDC)
-print(RDC)
-print(CDC)
-print(LUT)
+print(ldc)
+print(rdc)
+print(cdc)
+print(lut)
 
 #with open(inputfile, "rb") as obsfile:
 #	data=obstore.obstore_read_data_record(obsfile,1,[1,2,3])

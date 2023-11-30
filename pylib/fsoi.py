@@ -9,14 +9,12 @@ from __future__ import print_function
 import sys,os
 diaglev=int(os.environ.get('GEN_MODE',0))
 CURR_PATH=os.path.dirname(os.path.abspath(__file__))
-CYLCROOT=os.path.dirname(os.path.dirname(os.path.dirname(CURR_PATH)))
-CYLCPATH=os.environ.get('CYLCPATH',CYLCROOT)
-MONITOBS=os.environ.get('MONITOBS',CYLCPATH+"/modules/monitobs")
-OBSLIB=os.environ.get('OBSLIB',MONITOBS+"/pylib")
+PKGHOME=os.path.dirname(CURR_PATH)
+OBSLIB=os.environ.get('OBSLIB',PKGHOME+"/pylib")
 sys.path.append(OBSLIB)
-OBSDIC=os.environ.get('OBSDIC',MONITOBS+"/pydic")
+OBSDIC=os.environ.get('OBSDIC',PKGHOME+"/pydic")
 sys.path.append(OBSDIC)
-OBSNML=os.environ.get('OBSNML',MONITOBS+"/nml")
+OBSNML=os.environ.get('OBSNML',PKGHOME+"/nml")
 sys.path.append(OBSNML)
 import obslib
 import numpy

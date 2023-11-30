@@ -25,14 +25,15 @@ varcx_uair_nml=OBSNML+"/varcx_uair_nml"
 import obslib
 import obsdic
 import obstore
+import fixheader
 import ecbufr
 #import ncbufr
 #import varobs
 #import varcx
 #import fsoi
-#import symobs
-#import obsplot
-#import sqlobs
+import symobs
+import obsplot
+import sqlobs
 #import sqlodb
 #import obsgui
 import matplotlib
@@ -43,7 +44,14 @@ import numpy
 import glob
 #import odb
 
-MAXINDX=int(os.environ.get('MAXINDX',obstore.MAXINDX))
+diaglev=int(os.environ.get('GEN_MODE',0))
+MAXINDX=int(os.environ.get('MAXINDX',fixheader.MAXINDX))
+HDRSIZE=int(os.environ.get('HDRSIZE',fixheader.HDRSIZE))
+LUTSIZE=int(os.environ.get('LUTSIZE',fixheader.LUTSIZE))
+HBpos=int(os.environ.get('HBpos',fixheader.HBpos))
+HBlen=int(os.environ.get('HBlen',fixheader.HBlen))
+HCpos=int(os.environ.get('HCpos',fixheader.HCpos))
+HClen=int(os.environ.get('HClen',fixheader.HClen))
 obs_nml=os.environ.get('obs_index_nml',OBSNML+"/obs_index_nml")
 odb_nml=os.environ.get('odb_index_nml',OBSNML+"/odb_index_nml")
 varno_nml=os.environ.get('odb_varno_nml',OBSNML+"/odb_varno_nml")
@@ -202,7 +210,7 @@ def obstore_batchinfo(obsfile_name,nmlfile=obs_nml):
         obstore.print_batchinfo(batchinfo)
         for indx in batchinfo.Batch_Index.values:
             print(indx)
-            if indx not in [0]: print(obstore.obstore_read_subhead_segment(obsfile,"lut",indx,1,128))
+            if indx not in [0]: print(obstore.obstore_read_subhead_segment(obsfile,"lut",indx,1,LUTSIZE))
         #print(batchinfo[["Batch_Index","Batch_Subtype","Batch_Data_Position","Batch_Obs_Count","Batch_Col_Count","Batch_Data_Length","Batch_Data_End"]].loc[[0,1]])
         #print(batchinfo['elist_map'].loc[1])
         #print(obstore.binpos(obsfile,"ldc"))
@@ -376,12 +384,17 @@ def plotallvar_odb(plotpath,odbfile,cylcdatestr,obstype,odbnmlfile=odb_nml,varno
             obsplot.plot_depart_firstguess(plotpath,odbnmlfile,data,cylcdatestr,prefix,varname,long_name,fill=fill,extend="both")
             obsplot.plot_depart_anal(plotpath,odbnmlfile,data,cylcdatestr,prefix,varname,long_name,fill=fill,extend="both")
 
-def obs_frame(datagroup,subtypegroup,outpath,filename="output",option=0,tagmark="",text="",maxindx=MAXINDX):
-      plotfile=outpath+"/"+filename+".png"
-      print(plotfile)
-      if datagroup is not None: figure1=obsplot.plot_location(datagroup,plotfile,tagmark=tagmark,lblst=subtypegroup,text=text)
-      #figure1.show()
-      for idx in range(0,len(datagroup),1):
+def obs_frame(datagroup=None,subtypegroup=None,outpath=None,filename="output",option=0,tagmark="",text="",maxindx=MAXINDX,obstore_info=None):
+	if obstore_info is not None:
+		if "datagroup" in obstore_info: datagroup=obstore_info["datagroup"]
+		if "subtypegroup" in obstore_info: subtypegroup=obstore_info["subtypegroup"]
+		if "outpath" in obstore_info: outpath=obstore_info["outpath"]
+		if "filename" in obstore_info: filename=obstore_info["filename"].replace(".","_")
+	plotfile=outpath+"/"+filename+".png"
+	print(plotfile)
+	if datagroup is not None: figure1=obsplot.plot_location(datagroup,plotfile,tagmark=tagmark,lblst=subtypegroup,text=text)
+	#figure1.show()
+	for idx in range(0,len(datagroup),1):
            data=datagroup[idx]
            textfile=outpath+"/"+filename+"_batch_"+str(idx+1)+".txt"
            print(textfile)
@@ -409,21 +422,27 @@ def symobs_buoy_nio(Tnode,outpath,inpath,nmlpath,obstypelist=[],maxindx=MAXINDX,
 	infodic["lonmin"] = 30.0
 	infodic["lonmax"] = 120.0
    	infodic["header_offset"] = 339
-    	infodic["lut_ncols"] = 128
+    	infodic["lut_ncols"] = LUTSIZE
     	infodic["maxindx"] = maxindx
 	infodic["inpath"] = inpath
 	infodic["outpath"] = outpath
 	infodic["nmlpath"] = nmlpath
 	infodic["subtypelist"] = subtypelist
+	#infodic["elistgroup"] = elistgroup
         datagroup=symobs.sose_merge_data(infodic)
         ######################
         
-    
-def obstore_create_file(obstore_info):
-	outfile=obstore.obstore_create_file(obstore_info)
-	obsmod.obs_frame(datagroup,subtypegroup,outpath,filename=obstype,option=1)
-
-
 def obstore_write(data,keynmlfile,outpath,btchcnt=None,cntmax=None,DT=None,diagflag=0,missing_value=-1073741824.00000):
 	outfile=obstore.obstore_write(data,keynmlfile,outpath,btchcnt=btchcnt,cntmax=cntmax,DT=DT,diagflag=diagflag,missing_value=missing_value)
 	return(outfile)
+
+    
+def obstore_create_file(obstore_info,diagflg=0,callsignflag=False,filedata=None):
+	obstore_info=obstore.obstore_create_file(obstore_info,diagflg=diagflg,callsignflag=callsignflag,filedata=filedata)
+	obs_frame(obstore_info=obstore_info,option=1)
+	return(obstore_info)
+
+
+def create_obstore(obstore_info,diagflg=0,callsignflag=False,filedata=None):
+	obstore_info=obstore_create_file(obstore_info,diagflg=diagflg,callsignflag=callsignflag,filedata=filedata)
+	return(obstore_info)

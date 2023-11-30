@@ -282,6 +282,6 @@ def write_obsheader(obsfile,nmlfile,obsgroup,maxindx=MAXINDX,callsignflag=False)
     obslib.binary_write(HDRgam,306,obsfile)
     return(hdrlen)
 
-def write_batchheader(outfile,batchcount=1,header_offset=339,obs_index_max=512,lut_ncols=128):
-    obstore.obstore_set_batchpos(outfile,batchcount,header_offset,obs_index_max,lut_ncols)
+def write_batchheader(outfile,batchcount=1,header_offset=339,maxindx=MAXINDX,lut_ncols=LUTSIZE):
+    obstore.obstore_set_batchpos(outfile,batchcount,header_offset,maxindx,lut_ncols)
     return(0)

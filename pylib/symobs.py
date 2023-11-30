@@ -9,14 +9,12 @@ from __future__ import print_function
 import sys
 import os
 CURR_PATH=os.path.dirname(os.path.abspath(__file__))
-CYLCROOT=os.path.dirname(os.path.dirname(os.path.dirname(CURR_PATH)))
-CYLCPATH=os.environ.get('CYLCPATH',CYLCROOT)
-MONITOBS=os.environ.get('MONITOBS',CYLCPATH+"/modules/monitobs")
-OBSLIB=os.environ.get('OBSLIB',MONITOBS+"/pylib")
+PKGHOME=os.path.dirname(CURR_PATH)
+OBSLIB=os.environ.get('OBSLIB',PKGHOME+"/pylib")
 sys.path.append(OBSLIB)
-OBSDIC=os.environ.get('OBSDIC',MONITOBS+"/pydic")
+OBSDIC=os.environ.get('OBSDIC',PKGHOME+"/pydic")
 sys.path.append(OBSDIC)
-OBSNML=os.environ.get('OBSDIC',MONITOBS+"/nml")
+OBSNML=os.environ.get('OBSNML',PKGHOME+"/nml")
 sys.path.append(OBSNML)
 obs_index_nml="obs_index_nml"
 nmlfile="%s/%s" % (OBSNML,obs_index_nml)
@@ -34,7 +32,7 @@ import math
 import itertools
  
 
-OBS_INDX_MAX=int(os.environ.get('OBS_INDX_MAX',608))
+MAXINDX=int(os.environ.get('MAXINDX',608))
 diaglev=int(os.environ.get('GEN_MODE',0))
 
 def nadir_latlon(Tnow,Tnode,Torbit,OrbInc,NodeShift=0):
@@ -96,21 +94,6 @@ def fileindex(data,index,filedim,gph,altnam="Altitude",DT=None):
     findex=pandas.DataFrame(findx1,index=[index],columns=['Index','itime','ilat','ilon','ilev','lev','azmh'])
     return(findex)
     
-def getfiledim(Tnow):
-    Year=Tnow.year
-    time=nature.getdata(Year,"time")
-    time_units=ncepradic.getunits(Year,"time")
-    lat=ncepradic.getdata(Year,"lat")
-    lon=ncepradic.getdata(Year,"lon")
-    lev=ncepradic.getdata(Year,"lev")
-    filedim={
-            "time":time,
-            "time_units":time_units,
-            "lat":lat,
-            "lon":lon,
-            "lev": lev,
-            }
-    return(Year,filedim)
 
 def degreelon(lon):
     while lon < -180 :
@@ -250,7 +233,7 @@ def generate3Dindex(obs_cnt,LTTD,LNGD,ALTTD,datetime,time,time_units,lat,lon,lev
             idx=idx.append(pandas.DataFrame([[itime,ilat,ilon,ilev]],index=[i+1],columns=["itime","ilat","ilon","ilev"]))
     return(idx)
 
-def HLOSWind(location,findex,Tstart,outpath,nmlfile,obscount,obs_index_max=OBS_INDX_MAX):   #,obsgroup,subtype,elist,data,batchcount=1,header_offset=339,obs_index_max=600,lut_ncols=128):
+def HLOSWind(location,findex,Tstart,outpath,nmlfile,obscount,maxindx=MAXINDX):   #,obsgroup,subtype,elist,data,batchcount=1,header_offset=339,maxindx=600,lut_ncols=LUTSIZE):
     data=location.join(findex.lev,on='ProfileNo')
     Year=location.Year.values[0]
     uwnd=ncepradic.getdata(Year,"uwnd",element="uwnd")
@@ -275,14 +258,14 @@ def HLOSWind(location,findex,Tstart,outpath,nmlfile,obscount,obs_index_max=OBS_I
     obsgroup=obsdic.HLOSWind["obsgroup"]
     subtype=obsdic.HLOSWind["subtype"]
     with open(output_file, "wb+") as outfile:
-        obstore.create_obstore(Tstart,outfile,nmlfile,obsgroup,subtype,elist,data,batchcount=1,header_offset=339,obs_index_max=600,lut_ncols=128)
+        obstore.create_obstore(Tstart,outfile,nmlfile,obsgroup,subtype,elist,data,batchcount=1,header_offset=339,maxindx=600,lut_ncols=LUTSIZE)
     #difflist=obstore.header_diffcheck(output_file)
     #print(difflist)
-    batchinfo=obstore.batch_header_read(output_file,nmlfile,obs_index_max=obs_index_max,batchid=1)
+    batchinfo=obstore.batch_header_read(output_file,nmlfile,maxindx=maxindx,batchid=1)
     #print(batchinfo)
     return(data)
 
-def LEOGEOAMV(location,findex,Tstart,nmlfile,obs_index_max=OBS_INDX_MAX):   #,obsgroup,subtype,elist,data,batchcount=1,header_offset=339,obs_index_max=600,lut_ncols=128):
+def LEOGEOAMV(location,findex,Tstart,nmlfile,maxindx=MAXINDX):   #,obsgroup,subtype,elist,data,batchcount=1,header_offset=339,maxindx=600,lut_ncols=LUTSIZE):
     data=location.join(findex.lev,on='ProfileNo')
     Year=location.Year.values[0]
     Month=location.Month.values[0]
@@ -326,15 +309,15 @@ def LEOGEOAMV(location,findex,Tstart,nmlfile,obs_index_max=OBS_INDX_MAX):   #,ob
 #    obs_index=obsdic.LEOGEOAMV["obs_index"]
 #    elist=obstore.obstore_create_element_table(nmlfile,obs_index)
 #    with open(output_file, "wb+") as outfile:
-#        (datapos,datalen,dataend)=obstore.create_obstore(Tstart,outfile,nmlfile,obsgroup,[subtype],[elist],[data],batchcount=1,header_offset=339,obs_index_max=obs_index_max,lut_ncols=128)
+#        (datapos,datalen,dataend)=obstore.create_obstore(Tstart,outfile,nmlfile,obsgroup,[subtype],[elist],[data],batchcount=1,header_offset=339,maxindx=maxindx,lut_ncols=LUTSIZE)
 #    print(datapos,datalen,dataend)
     #difflist=obstore.header_diffcheck(output_file)
     #print(difflist)
-    #batchinfo=obstore.batch_header_read(output_file,nmlfile,obs_index_max=600,batchid=1)
+    #batchinfo=obstore.batch_header_read(output_file,nmlfile,maxindx=600,batchid=1)
     #print(batchinfo)
     return(data)
 
-def aladin_profile(Tnode,Tstart,Tstop,output_file,nmlpath,obs_index_max=OBS_INDX_MAX):
+def aladin_profile(Tnode,Tstart,Tstop,output_file,nmlpath,maxindx=MAXINDX):
     obs_index_nml="obs_index_nml"
     nmlfile="%s/%s" % (nmlpath,obs_index_nml)
     SatID=obsdic.Aeolus["SatID"]
@@ -877,7 +860,7 @@ def prepdata(subdic,data,findex,idxnam,elenam,option="const",DT=None,lev=None,le
             data=data.join(element,on=idxnam)
     return(data)
 
-def symulate_subtype(obs_info,obstypedic=None,obs_index_max=OBS_INDX_MAX,temp=[],rhum=[],uwnd=[],vwnd=[]):
+def symulate_subtype(obs_info,obstypedic=None,maxindx=MAXINDX,temp=[],rhum=[],uwnd=[],vwnd=[]):
     DT = obs_info["timeinfo"]
     data = obs_info["data"]
     elist = obs_info["elist"]
@@ -899,20 +882,20 @@ def symulate_subtype(obs_info,obstypedic=None,obs_index_max=OBS_INDX_MAX,temp=[]
         Minute=DT.minute
         DT=obslib.pydatetime(Year,Month,Day,Hour,Minute,0)
 	print(DT)
-        Year,filedim=getfiledim(DT)
-        lev=nature.getdata(Year,"lev",element="gph")
+        Year,filedim=nature.getfiledim(DT)
+        #lev=nature.getdata(Year,"lev")
         gph=nature.getdata(Year,"gph")
-        uwnd=nature.getdata(Year,"uwnd",element="uwnd")
-        vwnd=nature.getdata(Year,"vwnd",element="vwnd")
-        temp=nature.getdata(Year,"tmp",element="tmp")
-        rhum=nature.getdata(Year,"rhum",element="rhum")  
-        u10m=nature.getdata(Year,"uwnd",element="u10m")
-        v10m=nature.getdata(Year,"vwnd",element="v10m")
-        slp=nature.getdata(Year,"slp",element="slp")
-        psfc=nature.getdata(Year,"pres",element="psfc")
-        t2m=nature.getdata(Year,"tmp",element="t2m")
-        #rh2m=nature.getdata(Year,"rhum",element="rh2m")  
-        sh2m=nature.getdata(Year,"shum",element="sh2m") 
+        temp=nature.getdata(Year,"tmp")
+        rhum=nature.getdata(Year,"rhum")  
+        u10m=nature.getdata(Year,"u10m")
+        v10m=nature.getdata(Year,"v10m")
+        slp=nature.getdata(Year,"slp")
+        psfc=nature.getdata(Year,"psfc")
+        t2m=nature.getdata(Year,"t2m")
+        rh2m=nature.getdata(Year,"rh2m")  
+        sh2m=nature.getdata(Year,"sh2m") 
+        #uwnd=nature.getdata(Year,"uwnd")
+        vwnd=nature.getdata(Year,"vwnd")
     
 #    if subtype is 22501 : 
 #        altnam="HeightCOG"
@@ -940,7 +923,7 @@ def symulate_subtype(obs_info,obstypedic=None,obs_index_max=OBS_INDX_MAX,temp=[]
 #        if obsgroup not in [1,3] :
 #            if "lev" in findex.columns.values: data=data.join(findex.lev,on='Index')
         subdic={"obs_index" : obstypedic[str(subtype)]}      #elist.obs_index.values with repeatition
-        #data=LEOGEOAMV(data,findex,DT,nmlfile,obs_index_max=obs_index_max)
+        #data=LEOGEOAMV(data,findex,DT,nmlfile,maxindx=maxindx)
         if obsgroup not in [2]:
             data=prepdata(subdic,data,findex,indxnam,"Index",option="index")
             data=prepdata(subdic,data,findex,indxnam,"Year",option="date",DT=DT)
@@ -1069,7 +1052,7 @@ def subtype_filter(subtypegroup, subtypelist):
 	return(indxlist)
     
 
-def symulate_obstore(outpath,inpath,nmlpath,DT,obstype,filevar=None,obs_index_max=OBS_INDX_MAX,subtypelist=None):
+def symulate_obstore(outpath,inpath,nmlpath,DT,obstype,filevar=None,maxindx=MAXINDX,subtypelist=None):
     obstypedic=obsdic.obstype[obstype]
     filename=obstypedic["filename"]
     output_file="%s/%s" % (outpath,filename)
@@ -1092,10 +1075,10 @@ def symulate_obstore(outpath,inpath,nmlpath,DT,obstype,filevar=None,obs_index_ma
         datagroup=[None]*batchcount
         for indx in range(1,batchcount+1,1):
             Tstop=Tstart+Tdelta
-            location=aladin_profile(DT,Tstart,Tstop,outpath,nmlpath,obs_index_max=obs_index_max)
+            location=aladin_profile(DT,Tstart,Tstop,outpath,nmlpath,maxindx=maxindx)
             datagroup[indx-1]=location
-            #datagroup[indx-1]=LEOGEOAMV(location,findex,Tstart,output_file,nmlfile,obscount,obs_index_max=obs_index_max)
-            #datagroup[indx-1]=symulate_subtype(location,elistgroup[indx],obstypedic,obs_index_max=obs_index_max)
+            #datagroup[indx-1]=LEOGEOAMV(location,findex,Tstart,output_file,nmlfile,obscount,maxindx=maxindx)
+            #datagroup[indx-1]=symulate_subtype(location,elistgroup[indx],obstypedic,maxindx=maxindx)
             print(DT,Tstart,Tstop)
             Tstart=Tstop
     else:
@@ -1114,7 +1097,7 @@ def symulate_obstore(outpath,inpath,nmlpath,DT,obstype,filevar=None,obs_index_ma
 #        ##### Keep the header for all batches before writing the date time information
 #        for indx in batchinfo.Batch_Index.values:
 #            print(indx)
-#            if indx not in [0]: print(obstore.obstore_read_subhead_segment(infile,"lut",indx,1,128))
+#            if indx not in [0]: print(obstore.obstore_read_subhead_segment(infile,"lut",indx,1,LUTSIZE))
 #        if diaglev > 5 : print(obstore.obstore_read_subtype(infile))
             subtypegroup=obstore.obstore_read_subtype(infile)
 	    indxlist=subtype_filter(subtypegroup,subtypelist)
@@ -1128,13 +1111,13 @@ def symulate_obstore(outpath,inpath,nmlpath,DT,obstype,filevar=None,obs_index_ma
 		subtype=subtypegroup[indx-1]
 		subtype_name=obslib.get_subtype_name(subtype_nmlfile,subtype)
                 print(indx,subtype_name)
-                elist=obstore.obstore_read_batch_elements(infile,preindx+1,nmlfile,obs_index_max=obs_index_max)
+                elist=obstore.obstore_read_batch_elements(infile,preindx+1,nmlfile,maxindx=maxindx)
                 elistgroup[indx-1]=elist
                 print(elist.obs_index.values)
                 #print(elist)
                 count=0
                 for element in obsdic.stationelist:
-                    elemdata = obstore.obstore_read_data_element(infile,nmlfile,preindx+1,element,obs_index_max=obs_index_max)
+                    elemdata = obstore.obstore_read_data_element(infile,nmlfile,preindx+1,element,maxindx=maxindx)
                     if elemdata is not None:
                         count+=1
                         if count == 1:
@@ -1170,12 +1153,12 @@ def symulate_obstore(outpath,inpath,nmlpath,DT,obstype,filevar=None,obs_index_ma
 		"subtype" : subtypegroup[indx-1],
 		"obstype" : obstype,
 		}
-        datagroup[indx-1]=symulate_subtype(obs_info,obstypedic,obs_index_max=obs_index_max)
+        datagroup[indx-1]=symulate_subtype(obs_info,obstypedic,maxindx=maxindx)
         print(datagroup[indx-1])
     
     print("Writting "+str(batchcount)+" batches of data to "+ output_file)
     with open(output_file, "wb+") as outfile:
-        (datapos,datalen,dataend)=obstore.create_obstore(DT,outfile,nmlfile,obsgroup,subtypegroup,elistgroup,datagroup,batchcount=batchcount,header_offset=339,obs_index_max=obs_index_max,lut_ncols=128)
+        (datapos,datalen,dataend)=obstore.create_obstore(DT,outfile,nmlfile,obsgroup,subtypegroup,elistgroup,datagroup,batchcount=batchcount,header_offset=339,maxindx=maxindx,lut_ncols=LUTSIZE)
         print(datapos,datalen,dataend)
     print("Writting to "+output_file+ " is completed")
     obsmod.obs_frame(datagroup,subtypegroup,outpath,filename=obstype,option=1)
@@ -1190,7 +1173,7 @@ def sose_merge_data(infodic):
     obstore_info["timeinfo"] = infodic["timeinfo"]
     obstore_info["header_offset"] = infodic["header_offset"]
     obstore_info["lut_ncols"] = infodic["lut_ncols"]
-    obstore_info["obs_index_max"] = infodic["obs_index_max"]
+    obstore_info["maxindx"] = infodic["maxindx"]
     obstore_info["subtypelist"] = infodic["subtypelist"]
     datafilter={}
     datafilter["synbuoyloc"] = infodic["synbuoyloc"]
@@ -1202,6 +1185,7 @@ def sose_merge_data(infodic):
     datafilter["subtypelist"] = infodic["subtypelist"]
     obstore_info=filtered_obstore_read(obstore_info,datafilter)
     subtypegroup=obstore_info["subtypegroup"]
+    batchcount=len(subtypegroup)
     for indx,subtype in enumerate(subtypegroup[0:batchcount],start=1):
 	if subtype in infodic["syntype"] :
     		obs_info={}
@@ -1210,13 +1194,13 @@ def sose_merge_data(infodic):
     		obs_info["timeinfo"] = infodic["timeinfo"]
 		obs_info["subtype"] = subtype
 		fltrdata=obstore_info["datagroup"][indx-1]
-    		obs_info["elist"] = obstore_info["elist"][indx-1]
+    		obs_info["elist"] = obstore_info["elistgroup"][indx-1]
 		fltrdata=fltrdata.append(synbuoy(datafilter,obs_info),ignore_index=True)
     		fltrdata=indexreset(fltrdata)
 		obstore_info["datagroup"][indx-1]=fltrdata
     #obstore_info["datagroup"] = datagroup
-    obsmod.create_obstore(obstore_info)
-    return(data)
+    obstore_info=obsmod.create_obstore(obstore_info)
+    return(obstore_info)
 
 def filtered_obstore_read(obstore_info,datafilter):
     inpath = obstore_info["inpath"]
@@ -1226,7 +1210,7 @@ def filtered_obstore_read(obstore_info,datafilter):
     DT = obstore_info["timeinfo"]
     header_offset = obstore_info["header_offset"]
     lut_ncols = obstore_info["lut_ncols"]
-    obs_index_max = obstore_info["obs_index_max"]
+    maxindx = obstore_info["maxindx"]
     obstypedic=obsdic.obstype[obstype]
     filename=obstypedic["filename"]
     output_file="%s/%s" % (outpath,filename)
@@ -1249,7 +1233,7 @@ def filtered_obstore_read(obstore_info,datafilter):
         datagroup=[None]*batchcount
         for indx in range(1,batchcount+1,1):
             Tstop=Tstart+Tdelta
-            location=aladin_profile(DT,Tstart,Tstop,outpath,nmlpath,obs_index_max=obs_index_max)
+            location=aladin_profile(DT,Tstart,Tstop,outpath,nmlpath,maxindx=maxindx)
             datagroup[indx-1]=location
             print(DT,Tstart,Tstop)
             Tstart=Tstop
@@ -1271,13 +1255,13 @@ def filtered_obstore_read(obstore_info,datafilter):
 		subtype=subtypegroup[indx-1]
 		subtype_name=obslib.get_subtype_name(subtype_nmlfile,subtype)
                 print(indx,subtype_name)
-                elist=obstore.obstore_read_batch_elements(infile,preindx+1,nmlfile,obs_index_max=obs_index_max)
+                elist=obstore.obstore_read_batch_elements(infile,preindx+1,nmlfile,maxindx=maxindx)
                 elistgroup[indx-1]=elist
                 print(elist.obs_index.values)
                 #print(elist)
                 count=0
-                for element in obsdic.stationelist:
-                    elemdata = obstore.obstore_read_data_element(infile,nmlfile,preindx+1,element,obs_index_max=obs_index_max)
+                for element in obsdic.station_call_list:
+                    elemdata = obstore.obstore_read_data_element(infile,nmlfile,preindx+1,element,maxindx=maxindx)
                     if elemdata is not None:
                         count+=1
                         if count == 1:
@@ -1295,7 +1279,7 @@ def filtered_obstore_read(obstore_info,datafilter):
 		"subtype" : subtypegroup[indx-1],
 		"obstype" : obstype,
 		}
-        datagroup[indx-1]=symulate_subtype(obs_info,obstypedic,obs_index_max=obs_index_max)
+        datagroup[indx-1]=symulate_subtype(obs_info,obstypedic,maxindx=maxindx)
         #print(datagroup[indx-1])
     obstore_info={
 	"obstype" : obstype,
@@ -1307,14 +1291,13 @@ def filtered_obstore_read(obstore_info,datafilter):
 	"outpath" : outpath,
 	"filename" : filename,
 	"nmlpath" : nmlpath,
-	"obs_index_max" : obs_index_max,
+	"maxindx" : maxindx,
 	"batchcount" : batchcount,
 	"header_offset" : header_offset,
 	"lut_ncols" : lut_ncols,
 		}
     if datafilter is not None: obstore_info=filter_data(obstore_info,datafilter)
     datagroup = obstore_info["datagroup"]
-                
     return(obstore_info)
 
 
@@ -1329,7 +1312,7 @@ def filter_data(obstore_info,datafilter):
     outpath = obstore_info["outpath"]
     filename = obstore_info["filename"]
     nmlpath = obstore_info["nmlpath"]
-    obs_index_max = obstore_info["obs_index_max"]
+    maxindx = obstore_info["maxindx"]
     batchcount = obstore_info["batchcount"]
     header_offset = obstore_info["header_offset"]
     lut_ncols = obstore_info["lut_ncols"]

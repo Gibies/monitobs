@@ -19,32 +19,35 @@ OBSNML=os.environ.get('OBSNML',PKGHOME+"/nml")
 sys.path.append(OBSNML)
 
 #print(sys.path)
-
+import datetime
 import obsmod
 import obstore
 import obsdic
 
+today = datetime.date.today()
+todate=today.strftime("%Y%m%d")
 syn_buoy_loc=OBSNML+"/osse_synbuoy.nml"
-REFDATE=os.environ.get('PDY',"20200609")
+REFDATE=os.environ.get('PDY',"20220101")	#todate
 
-TDATE=os.environ.get('PDY',"20210101")
+TDATE=os.environ.get('PDY',"20220101")
 Tnode=obsmod.pydate(TDATE)
 datacfldrname=obsmod.cylcdate(Tnode)
-inpath="/home/gibies/init_cdas/obs_atmos/"+obsmod.cylcdate(obsmod.pydate(REFDATE))
-#inpath="/home/umprod/cylc-run/PS43_Hybrid/share/cycle/"+datacfldrname+"/glm_obstore"
+#inpath="/home/gibies/init_cdas/obs_atmos/"+obsmod.cylcdate(obsmod.pydate(REFDATE))
+inpath="/home/umprod/cylc-run/PS43_Hybrid/share/cycle/"+datacfldrname+"/glm_obstore"
+glodat="/home/gibies/data/ngfsra"
 
-obs_index_max=512
+maxindx=512
 obstypelist=["surface"]
 subtypelist=[10300,]	 #, 10800, 11100]
 #obstypelist=["sonde"]
 outpath="/home/"+USER+"/data/research/osse_buoy"
 
-obsmod.symobs_buoy_nio(Tnode,outpath,inpath,nmlpath=OBSNML,obs_index_max=obs_index_max,obstypelist=obstypelist,subtypelist=subtypelist,synbuoyloc=syn_buoy_loc)
+obsmod.symobs_buoy_nio(Tnode,outpath,inpath,nmlpath=OBSNML,maxindx=maxindx,obstypelist=obstypelist,subtypelist=subtypelist,synbuoyloc=syn_buoy_loc)
 
 plotpath="/home/"+USER+"/plots/research/osse_buoy/infile"
-#obsmod.obs_latlon_plot(inpath,plotpath,nmlpath=OBSNML,obs_index_max=obs_index_max,obstypelist=obstypelist)
+#obsmod.obs_latlon_plot(inpath,plotpath,nmlpath=OBSNML,maxindx=maxindx,obstypelist=obstypelist)
 plotpath="/home/"+USER+"/plots/research/osse_buoy/outfile"
-obsmod.obs_latlon_plot(outpath,plotpath,nmlpath=OBSNML,obs_index_max=obs_index_max,obstypelist=obstypelist)
+obsmod.obs_latlon_plot(outpath,plotpath,nmlpath=OBSNML,maxindx=maxindx,obstypelist=obstypelist)
 
 #obstype=obstypelist[0]
 #obstypedic=obsdic.obstype[obstype]
@@ -56,14 +59,14 @@ obsmod.obs_latlon_plot(outpath,plotpath,nmlpath=OBSNML,obs_index_max=obs_index_m
 #obstypedic=obsdic.obstype[obstype]
 #filename=obstypedic["filename"]
 #with open(inpath+"/"+filename, "rb") as infile:
-#	elist=obstore.obstore_read_batch_elements(infile,3,obs_index_max=obs_index_max)
+#	elist=obstore.obstore_read_batch_elements(infile,3,maxindx=maxindx)
 #	#data=obstore.obstore_read_header(infile,10324,100,"d")
 #	data=obstore.obstore_read_data_record(infile,3,[1,2,3])
 #	print(data)
 #	print(elist)
 #
 #with open(outpath+"/"+filename, "rb") as infile:
-#	elist=obstore.obstore_read_batch_elements(infile,3,obs_index_max=obs_index_max)
+#	elist=obstore.obstore_read_batch_elements(infile,3,maxindx=maxindx)
 #	#data=obstore.obstore_read_header(infile,3666,100,"d")
 #	data=obstore.obstore_read_data_record(infile,3,[1,2,3])
 #	print(data)

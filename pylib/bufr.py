@@ -13,14 +13,12 @@ import numpy
 import string
 import re
 CURR_PATH=os.path.dirname(os.path.abspath(__file__))
-CYLCROOT=os.path.dirname(os.path.dirname(os.path.dirname(CURR_PATH)))
-CYLCPATH=os.environ.get('CYLCPATH',CYLCROOT)
-MONITOBS=os.environ.get('MONITOBS',CYLCPATH+"/modules/monitobs")
-OBSLIB=os.environ.get('OBSLIB',MONITOBS+"/pylib")
+PKGHOME=os.path.dirname(CURR_PATH)
+OBSLIB=os.environ.get('OBSLIB',PKGHOME+"/pylib")
 sys.path.append(OBSLIB)
-OBSDIC=os.environ.get('OBSDIC',MONITOBS+"/pydic")
+OBSDIC=os.environ.get('OBSDIC',PKGHOME+"/pydic")
 sys.path.append(OBSDIC)
-OBSNML=os.environ.get('OBSDIC',MONITOBS+"/nml")
+OBSNML=os.environ.get('OBSNML',PKGHOME+"/nml")
 sys.path.append(OBSNML)
 import bufrdic
 import obstore
@@ -105,7 +103,7 @@ def read_bufr_dump(INFILE_LIST,HEADER_OFFSET,RECORD_LENGTH,bufr_ele_list):
                             val_list.append(value)
     return(datagroup)
 
-def write_to_obstore(INFILE_LIST,HEADER_OFFSET,RECORD_LENGTH,bufr_ele_list,outpath,nmlpath,DT,obstype,obs_index_max=608):
+def write_to_obstore(INFILE_LIST,HEADER_OFFSET,RECORD_LENGTH,bufr_ele_list,outpath,nmlpath,DT,obstype,maxindx=608):
     batch_count=len(INFILE_LIST)
     obstypedic=obsdic.obstype[obstype]
     filename=obstypedic["filename"]
@@ -122,7 +120,7 @@ def write_to_obstore(INFILE_LIST,HEADER_OFFSET,RECORD_LENGTH,bufr_ele_list,outpa
     print(datagroup)
     print(DT)
     with open(output_file, "wb+") as outfile:
-        (datapos,datalen,dataend)=obstore.create_obstore(DT,outfile,nmlfile,obsgroup,subtypegroup,elistgroup,datagroup,batchcount=batch_count,header_offset=339,obs_index_max=obs_index_max,lut_ncols=128)
+        (datapos,datalen,dataend)=obstore.create_obstore(DT,outfile,nmlfile,obsgroup,subtypegroup,elistgroup,datagroup,batchcount=batch_count,header_offset=339,maxindx=maxindx,lut_ncols=LUTSIZE)
     print("Writting to "+output_file+ " is completed. Data position:"+str(datapos)+" Data length:"+str(datalen)+" Data end:"+str(dataend))
     obsmod.obs_frame(datagroup,subtypegroup,outpath,filename=obstype,option=1)
     return(datagroup)

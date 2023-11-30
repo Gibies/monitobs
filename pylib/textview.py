@@ -8,15 +8,13 @@ Created on Fri Jun 19 15:45:39 2020
 
 import os,sys
 CURR_PATH=os.path.dirname(os.path.abspath(__file__))
-CYLCROOT=os.path.dirname(os.path.dirname(os.path.dirname(CURR_PATH)))
-CYLCPATH=os.environ.get('CYLCPATH',CYLCROOT)
-MONITOBS=os.environ.get('MONITOBS',CYLCPATH+"/modules/monitobs")
-LIB=os.environ.get('LIB',MONITOBS+"/pylib")
-sys.path.append(LIB)
-DIC=os.environ.get('DIC',MONITOBS+"/pydic")
-sys.path.append(DIC)
-NML=os.environ.get('NML',MONITOBS+"/nml")
-sys.path.append(NML)
+PKGHOME=os.path.dirname(CURR_PATH)
+OBSLIB=os.environ.get('OBSLIB',PKGHOME+"/pylib")
+sys.path.append(OBSLIB)
+OBSDIC=os.environ.get('OBSDIC',PKGHOME+"/pydic")
+sys.path.append(OBSDIC)
+OBSNML=os.environ.get('OBSNML',PKGHOME+"/nml")
+sys.path.append(OBSNML)
 
 from itertools import islice
 

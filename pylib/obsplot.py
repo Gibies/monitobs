@@ -8,15 +8,14 @@ Created on Wed Jan 23 12:56:36 2019
 from __future__ import print_function
 import os,sys
 CURR_PATH=os.path.dirname(os.path.abspath(__file__))
-CYLCROOT=os.path.dirname(os.path.dirname(os.path.dirname(CURR_PATH)))
-CYLCPATH=os.environ.get('CYLCPATH',CYLCROOT)
-MONITOBS=os.environ.get('MONITOBS',CYLCPATH+"/modules/monitobs")
-LIB=os.environ.get('LIB',MONITOBS+"/pylib")
-sys.path.append(LIB)
-DIC=os.environ.get('DIC',MONITOBS+"/pydic")
-sys.path.append(DIC)
-NML=os.environ.get('NML',MONITOBS+"/nml")
-sys.path.append(NML)
+PKGHOME=os.path.dirname(CURR_PATH)
+OBSLIB=os.environ.get('OBSLIB',PKGHOME+"/pylib")
+sys.path.append(OBSLIB)
+OBSDIC=os.environ.get('OBSDIC',PKGHOME+"/pydic")
+sys.path.append(OBSDIC)
+OBSNML=os.environ.get('OBSNML',PKGHOME+"/nml")
+sys.path.append(OBSNML)
+SUBTYPNML=OBSNML+"/obs_subtype.nml"
 import obslib
 import domaindic
 import numpy
@@ -65,7 +64,7 @@ def plot_keyfield(dataset,plotfile,tagmark="",lblst=[],text="",textpos=(0.25, -0
     pyplot.savefig(plotfile,bbox_inches='tight',dpi=200)
     return(fig)
 
-def plot_latlon(data,plotfile,tagmark="",lblst=[],text="",textpos=(0.25, -0.20),fltrkey="subtype"):
+def plot_latlon(data,plotfile,tagmark="",lblst=[],text="",textpos=(0.25, -0.20),fltrkey="subtype",subtypenml=SUBTYPNML):
     print(data)
     if fltrkey in data:
     	keylist=data[fltrkey].unique()
@@ -99,10 +98,9 @@ def plot_latlon(data,plotfile,tagmark="",lblst=[],text="",textpos=(0.25, -0.20),
     #plot1=pyplot.subplot(211)
     plot3=pyplot.subplot(212)
     if fltrkey == "subtype":
-	sbtypnmlfile=NML+"/obs_subtype.nml"
 	lblst=[None]*len(keylist)
 	for i,key in enumerate(keylist):
-	   lblst[i]=obslib.get_subtype_name(sbtypnmlfile,key)
+	   lblst[i]=obslib.get_subtype_name(subtypenml,key)
     else:
 	lblst=keylist
     fig= plot_cyl(datalist,fig,plot3,colors,area,alpha,parallels,meridians,tagmark=tagmark,lblst=lblst,text=text,textpos=textpos)

@@ -9,25 +9,48 @@ from __future__ import print_function
 import sys
 import os
 CURR_PATH=os.path.dirname(os.path.abspath(__file__))
-CYLCROOT=os.path.dirname(os.path.dirname(os.path.dirname(CURR_PATH)))
-CYLCPATH=os.environ.get('CYLCPATH',CYLCROOT)
-MONITOBS=os.environ.get('MONITOBS',CYLCPATH+"/modules/monitobs")
-OBSLIB=os.environ.get('OBSLIB',MONITOBS+"/pylib")
+PKGHOME=os.path.dirname(CURR_PATH)
+OBSLIB=os.environ.get('OBSLIB',PKGHOME+"/pylib")
 sys.path.append(OBSLIB)
-OBSDIC=os.environ.get('OBSDIC',MONITOBS+"/pydic")
+OBSDIC=os.environ.get('OBSDIC',PKGHOME+"/pydic")
 sys.path.append(OBSDIC)
-OBSNML=os.environ.get('OBSDIC',MONITOBS+"/nml")
+OBSNML=os.environ.get('OBSNML',PKGHOME+"/nml")
 sys.path.append(OBSNML)
 obs_index_nml="obs_index_nml"
 nmlfile="%s/%s" % (OBSNML,obs_index_nml)
 import obslib
 import obsdic
+import ngfsradic
 import ncepradic
 import imdaadic
 
 
 
-def getdata(Year,var="time",element="gph"):
-	data=ncepradic.getdata(Year,var,element)
+def getdata(Year,var="time",element=None):
+	if element is None: element=var
+	data=ngfsradic.getdata(Year,var,element)
+#	data=ncepradic.getdata(Year,var,element)
 #	data=imdaadic.getdata(Year,var,element)
 	return(data)
+
+def getunits(Year,var="time",element=None):
+    if element is None: element=var
+    units=ngfsradic.getunits(Year,var,element)
+    return(units)
+
+def getfiledim(Tnow,element=None):
+    if element is None: element="tmp"
+    Year=Tnow.year
+    time=getdata(Year,"time",element)
+    time_units=getunits(Year,"time",element)
+    lat=getdata(Year,"lat",element)
+    lon=getdata(Year,"lon",element)
+    lev=getdata(Year,"lev",element)
+    filedim={
+            "time":time,
+            "time_units":time_units,
+            "lat":lat,
+            "lon":lon,
+            "lev": lev,
+            }
+    return(Year,filedim)
