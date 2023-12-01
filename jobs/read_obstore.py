@@ -27,6 +27,15 @@ inputfile=obsmod.globlist(pathstring)[0]
 
 print(inputfile)
 
+if len(sys.argv) > 2:
+	pos=sys.argv[2]
+else:
+	pos=2003
+if len(sys.argv) > 3:
+	size=sys.argv[3]
+else:
+	size=19
+
 with open(inputfile, "rb") as obsfile:
 	hdr_info=obstore.obstore_read_batch_header(obsfile)
 alpha=hdr_info["alpha"]
@@ -45,8 +54,6 @@ print(cdc)
 print(lut)
 
 with open(inputfile, "rb") as obsfile:
-	pos=2003
-	size=19
 	data=obstore.obstore_read_real(obsfile,pos,size,fmtkey="d")
 	#data=obstore.obstore_read_data_record(obsfile,1,[1,2,3])
 print(data)
