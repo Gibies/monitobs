@@ -45,7 +45,10 @@ print(cdc)
 print(lut)
 
 with open(inputfile, "rb") as obsfile:
-	data=obstore.obstore_read_data_record(obsfile,1,[1,2,3])
+	pos=2003
+	size=19
+	data=obstore.obstore_read_real(obsfile,pos,size,fmtkey="d")
+	#data=obstore.obstore_read_data_record(obsfile,1,[1,2,3])
 print(data)
 
 nmlfile=OBSNML+"/obs_index_nml"
