@@ -28,11 +28,11 @@ inputfile=obsmod.globlist(pathstring)[0]
 print(inputfile)
 
 if len(sys.argv) > 2:
-	pos=sys.argv[2]
+	pos=int(sys.argv[2])
 else:
 	pos=2003
 if len(sys.argv) > 3:
-	size=sys.argv[3]
+	size=int(sys.argv[3])
 else:
 	size=19
 
