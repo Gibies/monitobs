@@ -131,7 +131,7 @@ def obstore_write_int8byte(data,obsfile):
     #struct.pack(">%sq"%(len(data)),*data)
 
 def obstore_read_real(obsfile,pos,size,fmtkey="d"):
-    val=obslib.binary_read_formatted(obsfile,pos,size,fmtkey)
+    val=obslib.binary_read(obsfile,pos,size,fmtkey)
     return(val)
     #obsfile.seek((pos-1)*8,0)
     #data = obsfile.read(size*8)
@@ -153,7 +153,7 @@ def obstore_overwrite_dec8byte(data,obsfile,pos):
 
 def obstore_read_formatted(obsfile,pos,size,data_fmt):
     fmtkey=data_fmt[-1]
-    val=obslib.binary_read_formatted(obsfile,pos,size,fmtkey)
+    val=obslib.binary_read(obsfile,pos,size,fmtkey)
     return(val)
     #obsfile.seek((pos-1)*8,0)
     #data = obsfile.read(size*8)
