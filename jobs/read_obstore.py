@@ -36,6 +36,11 @@ if len(sys.argv) > 3:
 else:
 	size=19
 
+if len(sys.argv) > 4:
+	fmtkey=str(sys.argv[4])
+else:
+	fmtkey="d"
+
 with open(inputfile, "rb") as obsfile:
 	hdr_info=obstore.obstore_read_batch_header(obsfile)
 alpha=hdr_info["alpha"]
@@ -54,7 +59,7 @@ print(cdc)
 print(lut)
 
 with open(inputfile, "rb") as obsfile:
-	data=obstore.obstore_read_real(obsfile,pos,size,fmtkey="d")
+	data=obstore.obstore_read_real(obsfile,pos,size,fmtkey=fmtkey)
 	#data=obstore.obstore_read_data_record(obsfile,1,[1,2,3])
 print(data)
 

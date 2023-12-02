@@ -674,11 +674,15 @@ def obstore_write_subtype_lut42(obsfile,irow,val=NAN_VAL_INT):
     obstore_write_subhead_segment(obsfile,"lut",irow,42,1,int(val))
 
 def obstore_write_subtype_lut_zero(obsfile,irow,fillval=NAN_VAL_INT,lutsize=LUTSIZE):
-    obstore_write_subhead_segment(obsfile,"lut",irow,20,2,[fillval,fillval])
-    obstore_write_subhead_segment(obsfile,"lut",irow,23,6,[fillval,fillval,fillval,fillval,fillval,fillval])
-    obstore_write_subhead_segment(obsfile,"lut",irow,31,7,[fillval,fillval,fillval,fillval,fillval,fillval,fillval])
-    obstore_write_subhead_segment(obsfile,"lut",irow,41,1,int(fillval))
-    obstore_write_subhead_segment(obsfile,"lut",irow,43,20,[fillval,fillval,fillval,fillval,fillval,fillval,fillval,fillval,fillval,fillval,fillval,fillval,fillval,fillval,fillval,fillval,fillval,fillval,fillval,fillval])
+    obstore_write_subhead_segment(obsfile,"lut",irow,13,2,[fillval,fillval])
+    obstore_write_subhead_segment(obsfile,"lut",irow,16,2,[fillval,fillval])
+    obstore_write_subhead_segment(obsfile,"lut",irow,20,2,[0,0])
+    obstore_write_subhead_segment(obsfile,"lut",irow,22,1,int(fillval))
+    obstore_write_subhead_segment(obsfile,"lut",irow,23,6,[0,0,0,0,0,0])
+    obstore_write_subhead_segment(obsfile,"lut",irow,31,7,[0,0,0,0,0,0,0])
+    obstore_write_subhead_segment(obsfile,"lut",irow,41,1,0))
+    obstore_write_subhead_segment(obsfile,"lut",irow,43,20,[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0])
+    obstore_write_subhead_segment(obsfile,"lut",irow,65,1,int(fillval))
     laseglen=int(lutsize-71)
     obstore_write_subhead_segment(obsfile,"lut",irow,71,laseglen,[fillval]*laseglen)
 
