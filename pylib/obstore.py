@@ -680,7 +680,7 @@ def obstore_write_subtype_lut_zero(obsfile,irow,fillval=NAN_VAL_INT,lutsize=LUTS
     obstore_write_subhead_segment(obsfile,"lut",irow,22,1,int(fillval))
     obstore_write_subhead_segment(obsfile,"lut",irow,23,6,[0,0,0,0,0,0])
     obstore_write_subhead_segment(obsfile,"lut",irow,31,7,[0,0,0,0,0,0,0])
-    obstore_write_subhead_segment(obsfile,"lut",irow,41,1,0))
+    obstore_write_subhead_segment(obsfile,"lut",irow,41,1,0)
     obstore_write_subhead_segment(obsfile,"lut",irow,43,20,[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0])
     obstore_write_subhead_segment(obsfile,"lut",irow,65,1,int(fillval))
     laseglen=int(lutsize-71)
