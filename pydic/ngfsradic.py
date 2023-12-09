@@ -26,7 +26,7 @@ def filename(element,year,month,day=None):
     fileprefix="ngfs_reanl_"
     fmtstr="%Y%m%d%H"
     startdate=obslib.fmtdatetime(fmtstr, year=year, month=month, day=day, hour=00)
-    daylast=obslib.monthendday(year=year, month=month, day=day, hour=00)
+    daylast=obslib.lastday(year=year, month=month)
     enddate=obslib.fmtdatetime(fmtstr, year=year, month=month, day=daylast, hour=18)
     datafile = {
         "gph" : "%s/%s"%(ngfsrapath,fileprefix+"HR_HGT-prl_"+str(startdate)+"-"+str(enddate)+".nc"),

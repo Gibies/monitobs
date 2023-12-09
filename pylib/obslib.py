@@ -453,7 +453,7 @@ def fmtdatetime(fmtstr,date=None, year=None, month=None, day=None, hour=00, minu
 	dtfmted=DT.strftime(fmtstr)
 	return(dtfmted)
 
-def monthendday(date=None, year=None, month=None, day=None, hour=00, minute=00, second=00):
+def lastday(date=None, year=None, month=None, day=None, hour=00, minute=00, second=00):
     if date is not None :
         datestr=str(date)
         year=int(datestr[0:4])
@@ -466,10 +466,8 @@ def monthendday(date=None, year=None, month=None, day=None, hour=00, minute=00, 
         day=int(day)
     nxtmon=(month+1)
     nxtmonday=pydate(date,year,nxtmon,day,hour,minute,second)
-    print(nxtmonday.strftime("%Y%m%d"))
     oneday=datetime.timedelta(days=1)
     dtlast=(nxtmonday-oneday)
-    print(dtlast.strftime("%Y%m%d"))
     return(dtlast.day)
 
  
