@@ -20,22 +20,22 @@ obs_index_nml="obs_index_nml"
 nmlfile="%s/%s" % (OBSNML,obs_index_nml)
 import obslib
 import obsdic
-import ngfsradic
-import ncepradic
-import imdaadic
+import ngfsradic as datadic
+#import ncepradic as datadic
+#import imdaadic as datadic
 
 
-
-def getdata(Year,var="time",element=None):
-	if element is None: element=var
-	data=ngfsradic.getdata(Year,var,element)
-#	data=ncepradic.getdata(Year,var,element)
-#	data=imdaadic.getdata(Year,var,element)
-	return(data)
-
-def getunits(Year,var="time",element=None):
+def getdata(var="time",element=None,year=None,month=None,day=None):
     if element is None: element=var
-    units=ngfsradic.getunits(Year,var,element)
+    print(var,element)
+    with netCDF4.Dataset(datadic.filename(element,year,month,day), 'r',  format='NETCDF4_CLASSIC') as fileptr : 
+        data = fileptr.variables[datavar[var]][:]
+    return(data)
+    
+def getunits(var="time",element=None,year=None,month=None,day=None):
+    if element is None: element=var
+    with netCDF4.Dataset(datadic.filename(element,year,month,day), 'r',  format='NETCDF4_CLASSIC') as fileptr : 
+        units = fileptr.variables[datavar[var]].units
     return(units)
 
 def getfiledim(Tnow,element=None):
@@ -54,3 +54,17 @@ def getfiledim(Tnow,element=None):
             "lev": lev,
             }
     return(Year,filedim)
+
+
+
+#def getdata(Year,var="time",element=None,year=None,month=None,day=None):
+#	if element is None: element=var
+#	data=ngfsradic.getdata(Year,var,element)
+#	data=ncepradic.getdata(Year,var,element)
+#	data=imdaadic.getdata(Year,var,element)
+#	return(data)
+#
+#def getunits(Year,var="time",element=None):
+#    if element is None: element=var
+#    units=ngfsradic.getunits(Year,var,element)
+#    return(units)

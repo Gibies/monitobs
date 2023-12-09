@@ -884,18 +884,18 @@ def symulate_subtype(obs_info,obstypedic=None,maxindx=MAXINDX,temp=[],rhum=[],uw
 	print(DT)
         Year,filedim=nature.getfiledim(DT)
         #lev=nature.getdata(Year,"lev")
-        gph=nature.getdata(Year,"gph")
-        temp=nature.getdata(Year,"tmp")
-        rhum=nature.getdata(Year,"rhum")  
-        u10m=nature.getdata(Year,"u10m")
-        v10m=nature.getdata(Year,"v10m")
-        slp=nature.getdata(Year,"slp")
-        psfc=nature.getdata(Year,"psfc")
-        t2m=nature.getdata(Year,"t2m")
-        rh2m=nature.getdata(Year,"rh2m")  
-        sh2m=nature.getdata(Year,"sh2m") 
-        #uwnd=nature.getdata(Year,"uwnd")
-        vwnd=nature.getdata(Year,"vwnd")
+        gph=nature.getdata("gph",year=Year)
+        temp=nature.getdata("tmp",year=Year)
+        rhum=nature.getdata("rhum",year=Year)  
+        u10m=nature.getdata("u10m",year=Year)
+        v10m=nature.getdata("v10m",year=Year)
+        slp=nature.getdata("slp",year=Year)
+        psfc=nature.getdata("psfc",year=Year)
+        t2m=nature.getdata("t2m",year=Year)
+        rh2m=nature.getdata("rh2m",year=Year)  
+        sh2m=nature.getdata("sh2m",year=Year) 
+        #uwnd=nature.getdata("uwnd",year=Year)
+        vwnd=nature.getdata("vwnd",year=Year)
     
 #    if subtype is 22501 : 
 #        altnam="HeightCOG"
@@ -913,7 +913,7 @@ def symulate_subtype(obs_info,obstypedic=None,maxindx=MAXINDX,temp=[],rhum=[],uw
             DT=obslib.getdatetime(DT,data,indx)
             if Year != DT.year:
                 Year,filedim=getfiledim(DT)
-                gph=nature.getdata(Year,"gph")
+                gph=nature.getdata("gph",year=Year)
             if indx in [1]:
                 findex=fileindex(data,indx,filedim,gph,altnam,DT)
             else:
