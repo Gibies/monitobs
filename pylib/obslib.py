@@ -465,6 +465,9 @@ def lastday(date=None, year=None, month=None, day=None, hour=00, minute=00, seco
         if day is None: day=01
         day=int(day)
     nxtmon=(month+1)
+    if nxtmon > 12:
+	nxtmon=01
+	year=(year+1)
     nxtmonday=pydate(date,year,nxtmon,day,hour,minute,second)
     oneday=datetime.timedelta(days=1)
     dtlast=(nxtmonday-oneday)
