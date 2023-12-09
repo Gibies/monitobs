@@ -467,7 +467,7 @@ def monthendday(date=None, year=None, month=None, day=None, hour=00, minute=00, 
     nxtmon=(month+1)
     nxtmonday=pydate(date,year,nxtmon,day,hour,minute,second)
     print(nxtmonday.strftime("%Y%m%d")
-    dtlast=(nxtmonday-datetime.timedelta(days=-1)
+    dtlast=(nxtmonday-datetime.timedelta(days=-1))
     print(dtlast.strftime("%Y%m%d")
     return(dtlast.day)
 
