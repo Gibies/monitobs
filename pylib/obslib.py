@@ -444,7 +444,7 @@ def pydate(date=None, year=None, month=None, day=None, hour=00, minute=00, secon
     return(pydatetime(year,month,day,hour,minute,second))
   
 def fmtdatetime(fmtstr,date=None, year=None, month=None, day=None, hour=00, minute=00, second=00):
-	DT=pydate(date,year,month,day,hour,minite,second)
+	DT=pydate(date,year,month,day,hour,minute,second)
 	dtfmted=DT.strftime(fmtstr)
 	return(dtfmted)
  
