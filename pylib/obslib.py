@@ -452,6 +452,25 @@ def fmtdatetime(fmtstr,date=None, year=None, month=None, day=None, hour=00, minu
 	DT=pydate(date,year,month,day,hour,minute,second)
 	dtfmted=DT.strftime(fmtstr)
 	return(dtfmted)
+
+def monthendday(date=None, year=None, month=None, day=None, hour=00, minute=00, second=00):
+    if date is not None :
+        datestr=str(date)
+        year=int(datestr[0:4])
+        month=int(datestr[4:6])
+        day=int(datestr[6:8])
+    else:
+        year=int(year)
+        month=int(month)
+        if day is None: day=01
+        day=int(day)
+    nxtmon=(month+1)
+    nxtmonday=pydate(date,year,nxtmon,day,hour,minute,second)
+    print(nxtmonday.strftime("%Y%m%d")
+    dtlast=(nxtmonday-datetime.timedelta(days=-1)
+    print(dtlast.strftime("%Y%m%d")
+    return(dtlast.day)
+
  
 def cylcdate_to_pydate(cylc):
 	year=int(cylc[0:4])
