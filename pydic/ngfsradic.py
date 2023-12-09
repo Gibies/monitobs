@@ -24,26 +24,29 @@ ngfsrapath="/home/gibies/data/ngfsra"
 
 def filename(element,year,month,day=None):
     fileprefix="ngfs_reanl_"
+    fmtstr="%Y%m%d%H"
+    startdate=obslib.fmtdatetime(fmtstr, year=year, month=month, day=day, hour=00)
+    enddate=obslib.fmtdatetime(fmtstr, year=year, month=month, day=day, hour=18)
     datafile = {
-        "gph" : "%s/%s"%(ngfsrapath,fileprefix+"HR_HGT-prl_"+str(year)+str(month)+"0100-"+str(year)+str(month)+"3118.nc"),
-        "tmp" : "%s/%s"%(ngfsrapath,fileprefix+"HR_TMP-prl_"+str(year)+str(month)+"0100-"+str(year)+str(month)+"3118.nc"),
-        "shum" : "%s/%s"%(ngfsrapath,fileprefix+"HR_SPFH-2m-agl_"+str(year)+str(month)+"0100-"+str(year)+str(month)+"3118.nc"),
-        "rhum" : "%s/%s"%(ngfsrapath,fileprefix+"HR_RH-prl_"+str(year)+str(month)+"0100-"+str(year)+str(month)+"3118.nc"),
-        "uwnd" : "%s/%s"%(ngfsrapath,fileprefix+"HR_UGRD-prl_"+str(year)+str(month)+"0100-"+str(year)+str(month)+"3118.nc"),
-        "vwnd" : "%s/%s"%(ngfsrapath,fileprefix+"HR_VGRD-prl_"+str(year)+str(month)+"0100-"+str(year)+str(month)+"3118.nc"),
-        "tsfc" : "%s/%s"%(ngfsrapath,fileprefix+"HR_TMP-2m-agl_"+str(year)+str(month)+"0100-"+str(year)+str(month)+"3118.nc"),
-        "rhsfc" : "%s/%s"%(ngfsrapath,fileprefix+"HR_RH-2m-agl_"+str(year)+str(month)+"0100-"+str(year)+str(month)+"3118.nc"),
-        "usfc" : "%s/%s"%(ngfsrapath,fileprefix+"HR_UGRD-2m-agl_"+str(year)+str(month)+"0100-"+str(year)+str(month)+"3118.nc"),
-        "vsfc" : "%s/%s"%(ngfsrapath,fileprefix+"HR_VGRD-2m-agl_"+str(year)+str(month)+"0100-"+str(year)+str(month)+"3118.nc"),
-        "psfc" : "%s/%s"%(ngfsrapath,fileprefix+"HR_PRES-sfc_"+str(year)+str(month)+"0100-"+str(year)+str(month)+"3118.nc"),
-        "slp" : "%s/%s"%(ngfsrapath,fileprefix+"HR_PRES-msl_"+str(year)+str(month)+"0100-"+str(year)+str(month)+"3118.nc"),
-        "t2m" : "%s/%s"%(ngfsrapath,fileprefix+"HR_TMP-2m-agl_"+str(year)+str(month)+"0100-"+str(year)+str(month)+"3118.nc"),
-        "rh2m" : "%s/%s"%(ngfsrapath,fileprefix+"HR_RH-2m-agl_"+str(year)+str(month)+"0100-"+str(year)+str(month)+"3118.nc"),
-        "sh2m" : "%s/%s"%(ngfsrapath,fileprefix+"HR_SPFH-2m-agl_"+str(year)+str(month)+"0100-"+str(year)+str(month)+"3118.nc"),
-        "u2m" : "%s/%s"%(ngfsrapath,fileprefix+"HR_GUST-sfc_"+str(year)+str(month)+"0100-"+str(year)+str(month)+"3118.nc"),
-        "v2m" : "%s/%s"%(ngfsrapath,fileprefix+"HR_GUST-sfc_"+str(year)+str(month)+"0100-"+str(year)+str(month)+"3118.nc"),
-        "u10m" : "%s/%s"%(ngfsrapath,fileprefix+"HR_UGRD-10m-agl_"+str(year)+str(month)+"0100-"+str(year)+str(month)+"3118.nc"),
-        "v10m" : "%s/%s"%(ngfsrapath,fileprefix+"HR_VGRD-10m-agl_"+str(year)+str(month)+"0100-"+str(year)+str(month)+"3118.nc"),
+        "gph" : "%s/%s"%(ngfsrapath,fileprefix+"HR_HGT-prl_"+str(startdate)+"-"+str(enddate)+".nc"),
+        "tmp" : "%s/%s"%(ngfsrapath,fileprefix+"HR_TMP-prl_"+str(startdate)+"-"+str(enddate)+".nc"),
+        "shum" : "%s/%s"%(ngfsrapath,fileprefix+"HR_SPFH-2m-agl_"+str(startdate)+"-"+str(enddate)+".nc"),
+        "rhum" : "%s/%s"%(ngfsrapath,fileprefix+"HR_RH-prl_"+str(startdate)+"-"+str(enddate)+".nc"),
+        "uwnd" : "%s/%s"%(ngfsrapath,fileprefix+"HR_UGRD-prl_"+str(startdate)+"-"+str(enddate)+".nc"),
+        "vwnd" : "%s/%s"%(ngfsrapath,fileprefix+"HR_VGRD-prl_"+str(startdate)+"-"+str(enddate)+".nc"),
+        "tsfc" : "%s/%s"%(ngfsrapath,fileprefix+"HR_TMP-2m-agl_"+str(startdate)+"-"+str(enddate)+".nc"),
+        "rhsfc" : "%s/%s"%(ngfsrapath,fileprefix+"HR_RH-2m-agl_"+str(startdate)+"-"+str(enddate)+".nc"),
+        "usfc" : "%s/%s"%(ngfsrapath,fileprefix+"HR_UGRD-2m-agl_"+str(startdate)+"-"+str(enddate)+".nc"),
+        "vsfc" : "%s/%s"%(ngfsrapath,fileprefix+"HR_VGRD-2m-agl_"+str(startdate)+"-"+str(enddate)+".nc"),
+        "psfc" : "%s/%s"%(ngfsrapath,fileprefix+"HR_PRES-sfc_"+str(startdate)+"-"+str(enddate)+".nc"),
+        "slp" : "%s/%s"%(ngfsrapath,fileprefix+"HR_PRES-msl_"+str(startdate)+"-"+str(enddate)+".nc"),
+        "t2m" : "%s/%s"%(ngfsrapath,fileprefix+"HR_TMP-2m-agl_"+str(startdate)+"-"+str(enddate)+".nc"),
+        "rh2m" : "%s/%s"%(ngfsrapath,fileprefix+"HR_RH-2m-agl_"+str(startdate)+"-"+str(enddate)+".nc"),
+        "sh2m" : "%s/%s"%(ngfsrapath,fileprefix+"HR_SPFH-2m-agl_"+str(startdate)+"-"+str(enddate)+".nc"),
+        "u2m" : "%s/%s"%(ngfsrapath,fileprefix+"HR_GUST-sfc_"+str(startdate)+"-"+str(enddate)+".nc"),
+        "v2m" : "%s/%s"%(ngfsrapath,fileprefix+"HR_GUST-sfc_"+str(startdate)+"-"+str(enddate)+".nc"),
+        "u10m" : "%s/%s"%(ngfsrapath,fileprefix+"HR_UGRD-10m-agl_"+str(startdate)+"-"+str(enddate)+".nc"),
+        "v10m" : "%s/%s"%(ngfsrapath,fileprefix+"HR_VGRD-10m-agl_"+str(startdate)+"-"+str(enddate)+".nc"),
         }
     return(datafile[element])
 

@@ -442,7 +442,12 @@ def pydate(date=None, year=None, month=None, day=None, hour=00, minute=00, secon
     minute=int(minute)
     second=int(second)
     return(pydatetime(year,month,day,hour,minute,second))
-   
+  
+def fmtdatetime(fmtstr,date=None, year=None, month=None, day=None, hour=00, minute=00, second=00):
+	DT=pydate(date,year,month,day,hour,minite,second)
+	dtfmted=DT.strftime(fmtstr)
+	return(dtfmted)
+ 
 def cylcdate_to_pydate(cylc):
 	year=int(cylc[0:4])
 	month=int(cylc[4:6])
