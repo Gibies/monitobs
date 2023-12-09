@@ -35,7 +35,7 @@ import symobs
 import obsplot
 import sqlobs
 #import sqlodb
-#import obsgui
+import obsgui
 import matplotlib
 matplotlib.use('Agg')
 import matplotlib.pyplot as pyplot

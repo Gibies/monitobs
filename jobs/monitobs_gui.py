@@ -7,23 +7,27 @@ Created on Wed Jan 30 15:17:25 2019
 """
 import sys
 import os
+USER=os.environ.get('USER',"myhome")
 CURR_PATH=os.path.dirname(os.path.abspath(__file__))
-CYLCROOT=os.path.dirname(os.path.dirname(CURR_PATH))
-CYLCPATH=os.environ.get('CYLCPATH',CYLCROOT)
-MONITOBS=os.environ.get('MONITOBS',CYLCPATH+"/modules/monitobs")
-OBSLIB=os.environ.get('OBSLIB',MONITOBS+"/pylib")
+PKGHOME=os.path.dirname(CURR_PATH)
+OBSLIB=os.environ.get('OBSLIB',PKGHOME+"/pylib")
 sys.path.append(OBSLIB)
+OBSDIC=os.environ.get('OBSDIC',PKGHOME+"/pydic")
+sys.path.append(OBSDIC)
+OBSNML=os.environ.get('OBSNML',PKGHOME+"/nml")
+sys.path.append(OBSNML)
+
 import obsmod
 
 
-obs_index_nml="${MONITOBS}/nml/obs_index_nml"
-odb_index_nml="${MONITOBS}/nml/odb_index_nml"
+obs_index_nml="${OBSNML}/obs_index_nml"
+odb_index_nml="${OBSNML}/odb_index_nml"
 
-ROSE_SUITE_DIR=CYLCPATH
+ROSE_SUITE_DIR=""
 #obstore_file=ROSE_SUITE_DIR+"/share/cycle/20190110T0000Z/gl_obstore/Surface.obstore"
 #odb_file=ROSE_SUITE_DIR+"/share/cycle/20190110T0000Z/glu_odb2/surface.odb"
 
-ascii_out=CYLCPATH+"/share/data/test_out.txt"
+ascii_out="/scratch/"+USER+"/log/monitobs/test_out.txt"
 
 obj=obsmod.obsguiobj(ROSE_SUITE_DIR=ROSE_SUITE_DIR,OUTFILE=ascii_out)
 
