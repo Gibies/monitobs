@@ -20,6 +20,7 @@ obs_index_nml="obs_index_nml"
 nmlfile="%s/%s" % (OBSNML,obs_index_nml)
 import obslib
 import obsdic
+import netCDF4
 import ngfsradic as datadic
 #import ncepradic as datadic
 #import imdaadic as datadic
