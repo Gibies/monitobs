@@ -42,11 +42,12 @@ def getunits(var="time",element=None,year=None,month=None,day=None):
 def getfiledim(Tnow,element=None):
     if element is None: element="tmp"
     Year=Tnow.year
-    time=getdata("time",element,year=Year)
-    time_units=getunits("time",element,year=Year)
-    lat=getdata("lat",element,year=Year)
-    lon=getdata("lon",element,year=Year)
-    lev=getdata("lev",element,year=Year)
+    Month=Tnow.month
+    time=getdata("time",element,year=Year,month=Month)
+    time_units=getunits("time",element,year=Year,month=Month)
+    lat=getdata("lat",element,year=Year,month=Month)
+    lon=getdata("lon",element,year=Year,month=Month)
+    lev=getdata("lev",element,year=Year,month=Month)
     filedim={
             "time":time,
             "time_units":time_units,
