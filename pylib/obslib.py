@@ -432,12 +432,16 @@ def cylcdate_get_hour(cylc):
 def pydatetime(year,month,day,hour=0,minute=0,second=0):
     return(datetime.datetime(int(year),int(month),int(day),int(hour),int(minute),int(second)))
 
-def pydate(date=None, year=None, month=None, day=None, hour=00, minute=00, second=00):
+def pydate(date=None, year=None, month=None, day=01, hour=00, minute=00, second=00):
     if date is not None :
 	datestr=str(date)
 	year=int(datestr[0:4])
 	month=int(datestr[4:6])
 	day=int(datestr[6:8])
+    else:
+	year=int(year)
+	month=int(month)
+	day=int(day)
     hour=int(hour)
     minute=int(minute)
     second=int(second)
