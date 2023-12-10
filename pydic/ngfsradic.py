@@ -25,9 +25,14 @@ ngfsrapath="/home/gibies/data/ngfsra"
 def filename(element,year,month,day=None):
     fileprefix="ngfs_reanl_"
     fmtstr="%Y%m%d%H"
-    startdate=obslib.fmtdatetime(fmtstr, year=year, month=month, day=day, hour=00)
-    daylast=obslib.lastday(year=year, month=month)
-    enddate=obslib.fmtdatetime(fmtstr, year=year, month=month, day=daylast, hour=18)
+    if day is None:
+    	startdate=obslib.fmtdatetime(fmtstr, year=year, month=month, day=01, hour=00)
+    	daylast=obslib.lastday(year=year, month=month)
+    	enddate=obslib.fmtdatetime(fmtstr, year=year, month=month, day=daylast, hour=18)
+    else:
+    	startdate=obslib.fmtdatetime(fmtstr, year=year, month=month, day=day, hour=00)
+    	enddate=obslib.fmtdatetime(fmtstr, year=year, month=month, day=day, hour=18)
+
     datafile = {
         "gph" : "%s/%s"%(ngfsrapath,fileprefix+"HR_HGT-prl_"+str(startdate)+"-"+str(enddate)+".nc"),
         "tmp" : "%s/%s"%(ngfsrapath,fileprefix+"HR_TMP-prl_"+str(startdate)+"-"+str(enddate)+".nc"),
