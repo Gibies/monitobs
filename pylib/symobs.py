@@ -884,18 +884,18 @@ def symulate_subtype(obs_info,obstypedic=None,maxindx=MAXINDX,temp=[],rhum=[],uw
 	print(DT)
         Year,filedim=nature.getfiledim(DT)
         #lev=nature.getdata(Year,"lev")
-        gph=nature.getdata("gph",year=Year,month=Month,day=Day,hour=Hour,minute=Minute)
-        temp=nature.getdata("tmp",year=Year,month=Month,day=Day,hour=Hour,minute=Minute)
-        rhum=nature.getdata("rhum",year=Year,month=Month,day=Day,hour=Hour,minute=Minute)  
-        u10m=nature.getdata("u10m",year=Year,month=Month,day=Day,hour=Hour,minute=Minute)
-        v10m=nature.getdata("v10m",year=Year,month=Month,day=Day,hour=Hour,minute=Minute)
-        slp=nature.getdata("slp",year=Year,month=Month,day=Day,hour=Hour,minute=Minute)
-        psfc=nature.getdata("psfc",year=Year,month=Month,day=Day,hour=Hour,minute=Minute)
-        t2m=nature.getdata("t2m",year=Year,month=Month,day=Day,hour=Hour,minute=Minute)
-        rh2m=nature.getdata("rh2m",year=Year,month=Month,day=Day,hour=Hour,minute=Minute)  
-        sh2m=nature.getdata("sh2m",year=Year,month=Month,day=Day,hour=Hour,minute=Minute) 
-        #uwnd=nature.getdata("uwnd",year=Year,month=Month,day=Day,hour=Hour,minute=Minute)
-        vwnd=nature.getdata("vwnd",year=Year,month=Month,day=Day,hour=Hour,minute=Minute)
+        gph=nature.getdata("gph",year=Year,month=Month,day=Day)
+        temp=nature.getdata("tmp",year=Year,month=Month,day=Day)
+        rhum=nature.getdata("rhum",year=Year,month=Month,day=Day)  
+        u10m=nature.getdata("u10m",year=Year,month=Month,day=Day)
+        v10m=nature.getdata("v10m",year=Year,month=Month,day=Day)
+        slp=nature.getdata("slp",year=Year,month=Month,day=Day)
+        psfc=nature.getdata("psfc",year=Year,month=Month,day=Day)
+        t2m=nature.getdata("t2m",year=Year,month=Month,day=Day)
+        rh2m=nature.getdata("rh2m",year=Year,month=Month,day=Day)  
+        sh2m=nature.getdata("sh2m",year=Year,month=Month,day=Day) 
+        #uwnd=nature.getdata("uwnd",year=Year,month=Month,day=Day)
+        vwnd=nature.getdata("vwnd",year=Year,month=Month,day=Day)
     
 #    if subtype is 22501 : 
 #        altnam="HeightCOG"
@@ -913,7 +913,7 @@ def symulate_subtype(obs_info,obstypedic=None,maxindx=MAXINDX,temp=[],rhum=[],uw
             DT=obslib.getdatetime(DT,data,indx)
             if Year != DT.year:
                 Year,filedim=getfiledim(DT)
-                gph=nature.getdata("gph",year=Year,month=Month,day=Day,hour=Hour,minute=Minute)
+                gph=nature.getdata("gph",year=Year,month=Month,day=Day)
             if indx in [1]:
                 findex=fileindex(data,indx,filedim,gph,altnam,DT)
             else:
