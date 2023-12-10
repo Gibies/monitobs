@@ -43,11 +43,12 @@ def getfiledim(Tnow,element=None):
     if element is None: element="tmp"
     Year=Tnow.year
     Month=Tnow.month
-    time=getdata("time",element,year=Year,month=Month)
-    time_units=getunits("time",element,year=Year,month=Month)
-    lat=getdata("lat",element,year=Year,month=Month)
-    lon=getdata("lon",element,year=Year,month=Month)
-    lev=getdata("lev",element,year=Year,month=Month)
+    Day=Tnow.day
+    time=getdata("time",element,year=Year,month=Month,day=Day)
+    time_units=getunits("time",element,year=Year,month=Month,day=Day)
+    lat=getdata("lat",element,year=Year,month=Month,day=Day)
+    lon=getdata("lon",element,year=Year,month=Month,day=Day)
+    lev=getdata("lev",element,year=Year,month=Month,day=Day)
     filedim={
             "time":time,
             "time_units":time_units,
