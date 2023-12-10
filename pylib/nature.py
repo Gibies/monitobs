@@ -36,7 +36,7 @@ def getdata(var="time",element=None,year=None,month=None,day=None):
 def getunits(var="time",element=None,year=None,month=None,day=None):
     if element is None: element=var
     with netCDF4.Dataset(datadic.filename(element,year,month,day), 'r',  format='NETCDF4_CLASSIC') as fileptr : 
-        units = fileptr.variables[datavar[var]].units
+        units = fileptr.variables[datadic.datavar[var]].units
     return(units)
 
 def getfiledim(Tnow,element=None):
