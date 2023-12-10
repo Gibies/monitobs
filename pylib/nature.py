@@ -30,7 +30,7 @@ def getdata(var="time",element=None,year=None,month=None,day=None):
     if element is None: element=var
     print(var,element)
     with netCDF4.Dataset(datadic.filename(element,year,month,day), 'r',  format='NETCDF4_CLASSIC') as fileptr : 
-        data = fileptr.variables[datavar[var]][:]
+        data = fileptr.variables[datadic.datavar[var]][:]
     return(data)
     
 def getunits(var="time",element=None,year=None,month=None,day=None):
