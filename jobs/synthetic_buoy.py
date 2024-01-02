@@ -28,10 +28,14 @@ today = datetime.date.today()
 todate=today.strftime("%Y%m%d")
 syn_buoy_loc=OBSNML+"/osse_synbuoy.nml"
 REFDATE=os.environ.get('PDY',"20220101")	#todate
-
 TDATE=os.environ.get('PDY',"20220101")
 Tnode=obsmod.pydate(TDATE)
 datacfldrname=obsmod.cylcdate(Tnode)
+ROSE_DATAC=os.environ.get('ROSE_DATAC',"/home/"+USER+"/data/research/osse_buoy"+datacfldrname)
+outpath=ROSE_DATAC+"/glm_obstore"
+plot_idata=ROSE_DATAC+"/loc_plot_data_in"
+plot_odata=ROSE_DATAC+"/loc_plot_data_out"
+
 #inpath="/home/gibies/init_cdas/obs_atmos/"+obsmod.cylcdate(obsmod.pydate(REFDATE))
 inpath="/home/umprod/cylc-run/PS43_Hybrid/share/cycle/"+datacfldrname+"/glm_obstore"
 glodat="/home/gibies/data/ngfsra"
@@ -40,14 +44,11 @@ maxindx=512
 obstypelist=["surface"]
 subtypelist=[10300,]	 #, 10800, 11100]
 #obstypelist=["sonde"]
-outpath="/home/"+USER+"/data/research/osse_buoy"
 
 obsmod.symobs_buoy_nio(Tnode,outpath,inpath,nmlpath=OBSNML,maxindx=maxindx,obstypelist=obstypelist,subtypelist=subtypelist,synbuoyloc=syn_buoy_loc)
 
-plotpath="/home/"+USER+"/plots/research/osse_buoy/infile"
-#obsmod.obs_latlon_plot(inpath,plotpath,nmlpath=OBSNML,maxindx=maxindx,obstypelist=obstypelist)
-plotpath="/home/"+USER+"/plots/research/osse_buoy/outfile"
-obsmod.obs_latlon_plot(outpath,plotpath,nmlpath=OBSNML,maxindx=maxindx,obstypelist=obstypelist)
+obsmod.obs_latlon_plot(inpath,plot_idata,nmlpath=OBSNML,maxindx=maxindx,obstypelist=obstypelist)
+obsmod.obs_latlon_plot(outpath,plot_odata,nmlpath=OBSNML,maxindx=maxindx,obstypelist=obstypelist)
 
 #obstype=obstypelist[0]
 #obstypedic=obsdic.obstype[obstype]

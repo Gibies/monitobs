@@ -1229,12 +1229,16 @@ def getldc(elenam,elist=pandas.DataFrame(),obsfile=None,indx=None,nmlfile=None,m
             return(ldc[i])
 
 def frame_data_batch(obsfile,nmlfile,indx,elenams,maxindx=MAXINDX):
+    print("inside frame_data_batch function of obstore")
+    print(elenams)
     dataframelist=[None]*len(elenams)
     for i,element in enumerate(elenams):
         if diaglev > 0 : errprint(element)
         dataframelist[i]=obstore_read_data_element(obsfile,nmlfile,indx,element,maxindx=maxindx)
 	#print(dataframelist[i])
-    return(obslib.obsdfcat(dataframelist))
+    data=obslib.obsdfcat(dataframelist)
+    print(data)
+    return(data)
 
 def erase_data_batch(obsfile,nmlfile,subtype,indx,maxindx=MAXINDX):
     if diaglev > 0 : errprint(subtype)

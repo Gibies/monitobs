@@ -2,7 +2,7 @@ PYSCRYPT=$(realpath $1)
 shift
 ARGS=$@
 
-module load gnu/python/3.9.1
+#gnu/python/3.9.1
 module load gnu/pandas/0.18.1
 module load gnu/utility/pynio/1.5.5
 module load gnu/pyngl/1.6.1

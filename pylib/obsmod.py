@@ -302,15 +302,15 @@ def print_obstore(obs_file,nmlfile=obs_nml,selectlist=[],querystring="",option=d
 
 def obs_latlon_plot(datapath,plotpath,nmlpath=OBSNML,maxindx=MAXINDX,obstypelist=[],fltrkey="subtype"):
     for obstype in obstypelist:
-	print(obstype)
-	obstypedic=obsdic.obstype[obstype]
-	filename=obstypedic["filename"]
-	data_file=datapath+"/"+filename
-	textfile=plotpath+"/"+obstype+".txt"
-	plotfile=plotpath+"/"+obstype+".png"
-	latlon_data=obstore_read_latlon(data_file,fltrkey=fltrkey,maxindx=maxindx)
-	obslib.obs_frame_ascii(latlon_data,textfile,option=diaglev)
-	figure1=obsplot.plot_latlon(latlon_data,plotfile,fltrkey=fltrkey)
+        print(obstype)
+        obstypedic=obsdic.obstype[obstype]
+        filename=obstypedic["filename"]
+        data_file=datapath+"/"+filename
+        textfile=plotpath+"/"+obstype+".txt"
+        plotfile=plotpath+"/"+obstype+".png"
+        latlon_data=obstore_read_latlon(data_file,fltrkey=fltrkey,maxindx=maxindx)
+        obslib.obs_frame_ascii(latlon_data,textfile,option=diaglev)
+        figure1=obsplot.plot_latlon(latlon_data,plotfile,fltrkey=fltrkey)
 
 def elenam_list(infile,indx=1,nmlfile=obs_nml):
 	elist=obstore.obstore_read_batch_elements(infile,indx,nmlfile)
@@ -318,29 +318,30 @@ def elenam_list(infile,indx=1,nmlfile=obs_nml):
 	return(element_list)
 
 def obstore_read_latlon(obs_file,fltrkey="subtype",nmlfile=obs_nml,option=diaglev,maxindx=None):
+    print("inside obstore_read_latlon function inside obsmod")
     #obstore.header_diffcheck(obs_file)
     data_list=[]
     with open(obs_file, "rb") as obsfile:
-	maxindx=obstore.obstore_read_header(obsfile,111,1)
-	print(maxindx)
-	maxindx=obstore.obstore_read_header(obsfile,116,1)
-	print(maxindx)
-	maxindx=obstore.obstore_read_header(obsfile,121,1)
-	print(maxindx)
-	if fltrkey in elenam_list(obsfile):
-	   selectlist=["Latitude","Longitude",fltrkey]
-	else:
-	   #selectlist=["Latitude","Longitude"]
-	   selectlist=[]
-	subtypelist=obstore.obstore_read_subtype(obsfile).flatten()
-	print(subtypelist)
-	for idx,subtype in enumerate(subtypelist[0:],start=1):
-	    print(idx,subtype)
-	    #print(obstore.obstore_read_batch_elements(obsfile,idx,nmlfile))
-	    data=sqlobs.query(obsfile,nmlfile,int(subtype),idx,selectlist=selectlist,maxindx=maxindx)
-	    data["subtype"]=pandas.Series([subtype for x in range(len(data.index)+1)]) 
-	    data_list=data_list+[data]
-	latlon_data=obslib.obs_merge_batch(data_list)
+        maxindx=obstore.obstore_read_header(obsfile,111,1)
+        print(maxindx)
+        maxindx=obstore.obstore_read_header(obsfile,116,1)
+        print(maxindx)
+        maxindx=obstore.obstore_read_header(obsfile,121,1)
+        print(maxindx)
+        if fltrkey in elenam_list(obsfile):
+           selectlist=["Latitude","Longitude",fltrkey]
+        else:
+           selectlist=["Latitude","Longitude"]
+        print(selectlist)
+        subtypelist=obstore.obstore_read_subtype(obsfile).flatten()
+        print(subtypelist)
+        for idx,subtype in enumerate(subtypelist[0:],start=1):
+            print(idx,subtype)
+            #print(obstore.obstore_read_batch_elements(obsfile,idx,nmlfile))
+            data=sqlobs.query(obsfile,nmlfile,int(subtype),idx,selectlist=selectlist,maxindx=maxindx)
+            data["subtype"]=pandas.Series([subtype for x in range(len(data.index)+1)]) 
+            data_list=data_list+[data]
+        latlon_data=obslib.obs_merge_batch(data_list)
     return(latlon_data)
 
 def plotallvar_obs(plotpath,infile,cylcdatestr,obstype,nmlfile=obs_nml,subtype_nmlfile=subtype_nml,fill=False):
@@ -411,24 +412,24 @@ def symobs_buoy_nio(Tnode,outpath,inpath,nmlpath,obstypelist=[],maxindx=MAXINDX,
     if len(obstypelist) == 0:
         obstypelist=obsdic.obstypelist
     for obstype in obstypelist:
-	infodic={}
-	infodic["obstype"] = obstype
-	infodic["syntype"] = [ 10300, ]
-	infodic["timeinfo"] = Tnode
-	infodic["synbuoyloc"] = synbuoyloc
-	infodic["array_weight"] = 2
-	infodic["latmin"] = -20.0
-	infodic["latmax"] = 30.0
-	infodic["lonmin"] = 30.0
-	infodic["lonmax"] = 120.0
-   	infodic["header_offset"] = 339
-    	infodic["lut_ncols"] = LUTSIZE
-    	infodic["maxindx"] = maxindx
-	infodic["inpath"] = inpath
-	infodic["outpath"] = outpath
-	infodic["nmlpath"] = nmlpath
-	infodic["subtypelist"] = subtypelist
-	#infodic["elistgroup"] = elistgroup
+        infodic={}
+        infodic["obstype"] = obstype
+        infodic["syntype"] = [ 10300, ]
+        infodic["timeinfo"] = Tnode
+        infodic["synbuoyloc"] = synbuoyloc
+        infodic["array_weight"] = 2
+        infodic["latmin"] = -20.0
+        infodic["latmax"] = 30.0
+        infodic["lonmin"] = 30.0
+        infodic["lonmax"] = 120.0
+        infodic["header_offset"] = 339
+        infodic["lut_ncols"] = LUTSIZE
+        infodic["maxindx"] = maxindx
+        infodic["inpath"] = inpath
+        infodic["outpath"] = outpath
+        infodic["nmlpath"] = nmlpath
+        infodic["subtypelist"] = subtypelist
+        #infodic["elistgroup"] = elistgroup
         datagroup=symobs.sose_merge_data(infodic)
         ######################
         

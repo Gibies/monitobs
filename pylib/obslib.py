@@ -618,15 +618,21 @@ def dtlist_backward(dtend,tdelta,count):
 	dtli=dtlist(dtstart,tdelta,count)
 	return(dtli)
         
-def obs_merge_batch(dataframelist):
+def obs_merge_batch(dataframelist,filval=numpy.nan):
     print(dataframelist)
+    data=pandas.DataFrame()
     for df in dataframelist:
 	print(len(df))
 	print(df.columns)
-    return(pandas.concat(dataframelist, ignore_index=True))
+	data=data.append(df, ignore_index=True).fillna(filval)
+    #data=pandas.concat(dataframelist, ignore_index=True) doesnot work for hetrogenous batches
+    return(data)
 
 def obsdfcat(dataframelist):
-    return(pandas.concat(dataframelist, axis='columns'))
+    data=pandas.concat(dataframelist, axis='columns')
+    print("indide obsdfcat function of obslib")
+    print(data)
+    return(data)
 
 def to_string(data,dtype=None):
     if isinstance(data,numpy.ndarray):
