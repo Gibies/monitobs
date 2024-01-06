@@ -1678,6 +1678,7 @@ def obstore_write_batches(DT,obsfile,nmlfile,obsgroup,subtypegroup,elistgroup,da
 def totobs(obstore_info):
     	outpath = obstore_info["outpath"]
     	batch_obs_cnt = obstore_info["count_list"]
+	elistgroup = obstore_info["elistgroup"]
 	#############################################################################
 	with file(outpath+"/totobs.dat", "w") as datout:
 		fmt01 = '%15.0i'

@@ -26,9 +26,10 @@ indx	elename	fieldname	datatype
 25
 26
 27	SatID	satelliteIdentifier	iVal
+69	CloudOpticalThickness	
 130	ScanLine	scanLineNumber	iValues
 131	ScanPosition	fieldOfViewNumber	iValues
-133	SatView		
+133	SatView	viewingZenithAngle	rValues
 135	SolAzimth	solarAzimuth	rValues
 197	SatZenithAngle	satelliteZenithAngle	rValues
 257	ReceiptYear	typicalYear	iVal
@@ -37,10 +38,11 @@ indx	elename	fieldname	datatype
 260	ReceiptHour	typicalHour	iVal
 261	ReceiptMinute	typicalMinute	iVal
 335	SEVIRIBrightnessTemp	brightnessTemperature	rValues
+389	TCWV	totalColumnWaterVapour	rValues
 437	ODBObsType
 438	ODBCodeType
 512	BrgtsTmpr1	brightnessTemperature	rValues
 513	BrgtsTmpr2	brightnessTemperature	rValues
-538	rotangle	geometricRotationalAngle	rVal	
+538	rotangle	geometricRotationalAngle	rVal
 620	SEVIRICloudFreeToSurface	amountSegmentCloudFree	iValues
 621	SEVIRILowCloudCover	cloudAmountInSegment	iValues

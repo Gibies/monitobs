@@ -2,7 +2,7 @@
 
 from __future__ import print_function
 import traceback
-from eccodes import *
+#from eccodes import *
 
 import os,sys
 
