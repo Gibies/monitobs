@@ -1691,9 +1691,7 @@ def totobs(obstore_info):
 		fmt01 = '%15.0i'
     	   	numpy.savetxt(datout, X=[datlen,elecnt], delimiter="\n",fmt=fmt01)
 	############################################################################
-	datapos=obstore_set_batchpos(obsfile,batchcount,batch_data_offset=0,hdrsize=hdrsize,maxindx=maxindx,lutsize=lutsize)  
-	if filedata is None : filedata=file_data_create(datapos,datlen-1)
-	return(filedata)
+	return(obstore_info)
     
 def obstore_create_file(obstore_info,diagflg=0,callsignflag=False,filedata=None,):
     obstore_info=obstore_info_fix(obstore_info)
@@ -1743,25 +1741,11 @@ def obstore_create_file(obstore_info,diagflg=0,callsignflag=False,filedata=None,
     print("Writting "+str(batchcount)+" batches of data to "+ output_file)
     obslib.mkdir(output_file.rsplit("/",1)[0])
     if "count_list" in obstore_info:
-    	filedata=totobs(obstore_info)
+    	obstore_info=totobs(obstore_info)
     with open(output_file, "wb+") as obsfile:
 	hdrsize=obsheader.write_obsheader(obsfile,nmlfile,obsgroup,maxindx=maxindx,callsignflag=callsignflag)
-    	#obslib.binary_write(FIXHDR,1,obsfile)
-    	#obslib.binary_write(HDR20,1,obsfile)
-    	#obslib.binary_write(HDRgam,306,obsfile)
-	#############################################################################
-	#with file(outpath+"/totobs.dat", "w") as datout:
-	#	fmt01 = '%15.0i'
-    	#   	numpy.savetxt(datout, X=batch_obs_cnt, delimiter="\n",fmt=fmt01)
-	#obscnt=numpy.sum(batch_obs_cnt)
-	#elist=elistgroup[0]
-	#elecnt=numpy.sum(elist.LDC)
-	#datlen=obscnt*elecnt
-	#with file(outpath+"/cnt.dat", "w") as datout:
-	#	fmt01 = '%15.0i'
-    	#   	numpy.savetxt(datout, X=[datlen,elecnt], delimiter="\n",fmt=fmt01)
-	#datapos=obstore_set_batchpos(obsfile,batchcount,batch_data_offset=0,hdrsize=hdrsize,maxindx=maxindx,lutsize=lutsize) 
-	#if filedata is None : filedata=file_data_create(datapos,datlen-1)
+	datapos=obstore_set_batchpos(obsfile,batchcount,batch_data_offset=0,hdrsize=hdrsize,maxindx=maxindx,lutsize=lutsize) 
+	if filedata is None : filedata=file_data_create(datapos,datlen-1)
 	############################################################################
         filedata=obstore_write_batches(DT,obsfile,nmlfile,obsgroup,subtypegroup,elistgroup,datagroup,batchcount=batchcount,hdrsize=hdrsize,maxindx=maxindx,lutsize=lutsize,filedata=filedata,diagflg=diagflg,diagout=diagout,HlfTW=HlfTW,Tref=Tref,callsignflag=callsignflag)
 	statusflg=obstore_file_data_write(obsfile,filedata,textfile=textfile,datfile=datfile)
