@@ -1691,6 +1691,7 @@ def totobs(obstore_info):
 		fmt01 = '%15.0i'
     	   	numpy.savetxt(datout, X=[datlen,elecnt], delimiter="\n",fmt=fmt01)
 	############################################################################
+	obstore_info["datlen"]=datlen
 	return(obstore_info)
     
 def obstore_create_file(obstore_info,diagflg=0,callsignflag=False,filedata=None,):
@@ -1742,6 +1743,7 @@ def obstore_create_file(obstore_info,diagflg=0,callsignflag=False,filedata=None,
     obslib.mkdir(output_file.rsplit("/",1)[0])
     if "count_list" in obstore_info:
     	obstore_info=totobs(obstore_info)
+        datlen=obstore_info["datlen"]
     with open(output_file, "wb+") as obsfile:
 	hdrsize=obsheader.write_obsheader(obsfile,nmlfile,obsgroup,maxindx=maxindx,callsignflag=callsignflag)
 	datapos=obstore_set_batchpos(obsfile,batchcount,batch_data_offset=0,hdrsize=hdrsize,maxindx=maxindx,lutsize=lutsize) 

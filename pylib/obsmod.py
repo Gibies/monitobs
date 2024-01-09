@@ -70,8 +70,8 @@ def DataFrame():
 def reset_index(data):
 	return(obslib.reset_index(data))
 
-def ecbufr_decode_files(inpath,Tnode,slctstr,nmlfile,eleindxmaptbl=None,elemlist=None,subtype=None):
-	return(ecbufr.bufr_decode_files(inpath,Tnode,slctstr,nmlfile,eleindxmaptbl,elemlist=elemlist,subtype=subtype))
+def ecbufr_decode_files(inpath,Tnode,slctstr,nmlfile,eleindxmaptbl=None,elemlist=None,subtype=None,keyfieldlst=[]):
+	return(ecbufr.bufr_decode_files(inpath,Tnode,slctstr,nmlfile,eleindxmaptbl,elemlist=elemlist,subtype=subtype,keyfieldlst=keyfieldlst))
 
 def ncbufr_decode_files(inpath,Tnode,slctstr,nmlfile):
 	return(ncbufr.bufr_decode_files(inpath,Tnode,slctstr,nmlfile))

@@ -62,6 +62,7 @@ def get_ecbufr_fieldlist(elemlist=None,nmlfile=None,eleindxmaptbl=ECBUFRNML,subt
 		else:
 			elemlist=obslib.get_key_info(nmlfile,key="elemlist_"+str(subtyp))
 	if isinstance(elemlist, str): elemlist=numpy.fromstring(elemlist[1:-1],sep=',',dtype=int)
+	#print(elemlist)
 	elist=pandas.DataFrame(collections.Counter(elemlist).items(),columns=["elem","elcnt"])
 	elist=elist.sort_values(by=['elem'])
 	obs_fieldlist=[]
@@ -152,7 +153,7 @@ def bufr_decode(input_file,nmlfile,eleindxmaptbl=ECBUFRNML,elemlist=None,subtype
     f.close()
     return(data)
 
-def bufr_decode_files(inpath,Tnode,slctstr,nmlfile,eleindxmaptbl=None,elemlist=None,subtype=None):
+def bufr_decode_files(inpath,Tnode,slctstr,nmlfile,eleindxmaptbl=None,elemlist=None,subtype=None,keyfieldlst=[],minval=-99999.99,maxval=99999.99):
 	if eleindxmaptbl is None : eleindxmaptbl=ECBUFRNML
 	searchstring=inpath+"/"+slctstr
 	infiles=obslib.globlist(searchstring)
@@ -162,6 +163,9 @@ def bufr_decode_files(inpath,Tnode,slctstr,nmlfile,eleindxmaptbl=None,elemlist=N
 	for infile in infiles[:] :
 		print(infile)
 		data1=bufr_decode(infile,nmlfile,eleindxmaptbl=eleindxmaptbl,elemlist=elemlist,subtype=subtype)
+		for field in keyfieldlst:
+			data1=obslib.frame_window_filter(data1,item=field,minval=minval,maxval=maxval)
+		print(data1)
 		data=data.append(data1.copy())
 	data=obslib.reset_index(data)
 	#print(data)
