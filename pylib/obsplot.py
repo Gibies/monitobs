@@ -188,7 +188,7 @@ def plot_cyl(datalist,figure,plot,colors,area,alpha,parallels,meridians,tagmark=
         	plot = pyplot.annotate(lbltxt,color=colors[idx],fontsize=5, xy=(lblxpos[idx], lblypos[idx]), xycoords='axes fraction')
     plot = pyplot.annotate(tagmark,fontsize=5, xy=(0.01, 1.05), xycoords='axes fraction')
     plot = pyplot.annotate(text,fontsize=5, xy=textpos, xycoords='axes fraction')
-    plot = pyplot.annotate(title,fontsize=10, xy=(0.25,1.05), xycoords='axes fraction')
+    plot = pyplot.annotate(title,fontsize=10, xy=(0.25,1.15), xycoords='axes fraction')
     return(figure)
 
 def plot_ortho(data,figure,plot,colors,area,alpha,parallels,meridians,polelat,polelon):
