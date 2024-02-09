@@ -51,20 +51,20 @@ def binary_write(data,pos,obsfile,binwidth=8):
     if type(data) is int or type(data) is numpy.int64 :
     	dlen=1
     	fmtstr=struct.Struct(">"+str(dlen)+"q")
-        status=obsfile.write(fmtstr.pack(data))
+    	status=obsfile.write(fmtstr.pack(data))
     elif type(data) is float or type(data) is numpy.float64 :
     	dlen=1
     	fmtstr=struct.Struct(">"+str(dlen)+"d")
-        status=obsfile.write(fmtstr.pack(data))
+    	status=obsfile.write(fmtstr.pack(data))
     else:
     	dlen=len(data)
-    	if type(data[0]) is int or isinstance(data[0], numpy.int64) : 
-		fmtstr=struct.Struct(">"+str(dlen)+"q")
+    	if type(data[0]) is int or isinstance(data[0], numpy.int64) :
+    		fmtstr=struct.Struct(">"+str(dlen)+"q")
     	elif type(data[0]) is float or isinstance(data[0], numpy.float64) : 
-		fmtstr=struct.Struct(">"+str(dlen)+"d")
-	else :
-		print("Datatype "+str(type(data[0]))+" is not yet supported")
-        status=obsfile.write(fmtstr.pack(*data))
+    		fmtstr=struct.Struct(">"+str(dlen)+"d")
+    	else :
+    		print("Datatype "+str(type(data[0]))+" is not yet supported")
+    	status=obsfile.write(fmtstr.pack(*data))
     return(status)
 ####################################################################
 
@@ -434,15 +434,15 @@ def pydatetime(year,month,day,hour=0,minute=0,second=0):
 
 def pydate(date=None, year=None, month=None, day=None, hour=00, minute=00, second=00):
     if date is not None :
-	datestr=str(date)
-	year=int(datestr[0:4])
-	month=int(datestr[4:6])
-	day=int(datestr[6:8])
+    	datestr=str(date)
+    	year=int(datestr[0:4])
+    	month=int(datestr[4:6])
+    	day=int(datestr[6:8])
     else:
-	year=int(year)
-	month=int(month)
-	if day is None: day=01
-	day=int(day)
+    	year=int(year)
+    	month=int(month)
+    	if day is None: day=1
+    	day=int(day)
     hour=int(hour)
     minute=int(minute)
     second=int(second)
@@ -462,12 +462,12 @@ def lastday(date=None, year=None, month=None, day=None, hour=00, minute=00, seco
     else:
         year=int(year)
         month=int(month)
-        if day is None: day=01
+        if day is None: day=1
         day=int(day)
     nxtmon=(month+1)
     if nxtmon > 12:
-	nxtmon=01
-	year=(year+1)
+    	nxtmon=1
+    	year=(year+1)
     nxtmonday=pydate(date,year,nxtmon,day,hour,minute,second)
     oneday=datetime.timedelta(days=1)
     dtlast=(nxtmonday-oneday)
@@ -531,44 +531,44 @@ def pandas_dtfmt(data,dtfmt,fldnamlst=None,fldtype=None):
     if fldtype is not None : 
     	fldnamlst=list(chain(fldtype["year"],fldtype["month"],fldtype["day"],fldtype["hour"],fldtype["minute"],fldtype["second"]))
     else :
-	fldtype = {"year":[],"month":[],"day":[],"hour":[],"minute":[],"second":[]}
+    	fldtype = {"year":[],"month":[],"day":[],"hour":[],"minute":[],"second":[]}
     	if fldnamlst is None: fldnamlst = data.columns
-	if "Year" in fldnamlst : 
-		fldnam = "Year"
-		fldtype["year"].append(fldnam)
-	if "Month" in fldnamlst : 
-		fldnam = "Month"
-		fldtype["month"].append(fldnam)
-	if "Day" in fldnamlst : 
-		fldnam = "Day"
-		fldtype["day"].append(fldnam)
-	if "Hour" in fldnamlst : 
-		fldnam = "Hour"
-		fldtype["hour"].append(fldnam)
-	if "Minute" in fldnamlst : 
-		fldnam = "Minute"
-		fldtype["minute"].append(fldnam)
-	if "Second" in fldnamlst : 
-		fldnam = "Second"
-		fldtype["second"].append(fldnam)
-	fldnamlst=list(chain(fldtype["year"],fldtype["month"],fldtype["day"],fldtype["hour"],fldtype["minute"],fldtype["second"]))
+    	if "Year" in fldnamlst : 
+    		fldnam = "Year"
+    		fldtype["year"].append(fldnam)
+    	if "Month" in fldnamlst : 
+    		fldnam = "Month"
+    		fldtype["month"].append(fldnam)
+    	if "Day" in fldnamlst : 
+    		fldnam = "Day"
+    		fldtype["day"].append(fldnam)
+    	if "Hour" in fldnamlst : 
+    		fldnam = "Hour"
+    		fldtype["hour"].append(fldnam)
+    	if "Minute" in fldnamlst : 
+    		fldnam = "Minute"
+    		fldtype["minute"].append(fldnam)
+    	if "Second" in fldnamlst : 
+    		fldnam = "Second"
+    		fldtype["second"].append(fldnam)
+    	fldnamlst=list(chain(fldtype["year"],fldtype["month"],fldtype["day"],fldtype["hour"],fldtype["minute"],fldtype["second"]))
     for fldnam in fldnamlst:
-	if fldnam in fldtype["year"]:
-		data[fldnam]=pandas.to_datetime(data[fldnam], format=dtfmt).dt.year
-	if fldnam in fldtype["month"]:
-		data[fldnam]=pandas.to_datetime(data[fldnam], format=dtfmt).dt.month
-	if fldnam in fldtype["day"]:
-		data[fldnam]=pandas.to_datetime(data[fldnam], format=dtfmt).dt.day
-	if fldnam in fldtype["hour"]:
-		data[fldnam]=pandas.to_datetime(data[fldnam], format=dtfmt).dt.hour
-	if fldnam in fldtype["minute"]:
-		data[fldnam]=pandas.to_datetime(data[fldnam], format=dtfmt).dt.minute
-	if fldnam in fldtype["second"]:
-		data[fldnam]=pandas.to_datetime(data[fldnam], format=dtfmt).dt.second
+    	if fldnam in fldtype["year"]:
+    		data[fldnam]=pandas.to_datetime(data[fldnam], format=dtfmt).dt.year
+    	if fldnam in fldtype["month"]:
+    		data[fldnam]=pandas.to_datetime(data[fldnam], format=dtfmt).dt.month
+    	if fldnam in fldtype["day"]:
+    		data[fldnam]=pandas.to_datetime(data[fldnam], format=dtfmt).dt.day
+    	if fldnam in fldtype["hour"]:
+    		data[fldnam]=pandas.to_datetime(data[fldnam], format=dtfmt).dt.hour
+    	if fldnam in fldtype["minute"]:
+    		data[fldnam]=pandas.to_datetime(data[fldnam], format=dtfmt).dt.minute
+    	if fldnam in fldtype["second"]:
+    		data[fldnam]=pandas.to_datetime(data[fldnam], format=dtfmt).dt.second
     return(data)
 
 def datetimeframe(datain,dtfmt):
-        data1 = numpy.array(datain).flatten()
+	data1 = numpy.array(datain).flatten()
 	fldnam="date"
 	data=pandas.DataFrame(data1,columns=[fldnam])
 	dfnew=DataFrame()
@@ -622,9 +622,9 @@ def obs_merge_batch(dataframelist,filval=numpy.nan):
     print(dataframelist)
     data=pandas.DataFrame()
     for df in dataframelist:
-	print(len(df))
-	print(df.columns)
-	data=data.append(df, ignore_index=True).fillna(filval)
+    	print(len(df))
+    	print(df.columns)
+    	data=data.append(df, ignore_index=True).fillna(filval)
     #data=pandas.concat(dataframelist, ignore_index=True) doesnot work for hetrogenous batches
     return(data)
 
@@ -642,7 +642,7 @@ def to_string(data,dtype=None):
        if isinstance(data, tuple) :
           data=str(data)
        elif isinstance(data, pandas.Series):
-	  data=str(data.values)
+          data=str(data.values)
        else:
           if isinstance(data, (int,float)) :
              data=str(data)
@@ -662,7 +662,7 @@ def print_frame(data,option=0):
               for i in range(0,len(data),1):
                 print(data[i])
            else :
-	      print(to_string(data))
+                print(to_string(data))
     if option in [2] :
         if isinstance(data, pandas.DataFrame):
            for i in data.index.values:
@@ -674,7 +674,7 @@ def print_frame(data,option=0):
                  for j in range(0,len(data[i]),1):
                     print(data[i,j])
            else :
-	      print(to_string(data))
+              print(to_string(data))
 
 def mkdir(path):
     paretdir=path.rsplit("/",1)[0]
@@ -926,8 +926,8 @@ def get_key_info(nmlfile,key="obsgroup"):
     if key in nmlinfo["keys"].values:
     	keyinfo=nmlinfo.query("keys == @key").information.values[0]
     else:
-	print("Key '"+str(key)+"' not found")
-	print(nmlinfo["keys"].values)
+    	print("Key '"+str(key)+"' not found")
+    	print(nmlinfo["keys"].values)
     return(keyinfo)
 
 def get_key_list_info(nmlfile,key):
@@ -940,12 +940,12 @@ def get_key_dic(keyinfofile,keylist,infodic=None):
    if infodic is None : infodic={}
    if os.path.exists(keyinfofile): 
 	#print("Readimng "+keyinfofile)
-	for key in keylist:
-		infodic[key]=get_key_info(keyinfofile,key)
+    	for key in keylist:
+    		infodic[key]=get_key_info(keyinfofile,key)
    else:
 	#print("File not found: "+keyinfofile)
-	srcdic=obsdic.obstype[obstype]
-	infodic=srcdic.copy()
+    	srcdic=obsdic.obstype[obstype]
+    	infodic=srcdic.copy()
    return(infodic)
 
 def get_elist(obstypnam,obstypnml,keynml):
@@ -961,8 +961,8 @@ def datframe_add_subtype(data,obstypnam,obstypnml):
 
 def reset_index(data,index=None):
     if index is None :
-	count=len(data)
-	index=pandas.Series(range(1,(count+1),1))
+    	count=len(data)
+    	index=pandas.Series(range(1,(count+1),1))
     data=data.set_index(index)
     return(data)
 

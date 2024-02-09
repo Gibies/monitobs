@@ -64,7 +64,7 @@ def plot_keyfield(dataset,plotfile,tagmark="",lblst=[],text="",textpos=(0.25, -0
     pyplot.savefig(plotfile,bbox_inches='tight',dpi=200)
     return(fig)
 
-def plot_latlon(data,plotfile,tagmark="",lblst=[],text="",textpos=(0.25, -0.20),fltrkey="subtype",subtypenml=SUBTYPNML):
+def plot_latlon(data,plotfile,tagmark="",lblst=[],text="",textpos=(0.25, -0.20),fltrkey="subtype",subtypenml=SUBTYPNML,title=""):
     print(data)
     if fltrkey in data:
     	keylist=data[fltrkey].unique()
@@ -88,6 +88,8 @@ def plot_latlon(data,plotfile,tagmark="",lblst=[],text="",textpos=(0.25, -0.20),
     alpha=0.5
     parallels = numpy.arange(-80.,90,20.)
     meridians = numpy.arange(-180.,180.,30.)
+    #parallels = numpy.arange(-80.,90,20.)
+    #meridians = numpy.arange(-180.,180.,30.)
     #######
     #plot1=pyplot.subplot(121)
     #fig = plot_ortho(data,fig,plot1,colors,area,alpha,parallels,meridians,polelat=10,polelon=70)
@@ -103,9 +105,9 @@ def plot_latlon(data,plotfile,tagmark="",lblst=[],text="",textpos=(0.25, -0.20),
 	   lblst[i]=obslib.get_subtype_name(subtypenml,key)
     else:
 	lblst=keylist
-    fig= plot_cyl(datalist,fig,plot3,colors,area,alpha,parallels,meridians,tagmark=tagmark,lblst=lblst,text=text,textpos=textpos)
+    fig= plot_cyl(datalist,fig,plot3,colors,area,alpha,parallels,meridians,tagmark=tagmark,lblst=lblst,text=text,textpos=textpos,title=title)
     #######
-    pyplot.savefig(plotfile,bbox_inches='tight',dpi=200)
+    pyplot.savefig(plotfile,bbox_inches='tight',dpi=300)
     return(fig)
 
 def plot_location(data,plotfile,tagmark="",lblst=[],text="",textpos=(0.25, -0.20)):
@@ -154,8 +156,9 @@ def data_check(data):
 	print(data)
 	return(data)	
 
-def plot_cyl(datalist,figure,plot,colors,area,alpha,parallels,meridians,tagmark="",lblst=[],text="",textpos=(0.25, -0.20),display_count=True):
-    plot = Basemap(projection='cyl', resolution='c', llcrnrlat= 0.,urcrnrlat= 40.,llcrnrlon= 60.,urcrnrlon=95.)
+def plot_cyl(datalist,figure,plot,colors,area,alpha,parallels,meridians,tagmark="",lblst=[],text="",textpos=(0.25, -0.20),display_count=True,title=""):
+    plot = Basemap(projection='cyl', resolution='c', llcrnrlat= -90.,urcrnrlat= 90.,llcrnrlon= 0.,urcrnrlon=360.)
+    #plot = Basemap(projection='cyl', resolution='c', llcrnrlat= 0.,urcrnrlat= 40.,llcrnrlon= 60.,urcrnrlon=95.)
     plot.drawlsmask(land_color='wheat',ocean_color='lightblue',lakes=True)
     #map.bluemarble(scale=0.5);
     plot.drawcoastlines()
@@ -185,6 +188,7 @@ def plot_cyl(datalist,figure,plot,colors,area,alpha,parallels,meridians,tagmark=
         	plot = pyplot.annotate(lbltxt,color=colors[idx],fontsize=5, xy=(lblxpos[idx], lblypos[idx]), xycoords='axes fraction')
     plot = pyplot.annotate(tagmark,fontsize=5, xy=(0.01, 1.05), xycoords='axes fraction')
     plot = pyplot.annotate(text,fontsize=5, xy=textpos, xycoords='axes fraction')
+    plot = pyplot.annotate(title,fontsize=10, xy=(0.25,1.05), xycoords='axes fraction')
     return(figure)
 
 def plot_ortho(data,figure,plot,colors,area,alpha,parallels,meridians,polelat,polelon):

@@ -300,7 +300,7 @@ def print_obstore(obs_file,nmlfile=obs_nml,selectlist=[],querystring="",option=d
             obslib.print_frame(data,option)
         return(data)
 
-def obs_latlon_plot(datapath,plotpath,nmlpath=OBSNML,maxindx=MAXINDX,obstypelist=[],fltrkey="subtype"):
+def obs_latlon_plot(datapath,plotpath,nmlpath=OBSNML,maxindx=MAXINDX,obstypelist=[],fltrkey="subtype",text="",title=""):
     for obstype in obstypelist:
         print(obstype)
         obstypedic=obsdic.obstype[obstype]
@@ -310,7 +310,7 @@ def obs_latlon_plot(datapath,plotpath,nmlpath=OBSNML,maxindx=MAXINDX,obstypelist
         plotfile=plotpath+"/"+obstype+".png"
         latlon_data=obstore_read_latlon(data_file,fltrkey=fltrkey,maxindx=maxindx)
         obslib.obs_frame_ascii(latlon_data,textfile,option=diaglev)
-        figure1=obsplot.plot_latlon(latlon_data,plotfile,fltrkey=fltrkey)
+        figure1=obsplot.plot_latlon(latlon_data,plotfile,fltrkey=fltrkey,text=text,title=title)
 
 def elenam_list(infile,indx=1,nmlfile=obs_nml):
 	elist=obstore.obstore_read_batch_elements(infile,indx,nmlfile)
