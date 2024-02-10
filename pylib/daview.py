@@ -1519,7 +1519,7 @@ def mpl_plot_latlon(data,plotfile,tagmark="",lblst=[],text="",textpos=(0.25, -0.
 	   lblst[i]=obslib.get_subtype_name(subtypenml,key)
     else:
 	lblst=keylist
-    fig= plot_cyl(datalist,fig,plot3,colors,area,alpha,parallels,meridians,tagmark=tagmark,lblst=lblst,text=text,textpos=textpos,title=title)
+    fig= mpl_plot_cyl(datalist,fig,plot3,colors,area,alpha,parallels,meridians,tagmark=tagmark,lblst=lblst,text=text,textpos=textpos,title=title)
     #######
     pyplot.savefig(plotfile,bbox_inches='tight',dpi=300)
     return(fig)
@@ -1536,14 +1536,14 @@ def mpl_plot_location(data,plotfile,tagmark="",lblst=[],text="",textpos=(0.25, -
     meridians = numpy.arange(-180.,180.,30.)
     #######
     #plot1=pyplot.subplot(121)
-    #fig = plot_ortho(data,fig,plot1,colors,area,alpha,parallels,meridians,polelat=10,polelon=70)
+    #fig = mpl_plot_ortho(data,fig,plot1,colors,area,alpha,parallels,meridians,polelat=10,polelon=70)
     #######
     #plot2=pyplot.subplot(122)
-    #fig = plot_ortho(data,fig,plot1,colors,area,alpha,parallels,meridians,polelat=10,polelon=250)
+    #fig = mpl_plot_ortho(data,fig,plot1,colors,area,alpha,parallels,meridians,polelat=10,polelon=250)
     #######
     #plot1=pyplot.subplot(211)
     plot3=pyplot.subplot(212)
-    fig= plot_cyl(data,fig,plot3,colors,area,alpha,parallels,meridians,tagmark=tagmark,lblst=lblst,text=text,textpos=textpos)
+    fig= mpl_plot_cyl(data,fig,plot3,colors,area,alpha,parallels,meridians,tagmark=tagmark,lblst=lblst,text=text,textpos=textpos)
     #######
     pyplot.savefig(plotfile,bbox_inches='tight',dpi=200)
     return(fig)
