@@ -1,7 +1,7 @@
 #!/usr/bin/env python2
 # -*- coding: utf-8 -*-
 """
-Created on Thu Jun 25 12:28:25 2020
+Created on Wed Jan 23 12:56:36 2019
 
 @author: gibies
 """
@@ -57,6 +57,35 @@ import cartopy.crs as ccrs
 import xarray
 
 cmapfile=os.environ.get('CMAP',PALETTE+"/gibies_colourmap_20150117.rgb")
+
+diaglev=int(os.environ.get('GEN_MODE',0))
+def errprint(*args, **kwargs):
+    if diaglev > 0: print(*args, file=sys.stderr, **kwargs)
+
+def mpl_truncate_colormap(cpallet, minval=0.0, maxval=1.0, n=100):
+    cmap=mplcm.get_cmap(cpallet)
+    new_cmap = colors.LinearSegmentedColormap.from_list(
+        'trunc({n},{a:.2f},{b:.2f})'.format(n=cmap.name, a=minval, b=maxval),
+        cmap(numpy.linspace(minval, maxval, n)))
+    return new_cmap
+
+def get_keyrange(dataset,keyfield):
+    lblset=set()
+    for data in dataset["data"]:
+       for keyfieldvalue in data[keyfield]:
+          lblset.add(keyfieldvalue)
+    lblist=list(lblset)
+    return(lblist)
+
+def data_check(data):
+        #x=numpy.array(data.Longitude.values)
+        #y=numpy.array(data.Latitude.values)
+	#xcheck=(x*10%10)
+	#ycheck=(y*10%10)
+	#data=data[obslib.compare(xcheck,ycheck)]
+	data=data[data.Longitude.values != data.Latitude.values]
+	print(data)
+	return(data)	
 
 def reshape_frame(data,data_field,series_field="date",height_field="height"):
     data=data[[series_field,height_field,data_field]]
@@ -163,7 +192,7 @@ def get_keyrange(dataset,keyfield):
     lblist=list(lblset)
     return(lblist)
 
-def plot_keyfield(dataset,plotfile,tagmark="",lblst=[],text="",textpos=(0.25, -0.20)):
+def mpl_plot_keyfield(dataset,plotfile,tagmark="",lblst=[],text="",textpos=(0.25, -0.20)):
     colors = ["b","g","y","r"]
     cmap= matplotlib.colors.ListedColormap(colors)
     clevs=range(0,24,6)
@@ -197,7 +226,7 @@ def satpassloc(df):
 	return(tmXBValues,tmXBLabels)
 
 
-def plot_raster_fill(dataset={},data_hoff=None,cnlev=None,clrindx=None,title="",lstr="",rstr="",foottext="",plot_btmlev=0.0,plot_toplev=20000.0,plotfile="test",wks_type="png",cmapfile=cmapfile,fillval=-999.99):
+def ngl_plot_raster_fill(dataset={},data_hoff=None,cnlev=None,clrindx=None,title="",lstr="",rstr="",foottext="",plot_btmlev=0.0,plot_toplev=20000.0,plotfile="test",wks_type="png",cmapfile=cmapfile,fillval=-999.99):
 	if "cnlev" not in dataset: dataset.update({"cnlev":[-25,-10,-5,-2,-1,-0.5,0.0,0.5,1,2,5,10,25]})
 	if "cnlev" in dataset: cnlev=dataset["cnlev"]
 	if "clrindx" not in dataset: dataset.update({"clrindx":range(172,204,1)+range(218,255,1)})
@@ -331,7 +360,7 @@ def plot_raster_fill(dataset={},data_hoff=None,cnlev=None,clrindx=None,title="",
 	Ngl.frame(wks) # Advance the frame.
 
 
-def plot_hoff(data_hoff,cnlev,clrindx,title="",lstr="",rstr="",foottext="",plot_btmlev=0.0,plot_toplev=20000.0,plotfile="test",wks_type="png",cmapfile=cmapfile,fillval=-999.99):
+def ngl_plot_hoff(data_hoff,cnlev,clrindx,title="",lstr="",rstr="",foottext="",plot_btmlev=0.0,plot_toplev=20000.0,plotfile="test",wks_type="png",cmapfile=cmapfile,fillval=-999.99):
 	data_hoff=data_hoff.truncate(plot_btmlev,plot_toplev)
 	data_hoff.fillna(fillval,inplace=True)
 	height=list(data_hoff.index)
@@ -557,12 +586,12 @@ def get_colrindx(colrdic):
     	colrindx=colrdic["colrindx"]
     return(colrindx)
 
-def print_rgb(colrdic):
+def ngl_print_rgb(colrdic):
     colrindx=get_colrindx(colrdic)
     cmap = Ngl.read_colormap_file(cmapfile)[colrindx,:]
     print(cmap)
 
-def orth_plot(wks,data,res):
+def ngl_orth_plot(wks,data,res):
 	res.vpWidthF               =  0.8               #-- width of plot
 	res.vpHeightF              =  0.8               #-- height of plot
 	res.mpFillOn               =  True              #-- map fill on
@@ -575,7 +604,7 @@ def orth_plot(wks,data,res):
 	map = Ngl.map(wks,res)
 	return(map)
 
-def cyl_plot(wks,dataset,res):
+def ngl_cyl_plot(wks,dataset,res):
     res.mpDataBaseVersion      = "MediumRes"
     res.mpFillOn              = True
     res.mpFillColors = [0,-1,-1,-1]
@@ -619,7 +648,7 @@ def cyl_plot(wks,dataset,res):
     return(plot1)
 	
 
-def get_subplot(dataset,wks):
+def ngl_get_subplot(dataset,wks):
     data=dataset["data"]
     lat2d=dataset["lat2d"]
     lon2d=dataset["lon2d"]
@@ -670,7 +699,7 @@ def get_subplot(dataset,wks):
     return(plot1)
 
 
-def plot_data(dicset_list,plotfile,wks_type):
+def ngl_plot_data(dicset_list,plotfile,wks_type):
     wkres = Ngl.Resources()
     wks = Ngl.open_wks(wks_type,plotfile,wkres)
     plot = []
@@ -706,7 +735,7 @@ def get_dataset_bias(dataset,dataref):
 	return(dataset_bias)
 
 
-def plot_bias(dicset_list,plotfile,wks_type):
+def ngl_plot_bias(dicset_list,plotfile,wks_type):
     wkres = Ngl.Resources()
     wks = Ngl.open_wks(wks_type,plotfile,wkres)
     plot = []
@@ -757,7 +786,7 @@ def convert_theta_to_airt(dataset,lev):
 	print("File variable name is "+str(dataset["fvarname"]))
     return(dataset)
 
-def plot_stdlev(dicset_list,plotfile,wks_type,lev_list=vardic.stdlev):
+def ngl_plot_stdlev(dicset_list,plotfile,wks_type,lev_list=vardic.stdlev):
     dicset=dicset_list[0].copy()
     wkres = Ngl.Resources()
     wks = Ngl.open_wks(wks_type,plotfile,wkres)
@@ -792,7 +821,7 @@ def plot_stdlev(dicset_list,plotfile,wks_type,lev_list=vardic.stdlev):
 
 
 
-def plot_databias(dicset_list,plotfile,wks_type):
+def ngl_plot_databias(dicset_list,plotfile,wks_type):
     wkres = Ngl.Resources()
     #wkres.wkColorMap = "default"
     wks = Ngl.open_wks(wks_type,plotfile,wkres)
@@ -820,7 +849,7 @@ def plot_databias(dicset_list,plotfile,wks_type):
     Ngl.end()
     return(plot)
 
-def plot_grid_data(data,plotfile,wks_type):
+def ngl_plot_grid_data(data,plotfile,wks_type):
 	wkres = Ngl.Resources()
 	wkres.wkColorMap = "default"
 	wks = Ngl.open_wks(wks_type,plotfile,wkres)
@@ -828,14 +857,14 @@ def plot_grid_data(data,plotfile,wks_type):
 	plot = Ngl.contour_map(wks,data,res)
 	return(plot)
 
-def truncate_colormap(cpallet, minval=0.0, maxval=1.0, n=100):
+def mpl_truncate_colormap(cpallet, minval=0.0, maxval=1.0, n=100):
     cmap=mplcm.get_cmap(cpallet)
     new_cmap = colors.LinearSegmentedColormap.from_list(
         'trunc({n},{a:.2f},{b:.2f})'.format(n=cmap.name, a=minval, b=maxval),
         cmap(numpy.linspace(minval, maxval, n)))
     return new_cmap
 
-def plot_location(data,plotfile,plotmode="cyl"):
+def mpl_plot_location(data,plotfile,plotmode="cyl"):
     fig = pyplot.figure()
     colors = (0,0,0)
     area = 1.0      #numpy.pi*
@@ -856,7 +885,7 @@ def plot_location(data,plotfile,plotmode="cyl"):
     pyplot.savefig(plotfile,bbox_inches='tight',dpi=200)
     return(fig)
 
-def plot_merc(data,figure,plot,colors,area,alpha,parallels,meridians):
+def mpl_plot_merc(data,figure,plot,colors,area,alpha,parallels,meridians):
     plot = Basemap(projection='merc',llcrnrlat=-85,urcrnrlat=85,llcrnrlon=-180,urcrnrlon=180,lat_ts=20,resolution='c')
     plot.drawlsmask(land_color='wheat',ocean_color='lightblue',lakes=True)
     #map.bluemarble(scale=0.5);
@@ -868,7 +897,7 @@ def plot_merc(data,figure,plot,colors,area,alpha,parallels,meridians):
     plot = pyplot.scatter(x,y,s=area,c=colors,alpha=alpha)
     return(figure)
 
-def plot_cyl(data,figure,plot,colors,area,alpha,parallels,meridians):
+def mpl_plot_cyl(data,figure,plot,colors,area,alpha,parallels,meridians):
     plot = Basemap(projection='cyl', resolution='c', llcrnrlat= -90.,urcrnrlat= 90.,llcrnrlon=-180.,urcrnrlon=180.)
     plot.drawlsmask(land_color='wheat',ocean_color='lightblue',lakes=True)
     #map.bluemarble(scale=0.5);
@@ -880,7 +909,7 @@ def plot_cyl(data,figure,plot,colors,area,alpha,parallels,meridians):
     plot = pyplot.scatter(x,y,s=area,c=colors,alpha=alpha)
     return(figure)
 
-def plot_ortho(data,figure,plot,colors,area,alpha,parallels,meridians,polelat,polelon):
+def mpl_plot_ortho(data,figure,plot,colors,area,alpha,parallels,meridians,polelat,polelon):
     plot=Basemap(lat_0=polelat, lon_0=polelon, projection='ortho',resolution='l' )
     plot.drawlsmask(land_color='wheat',ocean_color='lightblue',lakes=True)
     plot.drawcoastlines()
@@ -891,7 +920,7 @@ def plot_ortho(data,figure,plot,colors,area,alpha,parallels,meridians,polelat,po
     plot = pyplot.scatter(x,y,s=area,c=colors,alpha=alpha)
     return(figure)
 
-def globalview(plotfile,data,title,clevs=range(0,10,1),cpallet="jet",extend="max",plotmode="shaded"):
+def mpl_globalview(plotfile,data,title,clevs=range(0,10,1),cpallet="jet",extend="max",plotmode="shaded"):
     cmap=mplcm.get_cmap(cpallet, len(clevs) - 1)
     glat=data.index
     glon=data.columns
@@ -932,7 +961,7 @@ def plot_field(data,plotfile,domain="global",varname="hloswind",textout=False):
 	if textout: obslib.obs_frame_ascii(gridded_data,plotfile3)
 	return(gridded_data_omb)
 
-def plot_colourbutton():
+def mpl_plot_colourbutton():
    lon=data[:,1]
    lat=data[:,0]
    val=data[:,2]
@@ -966,14 +995,14 @@ def plot_colourbutton():
 ###  Merged from imdaanowcast package
 #############################################################################################################################
 
-def resof(plotinfo):
+def ngl_resof(plotinfo):
     if "res" in plotinfo:
         res=plotinfo["res"]
     else:
         res = Ngl.Resources()
     return(res)
 
-def gen_wks(plotinfo):
+def ngl_gen_wks(plotinfo):
     plotfile=plotinfo["plotfile"]
     wks_type=plotinfo["wks_type"]
     wkres = Ngl.Resources()
@@ -983,7 +1012,7 @@ def gen_wks(plotinfo):
     return(plotinfo)
 
 
-def get_colrindx(colrdic):
+def ngl_get_colrindx(colrdic):
     if "colrindx" not in colrdic or colrdic["colrindx"] is None:
     	try:colrmin=colrdic["colrmin"]
 	except:colrmin=0
@@ -994,7 +1023,7 @@ def get_colrindx(colrdic):
     	colrindx=colrdic["colrindx"]
     return(colrindx)
 
-def get_cmap(plotinfo):
+def ngl_get_cmap(plotinfo):
     colrindx=get_colrindx(plotinfo)
     cmap = Ngl.read_colormap_file(cmapfile)[colrindx,:]
     if "revcmap" in plotinfo and plotinfo["revcmap"]: cmap=cmap[::-1,:]
@@ -1006,7 +1035,7 @@ def print_rgb(colrdic):
     cmap=colrdic["cmap"]
     print(cmap)
 
-def truncate_colormap(cpallet, minval=0.0, maxval=1.0, n=100):
+def mpl_truncate_colormap(cpallet, minval=0.0, maxval=1.0, n=100):
     cmap=mplcm.get_cmap(cpallet)
     new_cmap = colors.LinearSegmentedColormap.from_list(
         'trunc({n},{a:.2f},{b:.2f})'.format(n=cmap.name, a=minval, b=maxval),
@@ -1018,7 +1047,7 @@ def check_plot(plotinfo):
     outfile=subprocess.call("ls "+outfile, shell=True)
     return(outfile)
 
-def test_ngl(plotinfo={}):
+def ngl_test_ngl(plotinfo={}):
     if "plotfile" not in plotinfo: plotinfo={"plotfile":"palette_check"}
     if "wks_type" not in plotinfo: plotinfo.update({"wks_type":"png"})
     outfile=os.path.abspath(plotinfo["plotfile"]+"."+plotinfo["wks_type"])
@@ -1033,7 +1062,7 @@ def test_ngl(plotinfo={}):
     print(cmapfile,outfile)
     return(outfile)
 
-def write_tlstring(plotinfo):
+def ngl_write_tlstring(plotinfo):
     vpx = Ngl.get_float(plotinfo["plot"],"vpXF")
     vpy = Ngl.get_float(plotinfo["plot"],"vpYF")
     vpw = Ngl.get_float(plotinfo["plot"],"vpWidthF")
@@ -1048,7 +1077,7 @@ def write_tlstring(plotinfo):
     Ngl.text_ndc(plotinfo["wks"], plotinfo["tlstring"], vpx+0.05*vpw, vpy, plotinfo["tlsres"])
     return(plotinfo)
 
-def write_trstring(plotinfo):
+def ngl_write_trstring(plotinfo):
     vpx = Ngl.get_float(plotinfo["plot"],"vpXF")
     vpy = Ngl.get_float(plotinfo["plot"],"vpYF")
     vpw = Ngl.get_float(plotinfo["plot"],"vpWidthF")
@@ -1063,7 +1092,7 @@ def write_trstring(plotinfo):
     Ngl.text_ndc(plotinfo["wks"], plotinfo["trstring"], vpx+0.95*vpw, vpy, plotinfo["trsres"])
     return(plotinfo)
 
-def write_blstring(plotinfo):
+def ngl_write_blstring(plotinfo):
     vpx = Ngl.get_float(plotinfo["plot"],"vpXF")
     vpy = Ngl.get_float(plotinfo["plot"],"vpYF")
     vpw = Ngl.get_float(plotinfo["plot"],"vpWidthF")
@@ -1078,7 +1107,7 @@ def write_blstring(plotinfo):
     Ngl.text_ndc(plotinfo["wks"], plotinfo["blstring"], vpx+0.05*vpw, vpy-1.2*vph, plotinfo["blsres"])
     return(plotinfo)
 
-def write_brstring(plotinfo):
+def ngl_write_brstring(plotinfo):
     vpx = Ngl.get_float(plotinfo["plot"],"vpXF")
     vpy = Ngl.get_float(plotinfo["plot"],"vpYF")
     vpw = Ngl.get_float(plotinfo["plot"],"vpWidthF")
@@ -1100,7 +1129,7 @@ def write_info_text(plotinfo):
     if "brstring" in plotinfo : plotinfo=write_brstring(plotinfo)
     return(plotinfo)
 
-def add_info_string(plotinfo):
+def ngl_add_info_string(plotinfo):
     #-- add units and copyrights to wks
     plot=plotinfo["plot"]
     wks=plotinfo["wks"]
@@ -1332,7 +1361,7 @@ def vcstyle(plotinfo):
     plotinfo.update({"res":res})
     return(plotinfo) 
 
-def cyl_plot(dataset,plotinfo):
+def ngl_cyl_plot(dataset,plotinfo):
     wks=plotinfo["wks"]
     res=resof(plotinfo)
     res.nglDraw               = False               #-- don't draw individual plots
@@ -1395,7 +1424,410 @@ def cyl_plot(dataset,plotinfo):
     plotinfo=write_info_text(plotinfo)
     return(plotinfo["plot"])
 	
-def get_subplot(dataset,plotinfo):
+def data_filename(datafield,datadir,init_date,init_hour,fcst_hour,datainfo=None,fname=None):
+    if datainfo is None: datainfo=datadic.get_data_info(datafield)
+    datainfo.update({"datadir":datadir})
+    datainfo.update({"grid_type":"regular"})
+    if fname is None:
+    	fnprefix="ncum_imdaa_nearrealtime_12km_"
+    	fnsufix="_"+str(init_date)+"_"+str(init_hour).zfill(2)+"z_hrofday.nc"
+    	datainfo.update({"filename":fnprefix+str(datainfo["fnamekey"])+fnsufix})
+    else:
+	datainfo.update({"filename":fname})
+    datainfo.update({"timeslice":"time|"+str(fcst_hour).zfill(2)})
+    print(datainfo)
+    return(datainfo)
+
+def plot_filename(datafield,plotdir,init_date,fcst_hour,prefix="",sufix=""):
+    plotinfo={}
+    sufix="_"+str(fcst_hour).zfill(2)+"Z"
+    plotinfo.update({"plotfile":plotdir+"/"+prefix+datafield+sufix})
+    plotinfo.update({"wks_type":"png"})
+    plotinfo.update({"trstring":str(init_date)+"_"+str(fcst_hour).zfill(2)+"Z"})
+    plotinfo=gen_wks(plotinfo)
+    return(plotinfo)
+
+
+def get_field_list():
+    field_list=datadic.field_list
+    return(field_list)
+
+
+def umff_to_grib2(infile,outfile=None):
+    if outfile is None: outfile=infile.split(".",1)[0]+".grib2"
+    file_cubes=iris.load(infile)
+    iris.save(file_cubes,outfile)
+
+#################################################################################################################################
+### Matplotlib based functions
+#################################################################################################################################
+def mpl_plot_keyfield(dataset,plotfile,tagmark="",lblst=[],text="",textpos=(0.25, -0.20)):
+    colors = ["b","g","y","r"]
+    cmap= matplotlib.colors.ListedColormap(colors)
+    clevs=range(0,24,6)
+    fig = pyplot.figure()
+    #colors = (0,0,0)
+    area = 1.0      #numpy.pi*
+    alpha=0.5
+    parallels = numpy.arange(-80.,90,20.)
+    meridians = numpy.arange(-180.,180.,30.)
+    plot1=pyplot.subplot(212)
+    fig= plot_cyl(dataset,fig,plot1,colors,area,alpha,parallels,meridians,tagmark=tagmark,lblst=lblst,text=text,textpos=textpos)
+    #######
+    pyplot.savefig(plotfile,bbox_inches='tight',dpi=200)
+    return(fig)
+
+def mpl_plot_latlon(data,plotfile,tagmark="",lblst=[],text="",textpos=(0.25, -0.20),fltrkey="subtype",subtypenml=SUBTYPNML,title=""):
+    print(data)
+    if fltrkey in data:
+    	keylist=data[fltrkey].unique()
+    	print(keylist)
+    	datalist=[None]*len(keylist)
+    	print(datalist)
+    	for i,key in enumerate(keylist):
+	   print(i,key)
+	   datalist[i]=data[data[fltrkey] == key]
+	   print(datalist[i])
+    else:
+	fltrkey=None
+	keylist=["data"]
+	datalist=[data]
+    colors = ["b","g","y","r","violet","pink","purple","magenta"]
+    cmap= matplotlib.colors.ListedColormap(colors)
+    clevs=range(0,24,6)
+    fig = pyplot.figure()
+    #colors = (0,0,0)
+    area = 1.0      #numpy.pi*
+    alpha=0.5
+    parallels = numpy.arange(-80.,90,20.)
+    meridians = numpy.arange(-180.,180.,30.)
+    #parallels = numpy.arange(-80.,90,20.)
+    #meridians = numpy.arange(-180.,180.,30.)
+    #######
+    #plot1=pyplot.subplot(121)
+    #fig = plot_ortho(data,fig,plot1,colors,area,alpha,parallels,meridians,polelat=10,polelon=70)
+    #######
+    #plot2=pyplot.subplot(122)
+    #fig = plot_ortho(data,fig,plot1,colors,area,alpha,parallels,meridians,polelat=10,polelon=250)
+    #######
+    #plot1=pyplot.subplot(211)
+    plot3=pyplot.subplot(212)
+    if fltrkey == "subtype":
+	lblst=[None]*len(keylist)
+	for i,key in enumerate(keylist):
+	   lblst[i]=obslib.get_subtype_name(subtypenml,key)
+    else:
+	lblst=keylist
+    fig= plot_cyl(datalist,fig,plot3,colors,area,alpha,parallels,meridians,tagmark=tagmark,lblst=lblst,text=text,textpos=textpos,title=title)
+    #######
+    pyplot.savefig(plotfile,bbox_inches='tight',dpi=300)
+    return(fig)
+
+def mpl_plot_location(data,plotfile,tagmark="",lblst=[],text="",textpos=(0.25, -0.20)):
+    colors = ["b","g","y","r","violet","pink","purple","magenta"]
+    cmap= matplotlib.colors.ListedColormap(colors)
+    clevs=range(0,24,6)
+    fig = pyplot.figure()
+    #colors = (0,0,0)
+    area = 1.0      #numpy.pi*
+    alpha=0.5
+    parallels = numpy.arange(-80.,90,20.)
+    meridians = numpy.arange(-180.,180.,30.)
+    #######
+    #plot1=pyplot.subplot(121)
+    #fig = plot_ortho(data,fig,plot1,colors,area,alpha,parallels,meridians,polelat=10,polelon=70)
+    #######
+    #plot2=pyplot.subplot(122)
+    #fig = plot_ortho(data,fig,plot1,colors,area,alpha,parallels,meridians,polelat=10,polelon=250)
+    #######
+    #plot1=pyplot.subplot(211)
+    plot3=pyplot.subplot(212)
+    fig= plot_cyl(data,fig,plot3,colors,area,alpha,parallels,meridians,tagmark=tagmark,lblst=lblst,text=text,textpos=textpos)
+    #######
+    pyplot.savefig(plotfile,bbox_inches='tight',dpi=200)
+    return(fig)
+
+def mpl_plot_merc(data,figure,plot,colors,area,alpha,parallels,meridians):
+    plot = Basemap(projection='merc',llcrnrlat=-85,urcrnrlat=85,llcrnrlon=-180,urcrnrlon=180,lat_ts=20,resolution='c')
+    plot.drawlsmask(land_color='wheat',ocean_color='lightblue',lakes=True)
+    #map.bluemarble(scale=0.5);
+    plot.drawcoastlines()
+    #map.drawcountries()
+    plot.drawparallels(parallels,labels=[True,False,True,False],fontsize=5)
+    plot.drawmeridians(meridians,labels=[False,False,False,True],fontsize=5,rotation=45)
+    x, y = plot(list(data.Longitude.values), list(data.Latitude.values))
+    plot = pyplot.scatter(x,y,s=area,c=colors,alpha=alpha)
+    return(figure)
+
+def mpl_plot_cyl(datalist,figure,plot,colors,area,alpha,parallels,meridians,tagmark="",lblst=[],text="",textpos=(0.25, -0.20),display_count=True,title=""):
+    plot = Basemap(projection='cyl', resolution='c', llcrnrlat= -90.,urcrnrlat= 90.,llcrnrlon= 0.,urcrnrlon=360.)
+    #plot = Basemap(projection='cyl', resolution='c', llcrnrlat= 0.,urcrnrlat= 40.,llcrnrlon= 60.,urcrnrlon=95.)
+    plot.drawlsmask(land_color='wheat',ocean_color='lightblue',lakes=True)
+    #map.bluemarble(scale=0.5);
+    plot.drawcoastlines()
+    plot.drawparallels(parallels,labels=[True,False,True,False],fontsize=5)
+    plot.drawmeridians(meridians,labels=[False,False,False,True],fontsize=5,rotation=45)
+    count=len(datalist)
+    print(count)
+    if count < 5 :
+       lblxpos=numpy.linspace(0.05, 0.95, num = count, endpoint = False)
+       lblypos=[1.05]*count
+    else:
+	tmparr=list(numpy.linspace(0.05, 0.95, num = int((count//2)+(count%2)), endpoint = False))
+	lblxpos=tmparr+tmparr
+	lblypos=([1.05]*((count//2)+(count%2)))+([1.10]*int(count//2))
+    print(lblxpos,lblypos)
+    for idx in range(0,count,1):
+        data = datalist[idx]
+	data = data_check(data)
+        x=numpy.array(data.Longitude.values)
+        y=numpy.array(data.Latitude.values)
+        if tagmark == "(b)" : print(x,y)
+	print(idx,colors)
+        plot = pyplot.scatter(x,y,s=area,c=colors[idx],alpha=alpha)
+	print(lblst[idx],len(data))
+        if display_count==True:
+        	lbltxt=str(lblst[idx])+": "+str(len(data))
+        	plot = pyplot.annotate(lbltxt,color=colors[idx],fontsize=5, xy=(lblxpos[idx], lblypos[idx]), xycoords='axes fraction')
+    plot = pyplot.annotate(tagmark,fontsize=5, xy=(0.01, 1.05), xycoords='axes fraction')
+    plot = pyplot.annotate(text,fontsize=5, xy=textpos, xycoords='axes fraction')
+    plot = pyplot.annotate(title,fontsize=10, xy=(0.25,1.15), xycoords='axes fraction')
+    return(figure)
+
+def mpl_plot_ortho(data,figure,plot,colors,area,alpha,parallels,meridians,polelat,polelon):
+    plot=Basemap(lat_0=polelat, lon_0=polelon, projection='ortho',resolution='l' )
+    plot.drawlsmask(land_color='wheat',ocean_color='lightblue',lakes=True)
+    plot.drawcoastlines()
+    #plot.readshapefile('/home/gibies/maskfiles/AllIndia/AllIndia', 'AllIndia')
+    plot.drawparallels(parallels,labels=[True,False,True,False],fontsize=5)
+    plot.drawmeridians(meridians,labels=[False,False,False,True],fontsize=5)
+    x, y = plot(list(data.Longitude.values), list(data.Latitude.values))
+    plot = pyplot.scatter(x,y,s=area,c=colors,alpha=alpha)
+    return(figure)
+
+    #m.readshapefile('/home/gibies/maskfiles/AllIndia/AllIndia', 'AllIndia')
+    
+
+def mpl_plot_shaded(plotfile,data,title,clevs=range(0,10,1),cpallet="jet",extend="max"):
+    cmap=mplcm.get_cmap(cpallet, len(clevs) - 1)
+    glat=data.index
+    glon=data.columns
+    x,y=numpy.meshgrid(glon,glat)
+    fig = pyplot.figure()
+    map = Basemap(projection='cyl', resolution='c', llcrnrlat= -90.,urcrnrlat= 90.,llcrnrlon=-180.,urcrnrlon=180.)
+    #map.bluemarble(scale=0.5);
+    map.drawcoastlines()
+    map.drawparallels(numpy.arange( -90., 90.,30.),labels=[1,0,0,0],fontsize=5)
+    map.drawmeridians(numpy.arange(-180.,180.,30.),labels=[0,0,0,1],fontsize=5,rotation=45)
+    #map.drawcountries()
+    plot = map.contourf(x,y,data,clevs, cmap=cmap,extend=extend)
+    pyplot.title(title)
+    #ax = fig.add_subplot(311)
+    cbar=fig.colorbar(plot,orientation='vertical')
+    cbar.ax.tick_params(labelsize=5)
+    pyplot.savefig(plotfile,bbox_inches='tight',dpi=200)
+
+#def plot_button(plotfile,data,title,clevs,cpallet,extend="max"):
+#    cmap=mplcm.get_cmap(cpallet, len(clevs) - 1)
+#    glat=data.index
+#    glon=data.columns
+#    x,y=numpy.meshgrid(glon,glat)
+#    fig = pyplot.figure()
+#    map = Basemap(projection='cyl', resolution='c', llcrnrlat= -90.,urcrnrlat= 90.,llcrnrlon=-180.,urcrnrlon=180.)
+#    #map.bluemarble(scale=0.5);
+#    map.drawcoastlines()
+#    map.drawparallels(numpy.arange( -90., 90.,30.),labels=[1,0,0,0],fontsize=5)
+#    map.drawmeridians(numpy.arange(-180.,180.,30.),labels=[0,0,0,1],fontsize=5,rotation=45)
+#    #map.drawcountries()
+#    plot = map.contour(x,y,data,clevs, cmap=cmap,extend=extend)
+#    pyplot.title(title)
+#    #ax = fig.add_subplot(311)
+#    cbar=fig.colorbar(plot,orientation='vertical')
+#    cbar.ax.tick_params(labelsize=5)
+#    pyplot.savefig(plotfile,bbox_inches='tight',dpi=200)
+
+def mpl_plot_button(plotfile,data,title,clevs=range(0,10,1),cpallet="jet",extend="max"):
+    cmap=mplcm.get_cmap(cpallet, len(clevs) - 1)
+    glat=data.index
+    glon=data.columns
+    x,y=numpy.meshgrid(glon,glat)
+    fig = pyplot.figure()
+    map = Basemap(projection='cyl', resolution='c', llcrnrlat= -90.,urcrnrlat= 90.,llcrnrlon=-180.,urcrnrlon=180.)
+    #map.bluemarble(scale=0.5);
+    map.drawcoastlines()
+    map.drawparallels(numpy.arange( -90., 90.,30.),labels=[1,0,0,0],fontsize=5)
+    map.drawmeridians(numpy.arange(-180.,180.,30.),labels=[0,0,0,1],fontsize=5,rotation=45)
+    #map.drawcountries()
+    plot = map.scatter(x,y,data,clevs, cmap=cmap,extend=extend)
+    pyplot.title(title)
+    #ax = fig.add_subplot(311)
+    cbar=fig.colorbar(plot,orientation='vertical')
+    cbar.ax.tick_params(labelsize=5)
+    pyplot.savefig(plotfile,bbox_inches='tight',dpi=200)
+    return(fig)
+    
+def mpl_scatterplot(plotpath,odbnmlfile,data,cylcdatestr,obstype,varname,long_name,fieldname="Obsvalue",fill=True,extend="max"):
+    data=obslib.odb_renamefield(data,odbnmlfile)
+    #clevs=obslib.clevgen(long_name,fieldname)
+    units=obslib.dataunit(long_name)
+    plot_title=obstype.replace("_"," ")+"\n"+long_name.replace("_"," ")+" ("+units+") "+"scatter"+"\n"+cylcdatestr
+    plotfile=plotpath+"/"+obstype+"_"+str(varname)+"_"+"scatter"+"_"+cylcdatestr+".png"
+    fig = pyplot.figure()
+    map = Basemap(projection='cyl', resolution='c', llcrnrlat= -90.,urcrnrlat= 90.,llcrnrlon=-180.,urcrnrlon=180.)
+    #map.bluemarble(scale=0.5);
+    map.drawcoastlines()
+    map.drawparallels(numpy.arange( -90., 90.,30.),labels=[1,0,0,0],fontsize=5)
+    map.drawmeridians(numpy.arange(-180.,180.,30.),labels=[0,0,0,1],fontsize=5,rotation=45)
+    #map.drawcountries()
+    colors = (0,0,0)
+    area = numpy.pi*1.0
+    alpha=0.5
+    #print(list(data[str(varname)]))
+    x, y = map(list(data.Longitude.values), list(data.Latitude.values))
+    plot = pyplot.scatter(x,y,s=area,c=colors,alpha=alpha)
+    pyplot.title(plot_title)
+    #fig = pyplot.figure()
+    #cbar=fig.colorbar(plot,orientation='vertical')
+    #cbar.ax.tick_params(labelsize=5)
+    pyplot.savefig(plotfile,bbox_inches='tight',dpi=200)
+    return(fig)
+
+def mpl_gridplot(plotpath,odbnmlfile,data,cylcdatestr,obstype,varname,long_name,fieldname="Obsvalue",gridopt="mean",cpallet="jet",fill=False,extend="max"):
+    data=obslib.odb_renamefield(data,odbnmlfile)
+    clevs=obslib.clevgen(long_name,fieldname)
+    units=obslib.dataunit(long_name)
+    plot_title=obstype.replace("_"," ")+"\n"+long_name.replace("_"," ")+" ("+units+") "+fieldname+"\n"+" (1x1 gridded "+gridopt+") "+"\n"+cylcdatestr
+    plotfile=plotpath+"/"+obstype+"_"+str(varname)+"_"+fieldname+"_"+cylcdatestr+".png"
+    if gridopt is "count" : gridded_data=obslib.gridded_count_1x1deg(data,varname)
+    elif gridopt is "sum" : gridded_data=obslib.gridded_sum_1x1deg(data,varname,fieldname)
+    elif gridopt is "mean" : gridded_data=obslib.gridded_mean_1x1deg(data,varname,fieldname)
+    if fill:
+        mpl_plot_shaded(plotfile,gridded_data,plot_title,clevs,cpallet,extend)
+    else:
+        mpl_plot_button(plotfile,gridded_data,plot_title,clevs,cpallet,extend)
+    return(fig)
+
+def mpl_plot_density(plotpath,nmlfile,data,cylcdatestr,obstype,element,long_name,fill=False,extend="max"):
+    fieldname="ObsDensity"
+    gridopt="count"
+    cpallet=mpl_truncate_colormap("gist_ncar_r", 0.05, 0.4)
+    mpl_gridplot(plotpath,nmlfile,data,cylcdatestr,obstype,element,long_name,fieldname,gridopt,cpallet,fill,extend)
+
+def mpl_plot_gridmean(plotpath,nmlfile,data,cylcdatestr,obstype,element,long_name,fill=False,extend="both"):
+    fieldname="Obsvalue"
+    gridopt="mean"
+    cpallet=mpl_truncate_colormap("gist_ncar", 0.1, 0.8)
+    mpl_gridplot(plotpath,nmlfile,data,cylcdatestr,obstype,element,long_name,fieldname,gridopt,cpallet,fill,extend)
+
+def mpl_plot_depart_firstguess(plotpath,nmlfile,data,cylcdatestr,obstype,element,long_name,fill=False,extend="both"):
+    fieldname="FGDep"
+    gridopt="mean"
+    cpallet=mpl_truncate_colormap("gist_ncar", 0.1, 0.8)
+    mpl_gridplot(plotpath,nmlfile,data,cylcdatestr,obstype,element,long_name,fieldname,gridopt,cpallet,fill,extend)
+
+def mpl_plot_depart_anal(plotpath,nmlfile,data,cylcdatestr,obstype,element,long_name,fill=False,extend="both"):
+    fieldname="AnalDep"
+    gridopt="mean"
+    cpallet=mpl_truncate_colormap("gist_ncar", 0.1, 0.8)
+    mpl_gridplot(plotpath,nmlfile,data,cylcdatestr,obstype,element,long_name,fieldname,gridopt,cpallet,fill,extend)
+
+def mpl_globalview(plotfile,data,title,clevs=range(0,10,1),cpallet="jet",extend="max",plotmode="shaded"):
+    cmap=mplcm.get_cmap(cpallet, len(clevs) - 1)
+    glat=data.index
+    glon=data.columns
+    x,y=numpy.meshgrid(glon,glat)
+    fig = pyplot.figure()
+    map = Basemap(projection='cyl', resolution='c', llcrnrlat= -90.,urcrnrlat= 90.,llcrnrlon=-180.,urcrnrlon=180.)
+    #map.bluemarble(scale=0.5);
+    map.drawcoastlines()
+    map.drawparallels(numpy.arange( -90., 90.,30.),labels=[1,0,0,0],fontsize=5)
+    map.drawmeridians(numpy.arange(-180.,180.,30.),labels=[0,0,0,1],fontsize=5,rotation=45)
+    #map.drawcountries()
+    if plotmode is "shaded": plot = map.contourf(x,y,data,clevs, cmap=cmap,extend=extend)
+    if plotmode is "button": plot = map.scatter(x,y,data,clevs, cmap=cmap,extend=extend)
+    pyplot.title(title)
+    #ax = fig.add_subplot(311)
+    cbar=fig.colorbar(plot,orientation='horizontal')
+    cbar.ax.tick_params(labelsize=5)
+    pyplot.savefig(plotfile,bbox_inches='tight',dpi=200)
+
+
+def mpl_plot_field(data,plotfile,domain="global",varname="hloswind",textout=False):
+	hgtmin=domaindic.dom_hgtmin[domain]
+	hgtmax=domaindic.dom_hgtmax[domain]
+	plotfile1=plotfile+"_"+domain+"_obs"
+	title1="Observation (magnitude) at altitude ["+str(int(hgtmin))+"m to "+str(int(hgtmax))+"m ]"
+	gridded_data_obs=obslib.gridded_rms_1x1deg(data,varname=varname,fieldname="observed")
+	plot=mpl_globalview(plotfile1,gridded_data_obs,title=title1,clevs=[0,1,2,3,4,5,10,15,20,25,35,45],extend="max",plotmode="shaded")
+	if textout: obslib.obs_frame_ascii(gridded_data,plotfile1)
+	plotfile2=plotfile+"_"+domain+"_bkg"
+	title2="Background (magnitude) at altitude ["+str(int(hgtmin))+"m to "+str(int(hgtmax))+"m ]"
+	gridded_data_bkg=obslib.gridded_rms_1x1deg(data,varname=varname,fieldname="background")
+	plot=mpl_globalview(plotfile2,gridded_data_bkg,title=title2,clevs=[0,1,2,3,4,5,10,15,20,25,35,45],extend="max",plotmode="shaded")
+	if textout: obslib.obs_frame_ascii(gridded_data,plotfile2)
+	plotfile3=plotfile+"_"+domain+"_omb"
+	title3="OBS minus BKG (rms) at altitude ["+str(int(hgtmin))+"m to "+str(int(hgtmax))+"m ]"
+	gridded_data_omb=obslib.gridded_rms_1x1deg(data,varname=varname,fieldname="obs_minus_bkg")
+	plot=mpl_globalview(plotfile3,gridded_data_omb,title=title3,clevs=[0,1,2,3,4,5,10],extend="max",plotmode="shaded")
+	if textout: obslib.obs_frame_ascii(gridded_data,plotfile3)
+	return(gridded_data_omb)
+
+
+#################################################################################################################################
+### NCAR Graghics based functions
+#################################################################################################################################
+
+
+def ngl_test_ngl():
+    wkres = Ngl.Resources()
+    rval=subprocess.call("export PYNGL_COLORMAPS=$HOME", shell=True)
+    wkres.wkColorMap = "gibies_colourmap_20150117"
+    wks = Ngl.open_wks("png","test",wkres)
+    Ngl.draw_colormap(wks)
+    Ngl.end()
+
+
+def ngl_plot_all(datadir,plotdir,init_date,init_hour,fcst_lead,field_list=None,fname=None):
+    hoursofday=numpy.arange(init_hour,init_hour+fcst_lead,1)
+    if field_list is None : field_list=get_field_list()
+    for datafield in field_list:
+        for fcst_hour in hoursofday:
+            print(fcst_hour)
+            print(datafield)
+            plotfile=plot_data([datafield],datadir,plotdir,init_date,init_hour,fcst_hour,fname)
+    Ngl.end()
+    return(plotfile)
+
+def ngl_plot_data(field_list,datadir,plotdir,init_date,init_hour,fcst_hour,fname=None):
+    plotinfo=plot_filename(field_list[0],plotdir,init_date,fcst_hour,prefix="ncumda_g12_imdaa_",sufix="_"+str(fcst_hour).zfill(2)+"Z")
+    print(plotinfo)
+    plot = []
+    for count,datafield in enumerate(field_list):
+        plotinfo=datadic.get_plot_info(datafield,plotinfo)
+        datainfo=data_filename(datafield,datadir,init_date,init_hour,fcst_hour,fname=fname)
+        plotinfo=get_cmap(plotinfo)
+        res=resof(plotinfo)
+        plotinfo.update({"res":res})
+	if plotinfo["plot_type"] in ["contour"]:
+		dataset=get_data(datainfo)
+	else:
+		dataset=get_vector_data(datainfo)
+	plot1=get_subplot(dataset,plotinfo)
+	plot.append(plot1)
+    count=len(plot)
+    panelres                  =  Ngl.Resources()
+    panelres.nglPanelLabelBar =  False           #-- common labelbar
+    panelres.nglPanelYWhiteSpacePercent =  0        #-- reduce space between the panel plots
+    panelres.nglPanelXWhiteSpacePercent =  0        #-- reduce space between the panel plots
+    panelres.nglPanelTop      =  0.95               #-- top position of panel
+    #-- create the panel
+    Ngl.panel(plotinfo["wks"],plot,[count,1],panelres)
+    outfile=check_plot(plotinfo)
+    del plotinfo, datainfo, plot
+    print(outfile)
+    return(outfile)
+
+def ngl_get_subplot(dataset,plotinfo):
     wks=plotinfo["wks"]
     res=resof(plotinfo)
 #   lat2d=dataset["lat2d"]
@@ -1435,77 +1867,4 @@ def get_subplot(dataset,plotinfo):
     plotinfo.update({"res":res})
     plot1=cyl_plot(dataset,plotinfo)
     return(plot1)
-
-def data_filename(datafield,datadir,init_date,init_hour,fcst_hour,datainfo=None,fname=None):
-    if datainfo is None: datainfo=datadic.get_data_info(datafield)
-    datainfo.update({"datadir":datadir})
-    datainfo.update({"grid_type":"regular"})
-    if fname is None:
-    	fnprefix="ncum_imdaa_nearrealtime_12km_"
-    	fnsufix="_"+str(init_date)+"_"+str(init_hour).zfill(2)+"z_hrofday.nc"
-    	datainfo.update({"filename":fnprefix+str(datainfo["fnamekey"])+fnsufix})
-    else:
-	datainfo.update({"filename":fname})
-    datainfo.update({"timeslice":"time|"+str(fcst_hour).zfill(2)})
-    print(datainfo)
-    return(datainfo)
-
-def plot_filename(datafield,plotdir,init_date,fcst_hour,prefix="",sufix=""):
-    plotinfo={}
-    sufix="_"+str(fcst_hour).zfill(2)+"Z"
-    plotinfo.update({"plotfile":plotdir+"/"+prefix+datafield+sufix})
-    plotinfo.update({"wks_type":"png"})
-    plotinfo.update({"trstring":str(init_date)+"_"+str(fcst_hour).zfill(2)+"Z"})
-    plotinfo=gen_wks(plotinfo)
-    return(plotinfo)
-
-def plot_data(field_list,datadir,plotdir,init_date,init_hour,fcst_hour,fname=None):
-    plotinfo=plot_filename(field_list[0],plotdir,init_date,fcst_hour,prefix="ncumda_g12_imdaa_",sufix="_"+str(fcst_hour).zfill(2)+"Z")
-    print(plotinfo)
-    plot = []
-    for count,datafield in enumerate(field_list):
-        plotinfo=datadic.get_plot_info(datafield,plotinfo)
-        datainfo=data_filename(datafield,datadir,init_date,init_hour,fcst_hour,fname=fname)
-        plotinfo=get_cmap(plotinfo)
-        res=resof(plotinfo)
-        plotinfo.update({"res":res})
-	if plotinfo["plot_type"] in ["contour"]:
-		dataset=get_data(datainfo)
-	else:
-		dataset=get_vector_data(datainfo)
-	plot1=get_subplot(dataset,plotinfo)
-	plot.append(plot1)
-    count=len(plot)
-    panelres                  =  Ngl.Resources()
-    panelres.nglPanelLabelBar =  False           #-- common labelbar
-    panelres.nglPanelYWhiteSpacePercent =  0        #-- reduce space between the panel plots
-    panelres.nglPanelXWhiteSpacePercent =  0        #-- reduce space between the panel plots
-    panelres.nglPanelTop      =  0.95               #-- top position of panel
-    #-- create the panel
-    Ngl.panel(plotinfo["wks"],plot,[count,1],panelres)
-    outfile=check_plot(plotinfo)
-    del plotinfo, datainfo, plot
-    print(outfile)
-    return(outfile)
-
-def get_field_list():
-    field_list=datadic.field_list
-    return(field_list)
-
-def plot_all(datadir,plotdir,init_date,init_hour,fcst_lead,field_list=None,fname=None):
-    hoursofday=numpy.arange(init_hour,init_hour+fcst_lead,1)
-    if field_list is None : field_list=get_field_list()
-    for datafield in field_list:
-        for fcst_hour in hoursofday:
-            print(fcst_hour)
-            print(datafield)
-            plotfile=plot_data([datafield],datadir,plotdir,init_date,init_hour,fcst_hour,fname)
-    Ngl.end()
-    return(plotfile)
-
-
-def umff_to_grib2(infile,outfile=None):
-    if outfile is None: outfile=infile.split(".",1)[0]+".grib2"
-    file_cubes=iris.load(infile)
-    iris.save(file_cubes,outfile)
 
