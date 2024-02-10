@@ -1,0 +1,17 @@
+keys: information
+obsgroup: 32
+obsname: sattcwv
+gdasname: sattcwv
+bufrmtyp:
+obsubtyplst: [25410,] 
+elemcntlst: [19,]
+maxindx: 621
+hdrsize: 339
+lutsize: 128
+OBSTORE: SatTCWV
+HDRFILE: *.hdr
+longname: Satellite_Total_Column_Water_Vapour
+satinstsnsr: Sent3_OLCI
+elemlist_25410: [3,4,5,6,7,8,257,258,259,260,261,1,2,133,69,389,27,437,438] 
+brightnessTemperature:
+metdbsubtype: 
