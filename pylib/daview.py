@@ -21,6 +21,7 @@ sys.path.append(DIC)
 NML=os.environ.get('NML',PKGHOME+"/nml")
 sys.path.append(NML)
 PALETTE=os.environ.get('PYNGL_COLORMAPS',PKGHOME+"/palette")
+SUBTYPNML=NML+"/obs_subtype.nml"
 
 diaglev=int(os.environ.get('GEN_MODE',0))
 def errprint(*args, **kwargs):
@@ -51,10 +52,10 @@ import math
 #from geocat.viz import cmaps as gvcmaps
 #from geocat.viz import util as gvutil
 
-import cartopy
-import cartopy.crs as ccrs
+#import cartopy
+#import cartopy.crs as ccrs
 
-import xarray
+#import xarray
 
 cmapfile=os.environ.get('CMAP',PALETTE+"/gibies_colourmap_20150117.rgb")
 
@@ -1560,7 +1561,7 @@ def mpl_plot_merc(data,figure,plot,colors,area,alpha,parallels,meridians):
     return(figure)
 
 def mpl_plot_cyl(datalist,figure,plot,colors,area,alpha,parallels,meridians,tagmark="",lblst=[],text="",textpos=(0.25, -0.20),display_count=True,title=""):
-    plot = Basemap(projection='cyl', resolution='c', llcrnrlat= -90.,urcrnrlat= 90.,llcrnrlon= 0.,urcrnrlon=360.)
+    plot = Basemap(projection='cyl', resolution='c', llcrnrlat= -90.,urcrnrlat= 90.,llcrnrlon= -180.,urcrnrlon=180.)
     #plot = Basemap(projection='cyl', resolution='c', llcrnrlat= 0.,urcrnrlat= 40.,llcrnrlon= 60.,urcrnrlon=95.)
     plot.drawlsmask(land_color='wheat',ocean_color='lightblue',lakes=True)
     #map.bluemarble(scale=0.5);

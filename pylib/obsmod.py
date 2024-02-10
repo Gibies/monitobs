@@ -32,7 +32,7 @@ import ecbufr
 #import varcx
 #import fsoi
 import symobs
-import obsplot
+import daview
 import sqlobs
 #import sqlodb
 #import obsgui
@@ -273,7 +273,7 @@ def obstore_print_element_table(obsfile,nmlfile=obs_nml):
             print(obstore.obstore_read_batch_elements(infile,indx,nmlfile))
 
 def plot_gridmean(plotpath,data,cylcdatestr,prefix,varname,element,fill=False,extend="both",nmlfile=obs_nml):
-    return(obsplot.plot_gridmean(plotpath,nmlfile,data,cylcdatestr,prefix,varname,element,fill=fill,extend=extend))
+    return(daview.mpl_plot_gridmean(plotpath,nmlfile,data,cylcdatestr,prefix,varname,element,fill=fill,extend=extend))
 
 def print_obstore_lite(obs_file,nmlfile=obs_nml,option=diaglev):
     headerdiff=obstore.header_diffcheck(obs_file)
@@ -310,7 +310,7 @@ def obs_latlon_plot(datapath,plotpath,nmlpath=OBSNML,maxindx=MAXINDX,obstypelist
         plotfile=plotpath+"/"+title+".png"
         latlon_data=obstore_read_latlon(data_file,fltrkey=fltrkey,maxindx=maxindx)
         obslib.obs_frame_ascii(latlon_data,textfile,option=diaglev)
-        figure1=obsplot.plot_latlon(latlon_data,plotfile,fltrkey=fltrkey,text=text,title=title)
+        figure1=daview.mpl_plot_latlon(latlon_data,plotfile,fltrkey=fltrkey,text=text,title=title)
 
 def elenam_list(infile,indx=1,nmlfile=obs_nml):
 	elist=obstore.obstore_read_batch_elements(infile,indx,nmlfile)
@@ -361,9 +361,9 @@ def plotallvar_obs(plotpath,infile,cylcdatestr,obstype,nmlfile=obs_nml,subtype_n
                     ncols=obstore.getldc(element,obsfile=infile,nmlfile=nmlfile,indx=indx)
                     if ncols > 1: varname=element+str(1)
                     else: varname=element
-                    obsplot.scatterplot(plotpath,nmlfile,data,cylcdatestr,prefix,varname,element,fill=fill)
-                    obsplot.plot_density(plotpath,nmlfile,data,cylcdatestr,prefix,varname,element,fill=fill)
-                    obsplot.plot_gridmean(plotpath,nmlfile,data,cylcdatestr,prefix,varname,element,fill=fill)
+                    daview.mpl_scatterplot(plotpath,nmlfile,data,cylcdatestr,prefix,varname,element,fill=fill)
+                    daview.mpl_plot_density(plotpath,nmlfile,data,cylcdatestr,prefix,varname,element,fill=fill)
+                    daview.mpl_plot_gridmean(plotpath,nmlfile,data,cylcdatestr,prefix,varname,element,fill=fill)
         
 def plotallvar_odb(plotpath,odbfile,cylcdatestr,obstype,odbnmlfile=odb_nml,varno_nmlfile=varno_nml,subtype_nmlfile=subtype_nml,fill=False):
     subtype_list=sqlodb.odb_list_subtype(odbfile)
@@ -379,11 +379,11 @@ def plotallvar_odb(plotpath,odbfile,cylcdatestr,obstype,odbnmlfile=odb_nml,varno
             #sqlodb.sqlodb(odbfile,'select lat,lon,varno,obsvalue,obs_error,fg_depar,an_depar from "' + odbfile + '" where varno='+ str(varno) +' ;')
             varname=obslib.getvarname(varno_nmlfile,varno)
             long_name=obslib.getlongname(varno_nmlfile,varno)
-            obsplot.scatterplot(plotpath,odbnmlfile,data,cylcdatestr,prefix,varname,long_name,fill=fill,extend="max")
-            obsplot.plot_density(plotpath,odbnmlfile,data,cylcdatestr,prefix,varname,long_name,fill=fill,extend="max")
-            obsplot.plot_gridmean(plotpath,odbnmlfile,data,cylcdatestr,prefix,varname,long_name,fill=fill,extend="both")
-            obsplot.plot_depart_firstguess(plotpath,odbnmlfile,data,cylcdatestr,prefix,varname,long_name,fill=fill,extend="both")
-            obsplot.plot_depart_anal(plotpath,odbnmlfile,data,cylcdatestr,prefix,varname,long_name,fill=fill,extend="both")
+            daview.mpl_scatterplot(plotpath,odbnmlfile,data,cylcdatestr,prefix,varname,long_name,fill=fill,extend="max")
+            daview.mpl_plot_density(plotpath,odbnmlfile,data,cylcdatestr,prefix,varname,long_name,fill=fill,extend="max")
+            daview.mpl_plot_gridmean(plotpath,odbnmlfile,data,cylcdatestr,prefix,varname,long_name,fill=fill,extend="both")
+            daview.mpl_plot_depart_firstguess(plotpath,odbnmlfile,data,cylcdatestr,prefix,varname,long_name,fill=fill,extend="both")
+            daview.mpl_plot_depart_anal(plotpath,odbnmlfile,data,cylcdatestr,prefix,varname,long_name,fill=fill,extend="both")
 
 def obs_frame(datagroup=None,subtypegroup=None,outpath=None,filename="output",option=0,tagmark="",text="",maxindx=MAXINDX,obstore_info=None):
 	if obstore_info is not None:
@@ -393,7 +393,7 @@ def obs_frame(datagroup=None,subtypegroup=None,outpath=None,filename="output",op
 		if "filename" in obstore_info: filename=obstore_info["filename"].replace(".","_")
 	plotfile=outpath+"/"+filename+".png"
 	print(plotfile)
-	if datagroup is not None: figure1=obsplot.plot_location(datagroup,plotfile,tagmark=tagmark,lblst=subtypegroup,text=text)
+	if datagroup is not None: figure1=daview.mpl_plot_location(datagroup,plotfile,tagmark=tagmark,lblst=subtypegroup,text=text)
 	#figure1.show()
 	for idx in range(0,len(datagroup),1):
            data=datagroup[idx]
