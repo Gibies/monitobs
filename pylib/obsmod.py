@@ -306,8 +306,8 @@ def obs_latlon_plot(datapath,plotpath,nmlpath=OBSNML,maxindx=MAXINDX,obstypelist
         obstypedic=obsdic.obstype[obstype]
         filename=obstypedic["filename"]
         data_file=datapath+"/"+filename
-        textfile=plotpath+"/"+obstype+".txt"
-        plotfile=plotpath+"/"+obstype+".png"
+        textfile=plotpath+"/"+title+".txt"
+        plotfile=plotpath+"/"+title+".png"
         latlon_data=obstore_read_latlon(data_file,fltrkey=fltrkey,maxindx=maxindx)
         obslib.obs_frame_ascii(latlon_data,textfile,option=diaglev)
         figure1=obsplot.plot_latlon(latlon_data,plotfile,fltrkey=fltrkey,text=text,title=title)

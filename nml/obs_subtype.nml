@@ -71,6 +71,7 @@ subtype	stname	descreption
 25200	imdwinds
 25300	iasi_hires
 25400	meris
+25410	sattcwv
 25500	ascathr
 25600	msg_aod
 25700	esa_csr
