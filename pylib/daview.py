@@ -1519,7 +1519,7 @@ def mpl_plot_latlon(data,plotfile,tagmark="",lblst=[],text="",textpos=(0.25, -0.
 	   lblst[i]=obslib.get_subtype_name(subtypenml,key)
     else:
 	lblst=keylist
-    fig= plot_cyl(datalist,fig,plot3,colors,area,alpha,parallels,meridians,tagmark=tagmark,lblst=lblst,text=text,textpos=textpos,title=title)
+    fig= mpl_plot_cyl(datalist,fig,plot3,colors,area,alpha,parallels,meridians,tagmark=tagmark,lblst=lblst,text=text,textpos=textpos,title=title)
     #######
     pyplot.savefig(plotfile,bbox_inches='tight',dpi=300)
     return(fig)

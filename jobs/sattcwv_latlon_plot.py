@@ -16,7 +16,7 @@ datauser="meena"
 
 datapath="/scratch/"+datauser+"/cylc-run/PS45_withSatTCWV/share/cycle/20230601T0000Z/glm_obstore"
 plotpath="/scratch/"+usernam+"/plots"
-nmlpath="/home/meena/packages/obspreproc/opps_sattcwv/nml"
+nmlpath="/home/"+datauser+"/packages/monitobs/nml"
 obstypelist = ["sattcwv"]
 text="20230601T0000Z SatTCWV"
 title="20230601T0000Z SatTCWV"
