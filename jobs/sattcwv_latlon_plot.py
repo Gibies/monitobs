@@ -20,5 +20,6 @@ nmlpath="/home/meena/packages/obspreproc/opps_sattcwv/nml"
 obstypelist = ["sattcwv"]
 text="20230601T0000Z SatTCWV"
 title="20230601T0000Z SatTCWV"
+pltnam="SatTCWV_20230601T0000Z"
 
-obsmod.obs_latlon_plot(datapath,plotpath,nmlpath,obstypelist=obstypelist,text=text,title=title)
+obsmod.obs_latlon_plot(datapath,plotpath,nmlpath,obstypelist=obstypelist,text=text,title=title,pltnam=pltnam)
