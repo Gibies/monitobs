@@ -300,14 +300,18 @@ def print_obstore(obs_file,nmlfile=obs_nml,selectlist=[],querystring="",option=d
             obslib.print_frame(data,option)
         return(data)
 
-def obs_latlon_plot(datapath,plotpath,nmlpath=OBSNML,maxindx=MAXINDX,obstypelist=[],fltrkey="subtype",text="",title=""):
+def obs_latlon_plot(datapath,plotpath,nmlpath=OBSNML,maxindx=MAXINDX,obstypelist=[],fltrkey="subtype",text="",title="",pltnam=None):
     for obstype in obstypelist:
         print(obstype)
         obstypedic=obsdic.obstype[obstype]
         filename=obstypedic["filename"]
         data_file=datapath+"/"+filename
-        textfile=plotpath+"/"+title+".txt"
-        plotfile=plotpath+"/"+title+".png"
+	if pltnam is None:
+        	plotfile=plotpath+"/"+filename+title+".png"
+        	textfile=plotpath+"/"+filename+title+".txt"
+	else:
+		plotfile=plotpath+"/"+pltnam+".png"
+        	textfile=plotpath+"/"+pltnam+".txt"
         latlon_data=obstore_read_latlon(data_file,fltrkey=fltrkey,maxindx=maxindx)
         obslib.obs_frame_ascii(latlon_data,textfile,option=diaglev)
         figure1=daview.mpl_plot_latlon(latlon_data,plotfile,fltrkey=fltrkey,text=text,title=title)

@@ -1332,99 +1332,6 @@ def get_vector_data(datainfo):
         if key is not "data" : dataset.update({key:dataset["zonal_data"][key]})
     return(dataset)
 
-def vcmag(plotinfo):
-    res=resof(plotinfo)
-    if plotinfo["plot_type"] in ["vector","vector_scalar",]:
-    	if "cmap" in plotinfo : res.vcLevelPalette = plotinfo["cmap"]
-	res.vcMinFracLengthF     = 0.008   # Increase length of vector
-	res.vcRefLengthF         = 0.045
-	if "vcmag" in plotinfo : 
-           res.vcRefMagnitudeF      = plotinfo["vcmag"]
-        else :
-           res.vcRefMagnitudeF      = 2.0
-    plotinfo.update({"res":res})
-    return(plotinfo)
-
-def vcstyle(plotinfo):
-    res=resof(plotinfo)
-    if "vcstyle" in plotinfo : 
-       vcstyle=plotinfo["vcstyle"]
-    else : 
-       vcstyle="CurlyVector"
-    if vcstyle is "CurlyVector":
-        res.vcLineArrowThicknessF = 3.0
-	res.vcMonoLineArrowColor = False  
-    if vcstyle is "FillArrow" :
-        res.vcFillArrowsOn       = True
-        res.vcMonoFillArrowFillColor  =  False
-        res.vcFillArrowWidthF         = 0.1
-    res.vcGlyphStyle = vcstyle
-    plotinfo.update({"res":res})
-    return(plotinfo) 
-
-def ngl_cyl_plot(dataset,plotinfo):
-    wks=plotinfo["wks"]
-    res=resof(plotinfo)
-    res.nglDraw               = False               #-- don't draw individual plots
-    res.nglFrame              = False               #-- don't advance frame
-    res.mpDataBaseVersion      = "MediumRes"
-    res.mpFillOn              = True
-    res.mpFillColors = [0,-1,-1,-1]
-    res.mpFillAreaSpecifiers  = ["land"]
-    res.mpSpecifiedFillColors = ["gray65"]
-    res.mpGridLatSpacingF =  10.                  #-- grid lat spacing
-    res.mpGridLonSpacingF =  10.                  #-- grid lon spacing
-    res.mpLimitMode       = "LatLon"              #-- must be set using minLatF/maxLatF/minLonF/maxLonF
-    print(dataset)   
-    if "latitude" in dataset["dimnames"]:
-       res.mpMinLatF = min(dataset["latitude"])
-       res.mpMaxLatF = max(dataset["latitude"])
-       if plotinfo["plot_type"] in ["contour","vector_scalar"]:
-          res.sfYCStartV = float(min(dataset["latitude"]))
-          res.sfYCEndV   = float(max(dataset["latitude"]))
-       if plotinfo["plot_type"] in ["vector","vector_scalar"]:
-          res.vfYCStartV = float(min(dataset["latitude"]))
-          res.vfYCEndV   = float(max(dataset["latitude"]))
-    else:
-       res.mpMinLatF    = -90
-       res.mpMaxLatF    = 90
-       
-    if "longitude" in dataset["dimnames"]:
-       res.mpMinLonF = min(dataset["longitude"])
-       res.mpMaxLonF = max(dataset["longitude"])
-       if plotinfo["plot_type"] in ["contour","vector_scalar"]:
-          res.sfXCStartV = float(min(dataset["longitude"]))   # Define where contour plot
-          res.sfXCEndV   = float(max(dataset["longitude"]))   # should lie on the map plot.
-       if plotinfo["plot_type"] in ["vector","vector_scalar"]:
-          res.vfXCStartV = float(min(dataset["longitude"]))   # Define where contour plot
-          res.vfXCEndV   = float(max(dataset["longitude"]))   # should lie on the map plot.
-    else:
-       res.mpMinLonF    = 0
-       res.mpMaxLonF    = 360
-      
-    if plotinfo["plot_type"] in ["vector","vector_scalar",]:
-        plotinfo=vcmag(plotinfo)
-        plotinfo=vcstyle(plotinfo)
-        res=resof(plotinfo)
-        res.vcMinDistanceF = 0.01
-	uwnd=dataset["zonal_data"]["data"]
-	vwnd=dataset["merid_data"]["data"]
-	print(uwnd.shape)
-	print(vwnd.shape)
-    if plotinfo["plot_type"] in ["vector_scalar",]:
-    	data=get_vector_magnitude(dataset)["data"]
-	print(data.shape)
-    	plotinfo["plot"]=Ngl.vector_scalar_map(wks, uwnd, vwnd, data, res)
-    if plotinfo["plot_type"] in ["vector",]:
-	res.vcMonoLineArrowColor = False  # Draw vectors in color.
-    	plotinfo["plot"]=Ngl.vector_map(wks, uwnd, vwnd, res)
-    if plotinfo["plot_type"] in ["contour",]:
-	data=dataset["data"]
-	print(data.shape)
-	plotinfo["plot"]=Ngl.contour_map(wks,data,res)
-    plotinfo=write_info_text(plotinfo)
-    return(plotinfo["plot"])
-	
 def data_filename(datafield,datadir,init_date,init_hour,fcst_hour,datainfo=None,fname=None):
     if datainfo is None: datainfo=datadic.get_data_info(datafield)
     datainfo.update({"datadir":datadir})
@@ -1439,16 +1346,6 @@ def data_filename(datafield,datadir,init_date,init_hour,fcst_hour,datainfo=None,
     print(datainfo)
     return(datainfo)
 
-def plot_filename(datafield,plotdir,init_date,fcst_hour,prefix="",sufix=""):
-    plotinfo={}
-    sufix="_"+str(fcst_hour).zfill(2)+"Z"
-    plotinfo.update({"plotfile":plotdir+"/"+prefix+datafield+sufix})
-    plotinfo.update({"wks_type":"png"})
-    plotinfo.update({"trstring":str(init_date)+"_"+str(fcst_hour).zfill(2)+"Z"})
-    plotinfo=gen_wks(plotinfo)
-    return(plotinfo)
-
-
 def get_field_list():
     field_list=datadic.field_list
     return(field_list)
@@ -1459,9 +1356,9 @@ def umff_to_grib2(infile,outfile=None):
     file_cubes=iris.load(infile)
     iris.save(file_cubes,outfile)
 
-#################################################################################################################################
-### Matplotlib based functions
-#################################################################################################################################
+#############################################################################################################################
+### Matlab Plotting Library based functions
+#############################################################################################################################
 def mpl_plot_keyfield(dataset,plotfile,tagmark="",lblst=[],text="",textpos=(0.25, -0.20)):
     colors = ["b","g","y","r"]
     cmap= matplotlib.colors.ListedColormap(colors)
@@ -1536,14 +1433,14 @@ def mpl_plot_location(data,plotfile,tagmark="",lblst=[],text="",textpos=(0.25, -
     meridians = numpy.arange(-180.,180.,30.)
     #######
     #plot1=pyplot.subplot(121)
-    #fig = plot_ortho(data,fig,plot1,colors,area,alpha,parallels,meridians,polelat=10,polelon=70)
+    #fig = mpl_plot_ortho(data,fig,plot1,colors,area,alpha,parallels,meridians,polelat=10,polelon=70)
     #######
     #plot2=pyplot.subplot(122)
-    #fig = plot_ortho(data,fig,plot1,colors,area,alpha,parallels,meridians,polelat=10,polelon=250)
+    #fig = mpl_plot_ortho(data,fig,plot1,colors,area,alpha,parallels,meridians,polelat=10,polelon=250)
     #######
     #plot1=pyplot.subplot(211)
     plot3=pyplot.subplot(212)
-    fig= plot_cyl(data,fig,plot3,colors,area,alpha,parallels,meridians,tagmark=tagmark,lblst=lblst,text=text,textpos=textpos)
+    fig= mpl_plot_cyl(data,fig,plot3,colors,area,alpha,parallels,meridians,tagmark=tagmark,lblst=lblst,text=text,textpos=textpos)
     #######
     pyplot.savefig(plotfile,bbox_inches='tight',dpi=200)
     return(fig)
@@ -1774,9 +1671,19 @@ def mpl_plot_field(data,plotfile,domain="global",varname="hloswind",textout=Fals
 	return(gridded_data_omb)
 
 
-#################################################################################################################################
-### NCAR Graghics based functions
-#################################################################################################################################
+#############################################################################################################################
+### NCAR Graghics Library based functions
+#############################################################################################################################
+
+
+def ngl_plot_filename(datafield,plotdir,init_date,fcst_hour,prefix="",sufix=""):
+    plotinfo={}
+    sufix="_"+str(fcst_hour).zfill(2)+"Z"
+    plotinfo.update({"plotfile":plotdir+"/"+prefix+datafield+sufix})
+    plotinfo.update({"wks_type":"png"})
+    plotinfo.update({"trstring":str(init_date)+"_"+str(fcst_hour).zfill(2)+"Z"})
+    plotinfo=ngl_gen_wks(plotinfo)
+    return(plotinfo)
 
 
 def ngl_test_ngl():
@@ -1798,6 +1705,36 @@ def ngl_plot_all(datadir,plotdir,init_date,init_hour,fcst_lead,field_list=None,f
             plotfile=plot_data([datafield],datadir,plotdir,init_date,init_hour,fcst_hour,fname)
     Ngl.end()
     return(plotfile)
+
+def ngl_vcstyle(plotinfo):
+    res=resof(plotinfo)
+    if "vcstyle" in plotinfo : 
+       vcstyle=plotinfo["vcstyle"]
+    else : 
+       vcstyle="CurlyVector"
+    if vcstyle is "CurlyVector":
+        res.vcLineArrowThicknessF = 3.0
+	res.vcMonoLineArrowColor = False  
+    if vcstyle is "FillArrow" :
+        res.vcFillArrowsOn       = True
+        res.vcMonoFillArrowFillColor  =  False
+        res.vcFillArrowWidthF         = 0.1
+    res.vcGlyphStyle = vcstyle
+    plotinfo.update({"res":res})
+    return(plotinfo) 
+
+def ngl_vcmag(plotinfo):
+    res=resof(plotinfo)
+    if plotinfo["plot_type"] in ["vector","vector_scalar",]:
+    	if "cmap" in plotinfo : res.vcLevelPalette = plotinfo["cmap"]
+	res.vcMinFracLengthF     = 0.008   # Increase length of vector
+	res.vcRefLengthF         = 0.045
+	if "vcmag" in plotinfo : 
+           res.vcRefMagnitudeF      = plotinfo["vcmag"]
+        else :
+           res.vcRefMagnitudeF      = 2.0
+    plotinfo.update({"res":res})
+    return(plotinfo)
 
 def ngl_plot_data(field_list,datadir,plotdir,init_date,init_hour,fcst_hour,fname=None):
     plotinfo=plot_filename(field_list[0],plotdir,init_date,fcst_hour,prefix="ncumda_g12_imdaa_",sufix="_"+str(fcst_hour).zfill(2)+"Z")
@@ -1869,3 +1806,66 @@ def ngl_get_subplot(dataset,plotinfo):
     plot1=cyl_plot(dataset,plotinfo)
     return(plot1)
 
+def ngl_cyl_plot(dataset,plotinfo):
+    wks=plotinfo["wks"]
+    res=resof(plotinfo)
+    res.nglDraw               = False               #-- don't draw individual plots
+    res.nglFrame              = False               #-- don't advance frame
+    res.mpDataBaseVersion      = "MediumRes"
+    res.mpFillOn              = True
+    res.mpFillColors = [0,-1,-1,-1]
+    res.mpFillAreaSpecifiers  = ["land"]
+    res.mpSpecifiedFillColors = ["gray65"]
+    res.mpGridLatSpacingF =  10.                  #-- grid lat spacing
+    res.mpGridLonSpacingF =  10.                  #-- grid lon spacing
+    res.mpLimitMode       = "LatLon"              #-- must be set using minLatF/maxLatF/minLonF/maxLonF
+    print(dataset)   
+    if "latitude" in dataset["dimnames"]:
+       res.mpMinLatF = min(dataset["latitude"])
+       res.mpMaxLatF = max(dataset["latitude"])
+       if plotinfo["plot_type"] in ["contour","vector_scalar"]:
+          res.sfYCStartV = float(min(dataset["latitude"]))
+          res.sfYCEndV   = float(max(dataset["latitude"]))
+       if plotinfo["plot_type"] in ["vector","vector_scalar"]:
+          res.vfYCStartV = float(min(dataset["latitude"]))
+          res.vfYCEndV   = float(max(dataset["latitude"]))
+    else:
+       res.mpMinLatF    = -90
+       res.mpMaxLatF    = 90
+       
+    if "longitude" in dataset["dimnames"]:
+       res.mpMinLonF = min(dataset["longitude"])
+       res.mpMaxLonF = max(dataset["longitude"])
+       if plotinfo["plot_type"] in ["contour","vector_scalar"]:
+          res.sfXCStartV = float(min(dataset["longitude"]))   # Define where contour plot
+          res.sfXCEndV   = float(max(dataset["longitude"]))   # should lie on the map plot.
+       if plotinfo["plot_type"] in ["vector","vector_scalar"]:
+          res.vfXCStartV = float(min(dataset["longitude"]))   # Define where contour plot
+          res.vfXCEndV   = float(max(dataset["longitude"]))   # should lie on the map plot.
+    else:
+       res.mpMinLonF    = 0
+       res.mpMaxLonF    = 360
+      
+    if plotinfo["plot_type"] in ["vector","vector_scalar",]:
+        plotinfo=vcmag(plotinfo)
+        plotinfo=vcstyle(plotinfo)
+        res=resof(plotinfo)
+        res.vcMinDistanceF = 0.01
+	uwnd=dataset["zonal_data"]["data"]
+	vwnd=dataset["merid_data"]["data"]
+	print(uwnd.shape)
+	print(vwnd.shape)
+    if plotinfo["plot_type"] in ["vector_scalar",]:
+    	data=get_vector_magnitude(dataset)["data"]
+	print(data.shape)
+    	plotinfo["plot"]=Ngl.vector_scalar_map(wks, uwnd, vwnd, data, res)
+    if plotinfo["plot_type"] in ["vector",]:
+	res.vcMonoLineArrowColor = False  # Draw vectors in color.
+    	plotinfo["plot"]=Ngl.vector_map(wks, uwnd, vwnd, res)
+    if plotinfo["plot_type"] in ["contour",]:
+	data=dataset["data"]
+	print(data.shape)
+	plotinfo["plot"]=Ngl.contour_map(wks,data,res)
+    plotinfo=write_info_text(plotinfo)
+    return(plotinfo["plot"])
+	
