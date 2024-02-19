@@ -19,7 +19,10 @@ module load gnu/netcdf4/1.5.3-netcdf4.6.0hdf51.10.0
 module load gnu/utility/pynio/1.5.5
 module load gnu/pyngl/1.6.1
 module load gnu/pyke/1.1.1
+<<<<<<< HEAD
 #module load gnu/xarray/0.10.2
+=======
+>>>>>>> 9d88f064ab322cf9c8dd6f038d09947fdcb491b1
 module load gnu/xarray/0.11.3
 
 python ${PYSCRYPT} ${ARGS}
