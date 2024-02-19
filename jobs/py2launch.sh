@@ -24,6 +24,10 @@ module load gnu/cartopy/0.16.0
 module load gnu/utility/pynio/1.5.5
 module load gnu/pyngl/1.6.1
 module load gnu/pyke/1.1.1
+<<<<<<< HEAD
+=======
+#module load gnu/xarray/0.10.2
+>>>>>>> 0a572c43fe3d42d96241451d4a8870f6f6583d07
 module load gnu/xarray/0.11.3
 
 module list
