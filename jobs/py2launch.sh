@@ -19,6 +19,7 @@ module load gnu/cartopy/0.16.0
 module load gnu/utility/pynio/1.5.5
 module load gnu/pyngl/1.6.1
 module load gnu/pyke/1.1.1
+module load gnu/xarray/0.11.3
 
 python ${PYSCRYPT} ${ARGS}
 
