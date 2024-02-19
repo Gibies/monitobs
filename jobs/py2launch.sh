@@ -3,6 +3,8 @@ shift
 ARGS=$@
 
 #gnu/python/3.9.1
+module load gnu/pythonpackages/2.7.9
+module load gnu/packagesuite/1
 module load gnu/pandas/0.18.1
 module load gnu/matplotlib/2.2.2
 module load gnu/basemap/1.1.0
