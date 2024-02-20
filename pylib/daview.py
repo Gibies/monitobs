@@ -52,10 +52,10 @@ import math
 #from geocat.viz import cmaps as gvcmaps
 #from geocat.viz import util as gvutil
 
-#import cartopy
-#import cartopy.crs as ccrs
+import cartopy
+import cartopy.crs as ccrs
 
-#import xarray
+import xarray
 
 cmapfile=os.environ.get('CMAP',PALETTE+"/gibies_colourmap_20150117.rgb")
 
@@ -1669,6 +1669,28 @@ def mpl_plot_field(data,plotfile,domain="global",varname="hloswind",textout=Fals
 	plot=mpl_globalview(plotfile3,gridded_data_omb,title=title3,clevs=[0,1,2,3,4,5,10],extend="max",plotmode="shaded")
 	if textout: obslib.obs_frame_ascii(gridded_data,plotfile3)
 	return(gridded_data_omb)
+
+
+def mpl_plot_indian(dataset,plot):
+	data1=dataset["data1"]
+	data2=dataset["data2"]
+	a = xarray.open_dataset(data1).sel(hybrid_ht=0,longitude=slice(60,100),latitude=slice(0,40))
+	b = xarray.open_dataset(data2).sel(hybrid_ht=0,longitude=slice(60,100),latitude=slice(0,40))
+	var1 = a['q']
+	var2 = b['q']
+	diff = var2 - var1
+	print(diff)
+	fig = pyplot.figure(figsize=[12,5])
+	ax = pyplot.axes(projection=ccrs.PlateCarree(central_longitude=0))
+	diff.plot(ax=ax,vmin=-0.02, vmax=0.02, cmap='Blues', transform=ccrs.PlateCarree())
+	ax.coastlines()
+	ax.gridlines()
+	pyplot.show()
+
+	#diff.plot()
+	#plt.show()
+	return(plot)
+
 
 
 #############################################################################################################################
