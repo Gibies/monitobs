@@ -1,3 +1,9 @@
+#!/bin/bash
+
+SELF=$(realpath $0)
+JOBSDIR=${SELF%/*}
+PKGHOME=${SELF%/jobs/*}
+
 PYSCRYPT=$(realpath $1)
 shift
 ARGS=$@
@@ -29,6 +35,8 @@ module list
 which python
 
 cd /scratch/${USER}
+
+export PKGHOME=${PKGHOME}
 
 python ${PYSCRYPT} ${ARGS}
 
