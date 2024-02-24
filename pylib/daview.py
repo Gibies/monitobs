@@ -54,8 +54,8 @@ import math
 
 import cartopy
 import cartopy.crs as ccrs
-
 import xarray
+import iris
 
 cmapfile=os.environ.get('CMAP',PALETTE+"/gibies_colourmap_20150117.rgb")
 
@@ -63,12 +63,49 @@ diaglev=int(os.environ.get('GEN_MODE',0))
 def errprint(*args, **kwargs):
     if diaglev > 0: print(*args, file=sys.stderr, **kwargs)
 
-def mpl_truncate_colormap(cpallet, minval=0.0, maxval=1.0, n=100):
-    cmap=mplcm.get_cmap(cpallet)
-    new_cmap = colors.LinearSegmentedColormap.from_list(
-        'trunc({n},{a:.2f},{b:.2f})'.format(n=cmap.name, a=minval, b=maxval),
-        cmap(numpy.linspace(minval, maxval, n)))
-    return new_cmap
+def load_cubes(infile):
+    file_cubes=iris.load(infile)
+    return(file_cubes)
+
+def umff_to_grib2(infile,outfile=None):
+    if outfile is None: outfile=infile.split(".",1)[0]+".grib2"
+    file_cubes=iris.load(infile)
+    iris.save(file_cubes,outfile)
+
+def read_grib(gribfile):
+	filtered_messages = []
+	for msg in iris_grib.message.GribMessage.messages_from_filename(gribfile):
+	    if msg.sections[4]['productDefinitionTemplateNumber'] is not None:
+		print(msg.sections[4]['productDefinitionTemplateNumber'])
+		print(msg.sections[4]['parameterNumber'])
+		print(msg.sections[4]['typeOfFirstFixedSurface'])
+		print(msg.sections[1])
+		print(msg.sections[3])
+		print(msg.sections[4])
+		print(msg.sections[5])
+		print(msg.sections[6])
+		print(msg.sections[7])
+		print(msg.sections[8])
+		filtered_messages.append(msg)
+	cubes_messages = iris_grib.load_pairs_from_fields(filtered_messages)
+	print(cubes_messages)
+	for cube, msg in cubes_messages:
+	   prod_stat = msg.sections[1]['productionStatusOfProcessedData']
+	   cube.attributes['productionStatusOfProcessedData'] = prod_stat
+	print(cube.attributes['productionStatusOfProcessedData'])
+		#msg.sections[4]['productDefinitionTemplateNumber']; 
+		#msg.sections[4]['parameterNumber']
+	#cubes = iris.load(gribfile)
+	#return(cubes)
+
+def cube_list(infile):
+	cubes = read_grib(infile)
+	cubes = list(cubes)
+	um2grb2.tweaked_messages(cubes)
+	return(cubes)
+
+def save_grib(gribfile,cubes):
+	iris.save(cubes, gribfile)
 
 def get_keyrange(dataset,keyfield):
     lblset=set()
@@ -1690,6 +1727,14 @@ def mpl_plot_indian(dataset,plot):
 	#diff.plot()
 	#plt.show()
 	return(plot)
+
+
+def mpl_truncate_colormap(cpallet, minval=0.0, maxval=1.0, n=100):
+    cmap=mplcm.get_cmap(cpallet)
+    new_cmap = colors.LinearSegmentedColormap.from_list(
+        'trunc({n},{a:.2f},{b:.2f})'.format(n=cmap.name, a=minval, b=maxval),
+        cmap(numpy.linspace(minval, maxval, n)))
+    return new_cmap
 
 
 
