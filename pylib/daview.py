@@ -1686,11 +1686,29 @@ def mpl_plot_indian(dataset,plot):
 	ax.coastlines()
 	ax.gridlines()
 	pyplot.show()
-
-	#diff.plot()
-	#plt.show()
 	return(plot)
 
+def mpl_plot_integrated_gl(dataset,plot):
+	q_ctl=dataset["q_ctl"]
+        rho_ctl=dataset["rho_ctl"]
+	q_ctl = xarray.open_dataset(q_ctl)
+	rho_ctl = xarray.open_dataset(rho_ctl)
+	thickness = xarray.DataArray(data=numpy.zeros(len(q_ctl.hybrid_ht)),dims=["hybrid_ht"],coords={"hybrid_ht": q_ctl.hybrid_ht},name="thickness")
+	thickness = thickness.isel(hybrid_ht=slice(None, -1))
+	for i in range(1, len(q_ctl.hybrid_ht) - 1):
+    		thickness[i] = ((q_ctl.hybrid_ht[i] - q_ctl.hybrid_ht[i - 1]) / 2) + ((q_ctl.hybrid_ht[i + 1] - q_ctl.hybrid_ht[i]) / 2)
+
+	thickness[0] = (q_ctl.hybrid_ht[1] - q_ctl.hybrid_ht[0]) / 2
+	weighted_q = (q_ctl.q * thickness* rho_ctl['unspecified'].values)/82369
+	integrated_weighted_q = weighted_q.sum('hybrid_ht')
+	integrated_weighted_q.to_netcdf('integrated_weighted_q_ctl.nc')
+	m = Basemap(projection='cyl',llcrnrlat=-90,urcrnrlat=90,llcrnrlon=-180,urcrnrlon=180,resolution='c')
+	fig = pyplot.figure(figsize=[12,5])
+	ax = pyplot.axes(projection=ccrs.PlateCarree(central_longitude=0))
+	integrated_weighted_q.plot(ax=ax,cmap='Blues', transform=ccrs.PlateCarree())
+	m.drawcoastlines()
+	pyplot.show()
+	return(plot)
 
 
 #############################################################################################################################
