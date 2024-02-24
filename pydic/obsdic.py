@@ -222,18 +222,19 @@ mwri = {
 	}
 
 obstype={
-        "surface" : Surface,
-        "sonde" : Sonde,
-        "aircraft" : Aircraft,
-        "leogeo" : LEOGEOAMV,           
-        "hlosw" : HLOSWind,
-	"goesabi" : { "filename" : "ABIClr.obstore",},
-	"fy3mws" : { "filename" : "MWSFY3.obstore",},
-	"satwind" : { "filename" : "Satwind.obstore",},
-	"scatwind" : { "filename" : "Scatwind.obstore",},
-	"grndgps" : { "filename" : "GroundGPS.obstore",},
-	"seviri"  : { "filename" : "SEVIRIClr.obstore", },
-	"mwri"	: {"filename" : "MWRI.obstore", },
+        "surface" 	: Surface,
+        "sonde"		: Sonde,
+        "aircraft"	: Aircraft,
+        "leogeo" 	: LEOGEOAMV,           
+        "hlosw" 	: HLOSWind,
+	"goesabi" 	: { "filename" : "ABIClr.obstore",},
+	"fy3mws" 	: { "filename" : "MWSFY3.obstore",},
+	"satwind" 	: { "filename" : "Satwind.obstore",},
+	"scatwind" 	: { "filename" : "Scatwind.obstore",},
+	"grndgps" 	: { "filename" : "GroundGPS.obstore",},
+	"seviri"  	: { "filename" : "SEVIRIClr.obstore", },
+	"mwri"		: {"filename" : "MWRI.obstore", },
+	"sattcwv" 	: {"filename" : "SatTCWV.obstore", },
         }
 
 obstypelist=["aladin",]  #"aircraft","sonde","surface",

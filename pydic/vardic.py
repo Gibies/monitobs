@@ -1,4 +1,13 @@
-import iris, numpy
+#!/usr/bin/env python2
+# -*- coding: utf-8 -*-
+"""
+Created on Wed Jan 23 12:56:36 2019
+
+@author: gibies
+"""
+
+import iris
+import numpy
 
 varlist=["sst", "sss", "ssh", "mld", "temp", "pres", "airt850", "airt500", "airt200"]
 umvarlist=[ "pres", "airt", "uwnd", "vwnd", "wwnd", "sphum", "clud", ]
