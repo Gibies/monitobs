@@ -246,11 +246,6 @@ def mpl_plot_keyfield(dataset,plotfile,tagmark="",lblst=[],text="",textpos=(0.25
     pyplot.savefig(plotfile,bbox_inches='tight',dpi=200)
     return(fig)
 
-def get_dataset(filename,time=0,lev=0,lon_min=0,lon_max=-1,lon_skip=None,lat_min=0,lat_max=-1,lat_skip=None):
-	file_in = xr.open_dataset(gdf.get(filename))
-	dataset = file_in.isel(time=time, lev=lev, lon=slice(lon_min, lon_max, lon_skip), lat=slice(lat_min, lat_max, lat_skip))
-	return(datasset)
-
 def get_cnlev(data):
 	minval=numpy.nanmin(data.values)
 	maxval=numpy.nanmax(data.values)
@@ -1012,8 +1007,8 @@ def mpl_plot_colourbutton():
    m1 = Basemap(projection='cyl', resolution='l', llcrnrlat=-90, llcrnrlon=0, urcrnrlat=90, urcrnrlon=360)
    m1.drawcoastlines()
    m1.drawcoastlines(color='white', linewidth=0.2)
-   m1.drawparallels(np.arange(-90.,90.,30.),labels=[1,0,0,0],fontsize=7)
-   m1.drawmeridians(np.arange(0.,360.,60.),labels=[0,0,0,1],fontsize=7)
+   m1.drawparallels(numpy.arange(-90.,90.,30.),labels=[1,0,0,0],fontsize=7)
+   m1.drawmeridians(numpy.arange(0.,360.,60.),labels=[0,0,0,1],fontsize=7)
    lons,lats=m1(lon,lat)
    sc1=m1.scatter(lons, lats,c=val,cmap=colrs,marker = 'o',s=5,norm=cnorm)
    del val
@@ -1707,12 +1702,13 @@ def mpl_plot_field(data,plotfile,domain="global",varname="hloswind",textout=Fals
 	if textout: obslib.obs_frame_ascii(gridded_data,plotfile3)
 	return(gridded_data_omb)
 
-
 def mpl_plot_indian(dataset,plot):
 	data1=dataset["data1"]
 	data2=dataset["data2"]
-	a = xarray.open_dataset(data1).sel(hybrid_ht=0,longitude=slice(60,100),latitude=slice(0,40))
-	b = xarray.open_dataset(data2).sel(hybrid_ht=0,longitude=slice(60,100),latitude=slice(0,40))
+	a = xar_slice_indian(data1)
+	b = xar_slice_indian(data2)
+	#a = xarray.open_dataset(data1).sel(hybrid_ht=0,longitude=slice(60,100),latitude=slice(0,40))
+	#b = xarray.open_dataset(data2).sel(hybrid_ht=0,longitude=slice(60,100),latitude=slice(0,40))
 	var1 = a['q']
 	var2 = b['q']
 	diff = var2 - var1
@@ -1730,12 +1726,12 @@ def mpl_plot_integrated_gl(dataset,plot):
         rho_ctl=dataset["rho_ctl"]
 	q_ctl = xarray.open_dataset(q_ctl)
 	rho_ctl = xarray.open_dataset(rho_ctl)
-	thickness = xarray.DataArray(data=numpy.zeros(len(q_ctl.hybrid_ht)),dims=["hybrid_ht"],coords={"hybrid_ht": q_ctl.hybrid_ht},name="thickness")
-	thickness = thickness.isel(hybrid_ht=slice(None, -1))
-	for i in range(1, len(q_ctl.hybrid_ht) - 1):
-    		thickness[i] = ((q_ctl.hybrid_ht[i] - q_ctl.hybrid_ht[i - 1]) / 2) + ((q_ctl.hybrid_ht[i + 1] - q_ctl.hybrid_ht[i]) / 2)
-
-	thickness[0] = (q_ctl.hybrid_ht[1] - q_ctl.hybrid_ht[0]) / 2
+	#thickness = xarray.DataArray(data=numpy.zeros(len(q_ctl.hybrid_ht)),dims=["hybrid_ht"],coords={"hybrid_ht": q_ctl.hybrid_ht},name="thickness")
+	#thickness = thickness.isel(hybrid_ht=slice(None, -1))
+	#for i in range(1, len(q_ctl.hybrid_ht) - 1):
+    	#	thickness[i] = ((q_ctl.hybrid_ht[i] - q_ctl.hybrid_ht[i - 1]) / 2) + ((q_ctl.hybrid_ht[i + 1] - q_ctl.hybrid_ht[i]) / 2)
+	#thickness[0] = (q_ctl.hybrid_ht[1] - q_ctl.hybrid_ht[0]) / 2
+ 	thickness=xar_layer_thickness(q_ctl)
 	weighted_q = (q_ctl.q * thickness* rho_ctl['unspecified'].values)/82369
 	integrated_weighted_q = weighted_q.sum('hybrid_ht')
 	integrated_weighted_q.to_netcdf('integrated_weighted_q_ctl.nc')
@@ -1954,3 +1950,32 @@ def ngl_cyl_plot(dataset,plotinfo):
     plotinfo=write_info_text(plotinfo)
     return(plotinfo["plot"])
 	
+
+#############################################################################################################################
+### XARRAY based functions
+#############################################################################################################################
+
+
+def get_dataset(filename,time=0,lev=0,lon_min=0,lon_max=-1,lon_skip=None,lat_min=0,lat_max=-1,lat_skip=None):
+	file_in = xarray.open_dataset(gdf.get(filename))
+	dataset = file_in.isel(time=time, lev=lev, lon=slice(lon_min, lon_max, lon_skip), lat=slice(lat_min, lat_max, lat_skip))
+	return(datasset)
+
+def xar_slice_indian(data):
+	ind_data=xarray.open_dataset(data).sel(hybrid_ht=0,longitude=slice(60,100),latitude=slice(0,40))
+	return(ind_data)
+
+def xar_layer_thickness(q_ctl):
+	thickness = xarray.DataArray(data=numpy.zeros(len(q_ctl.hybrid_ht)),dims=["hybrid_ht"],coords={"hybrid_ht": q_ctl.hybrid_ht},name="thickness")
+	thickness = thickness.isel(hybrid_ht=slice(None, -1))
+	for i in range(1, len(q_ctl.hybrid_ht) - 1):
+	    thickness[i] = ((q_ctl.hybrid_ht[i] - q_ctl.hybrid_ht[i - 1]) / 2) + ((q_ctl.hybrid_ht[i + 1] - q_ctl.hybrid_ht[i]) / 2)
+	thickness[0] = (q_ctl.hybrid_ht[1] - q_ctl.hybrid_ht[0]) / 2
+	return(thickness)
+
+def xar_quot_rsqure(rho_ctl):
+	R_ctl = rho_ctl.hybrid_ht + 6371*(10**3)
+	R_square_ctl = R_ctl**2
+	rho_ctl['density'] = rho_ctl['unspecified'] / R_square_ctl
+	return(rho_ctl)
+
