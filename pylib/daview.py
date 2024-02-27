@@ -1753,46 +1753,6 @@ def mpl_truncate_colormap(cpallet, minval=0.0, maxval=1.0, n=100):
         cmap(numpy.linspace(minval, maxval, n)))
     return new_cmap
 
-def mpl_plot_ose_scalar(plotdic):
-	data_ctl=plotdic["data_ctl"]
-	data_exp=plotdic["data_exp"]
-	plotfile=plotdic["plotfile"]
-	axlbl_y_ctl=plotdic["ctlname"]
-	axlbl_y_exp=plotdic["expname"]
-
-	integrated_q_diff = data_exp - data_ctl
-
-	fig, axes = pyplot.subplots(nrows=3, ncols=1,figsize=[8,20], subplot_kw={'projection': ccrs.PlateCarree(central_longitude=0)})
-	plot=[None]*3
-	axlbly=[None]*3
-
-	plot[0]=data_ctl.plot(ax=axes[0], cmap='Blues', transform=ccrs.PlateCarree())
-	m = Basemap(projection='cyl',llcrnrlat=-90,urcrnrlat=90,llcrnrlon=-180,urcrnrlon=180,resolution='c',ax=axes[0])
-	m.drawcoastlines()
-	axlbly[0]=axes[0].text(-0.1, 0.5, axlbl_y_ctl, va='center', ha='center', rotation='vertical', transform=axes[0].transAxes)
-	axins = inset_axes(axes[0], width = "5%", height = "100%", loc = 'lower left', bbox_to_anchor = (1.09, 0., 1, 1), bbox_transform = axes[0].transAxes, borderpad = 0)
-	fig.colorbar(plot[0], cax = axins)	
-
-	plot[1]=data_exp.plot(ax=axes[1], cmap='Blues', transform=ccrs.PlateCarree())
-	m = Basemap(projection='cyl',llcrnrlat=-90,urcrnrlat=90,llcrnrlon=-180,urcrnrlon=180,resolution='c',ax=axes[1])
-	m.drawcoastlines()
-	axlbly[1]=axes[1].text(-0.1, 0.5, axlbl_y_ctl, va='center', ha='center', rotation='vertical', transform=axes[1].transAxes)
-	axins = inset_axes(axes[1], width = "5%", height = "100%", loc = 'lower left', bbox_to_anchor = (1.09, 0., 1, 1), bbox_transform = axes[1].transAxes, borderpad = 0)
-	fig.colorbar(plot[1], cax = axins)	
-
-	plot[2]=integrated_q_diff.plot(ax=axes[2],vmin=-6,vmax=6, cmap='RdBu_r', transform=ccrs.PlateCarree())
-	m = Basemap(projection='cyl',llcrnrlat=-90,urcrnrlat=90,llcrnrlon=-180,urcrnrlon=180,resolution='c',ax=axes[2])
-	m.drawcoastlines()
-	axlbly[2]=axes[2].text(-0.1, 0.5, 'EXP-CTL', va='center', ha='center', rotation='vertical', transform=axes[2].transAxes)
-	axins = inset_axes(axes[2], width = "5%", height = "100%", loc = 'lower left', bbox_to_anchor = (1.09, 0., 1, 1), bbox_transform = axes[2].transAxes, borderpad = 0)
-	fig.colorbar(plot[2], cax = axins)	
-
-	#im = axes[0].imshow(data_ctl)	
-
-	pyplot.tight_layout(pad=10)
-	pyplot.savefig(plotfile)
-	return(plotfile)
-
 
 
 #############################################################################################################################
@@ -2034,14 +1994,127 @@ def xar_ipw(q_ctl,rho_ctl):
 	data_ctl = weighted_q_ctl.sum('hybrid_ht')
 	return(data_ctl)
 
-def xar_orthogrid_wind(u_wind_ctl,v_wind_ctl):
-	v_wind_ctl_interp = v_wind_ctl.interp(latitude=u_wind_ctl.latitude, longitude=u_wind_ctl.longitude)
+def xar_regrid(v_wind_ctl,q_ctl=None,lon=None,lat=None):
+	if q_ctl is not None:
+		lon = q_ctl.longitude
+		lat = q_ctl.latitude
+	v_wind_ctl_interp = v_wind_ctl.interp(latitude=lat, longitude=lon)
 	return(v_wind_ctl_interp)
 
-def xar_qtransdh(q_ctl,rho_ctl,u_wind_ctl):
+def xar_qtransdh(q_ctl,rho_ctl,u_wind_ctl=None):
 	if "density" not in rho_ctl.data_vars:
 		rho_ctl=xar_quot_rsqure(rho_ctl)
 	thickness=xar_layer_thickness(q_ctl)
-	weighted_q_u_ctl = q_ctl.q * thickness*rho_ctl['density'].values*u_wind_ctl['u'].values
+	if u_wind_ctl is None:
+		weighted_q_ctl = q_ctl.q * thickness*rho_ctl['density'].values
+	else:
+	   if "u" in u_wind_ctl.data_vars:
+		weighted_q_u_ctl = q_ctl.q * thickness*rho_ctl['density'].values*u_wind_ctl['u'].values
+	   if "v" in u_wind_ctl.data_vars:
+		weighted_q_u_ctl = q_ctl.q * thickness*rho_ctl['density'].values*u_wind_ctl['v'].values
 	return(weighted_q_u_ctl)
 
+def xar_height_integral(weighted_q_u_ctl):
+	integrated_q_u_ctl = weighted_q_u_ctl.sum('hybrid_ht')
+	return(integrated_q_u_ctl)
+
+def xar_vimt(q_ctl,rho_ctl,u_wind_ctl,v_wind_ctl):
+	u_wind_ctl=xar_regrid(u_wind_ctl,q_ctl)
+	weighted_q_u_ctl = xar_qtransdh(q_ctl,rho_ctl,u_wind_ctl)
+	integrated_q_u_ctl = xar_height_integral(weighted_q_u_ctl)
+	v_wind_ctl=xar_regrid(v_wind_ctl,q_ctl)
+	weighted_q_v_ctl = xar_qtransdh(q_ctl,rho_ctl,v_wind_ctl)
+	integrated_q_v_ctl = xar_height_integral(weighted_q_v_ctl)
+	dataset=xarray.Dataset(
+		data_vars=dict(
+        		u=(["time","lat", "lon"], integrated_q_u_ctl),
+        		v=(["time","lat", "lon"], integrated_q_v_ctl),
+    				),
+    		coords=dict(
+        		lon=q_ctl.longitude.values,
+        		lat=q_ctl.latitude.values,
+        		time=q_ctl.t.values,
+        		#reference_time=q_ctl.reference_time,
+    				),
+    		#attrs=dict(description="Vertical Integrated Moisture Transport."),
+				)
+	return(dataset)
+	
+
+def xar_plot_ose_scalar(plotdic):
+	data_ctl=plotdic["data_ctl"]
+	data_exp=plotdic["data_exp"]
+	plotfile=plotdic["plotfile"]
+	axlbl_y_ctl=plotdic["ctlname"]
+	axlbl_y_exp=plotdic["expname"]
+
+	integrated_q_diff = data_exp - data_ctl
+
+	fig, axes = pyplot.subplots(nrows=3, ncols=1,figsize=[8,20], subplot_kw={'projection': ccrs.PlateCarree(central_longitude=0)})
+	plot=[None]*3
+	axlbly=[None]*3
+
+	plot[0]=data_ctl.plot(ax=axes[0], cmap='Blues', transform=ccrs.PlateCarree(),add_colorbar=False)
+	m = Basemap(projection='cyl',llcrnrlat=-90,urcrnrlat=90,llcrnrlon=-180,urcrnrlon=180,resolution='c',ax=axes[0])
+	m.drawcoastlines()
+	axlbly[0]=axes[0].text(-0.1, 0.5, axlbl_y_ctl, va='center', ha='center', rotation='vertical', transform=axes[0].transAxes)
+	axins = inset_axes(axes[0], width = "5%", height = "100%", loc = 'lower left', bbox_to_anchor = (1.09, 0., 1, 1), bbox_transform = axes[0].transAxes, borderpad = 0)
+	fig.colorbar(plot[0], cax = axins)	
+
+	plot[1]=data_exp.plot(ax=axes[1], cmap='Blues', transform=ccrs.PlateCarree(),add_colorbar=False)
+	m = Basemap(projection='cyl',llcrnrlat=-90,urcrnrlat=90,llcrnrlon=-180,urcrnrlon=180,resolution='c',ax=axes[1])
+	m.drawcoastlines()
+	axlbly[1]=axes[1].text(-0.1, 0.5, axlbl_y_ctl, va='center', ha='center', rotation='vertical', transform=axes[1].transAxes)
+	axins = inset_axes(axes[1], width = "5%", height = "100%", loc = 'lower left', bbox_to_anchor = (1.09, 0., 1, 1), bbox_transform = axes[1].transAxes, borderpad = 0)
+	fig.colorbar(plot[1], cax = axins)	
+
+	plot[2]=integrated_q_diff.plot(ax=axes[2],vmin=-6,vmax=6, cmap='RdBu_r', transform=ccrs.PlateCarree(),add_colorbar=False)
+	m = Basemap(projection='cyl',llcrnrlat=-90,urcrnrlat=90,llcrnrlon=-180,urcrnrlon=180,resolution='c',ax=axes[2])
+	m.drawcoastlines()
+	axlbly[2]=axes[2].text(-0.1, 0.5, 'EXP-CTL', va='center', ha='center', rotation='vertical', transform=axes[2].transAxes)
+	axins = inset_axes(axes[2], width = "5%", height = "100%", loc = 'lower left', bbox_to_anchor = (1.09, 0., 1, 1), bbox_transform = axes[2].transAxes, borderpad = 0)
+	fig.colorbar(plot[2], cax = axins)	
+
+	#im = axes[0].imshow(data_ctl)	
+
+	pyplot.tight_layout(pad=10)
+	pyplot.savefig(plotfile)
+	return(plotfile)
+
+def xar_plot_ose_vector(plotdic):
+	vimt_ctl=plotdic["data_ctl"]
+	vimt_exp=plotdic["data_exp"]
+	plotfile=plotdic["plotfile"]
+	ctlname=plotdic["ctlname"]
+	expname=plotdic["expname"]
+
+	integrated_q_u_ctl = vimt_ctl.u
+	integrated_q_v_ctl = vimt_ctl.v
+	integrated_q_u_exp = vimt_exp.u
+	integrated_q_v_exp = vimt_exp.v
+
+	lon=vimt_ctl.lon
+	lat=vimt_ctl.lat
+
+	fig, axes = pyplot.subplots(nrows=3, ncols=1,figsize=[20,10], subplot_kw={'projection': ccrs.PlateCarree(central_longitude=0)})
+
+	m = Basemap(projection='cyl', llcrnrlat=-90, urcrnrlat=90,llcrnrlon=-180, urcrnrlon=180, resolution='c',ax=axes[0])
+	m.drawcoastlines()
+	axes[0].text(-0.1, 0.5, 'CONTROL (noSatTCWV)', va='center', ha='center', rotation='vertical', transform=axes[0].transAxes)
+	axes[0].quiver(lon[::40], lat[::40], integrated_q_u_ctl.isel(time=0).values[::40,::40 ], integrated_q_v_ctl.isel(time=0).values[::40,::40],scale=10000)
+
+	m = Basemap(projection='cyl', llcrnrlat=-90, urcrnrlat=90,llcrnrlon=-180, urcrnrlon=180, resolution='c',ax=axes[1])
+	m.drawcoastlines()
+	axes[1].text(-0.1, 0.5, 'EXPERIMENT (withSatTCWV)', va='center', ha='center', rotation='vertical', transform=axes[1].transAxes)
+	axes[1].quiver(lon[::40], lat[::40], integrated_q_u_exp.isel(time=0).values[::40,::40 ], integrated_q_v_exp.isel(time=0).values[::40,::40],scale=10000)
+
+	integrated_q_u_diff = integrated_q_u_exp-integrated_q_u_ctl
+	integrated_q_v_diff = integrated_q_v_exp-integrated_q_v_ctl
+	m = Basemap(projection='cyl',llcrnrlat=-90,urcrnrlat=90,llcrnrlon=-180,urcrnrlon=180,resolution='c',ax=axes[2])
+	m.drawcoastlines()
+	axes[2].text(-0.1, 0.5, 'EXP-CTL', va='center', ha='center', rotation='vertical', transform=axes[2].transAxes)
+	axes[2].quiver(lon[::40], lat[::40], integrated_q_u_diff.isel(time=0).values[::40,::40 ], integrated_q_v_diff.isel(time=0).values[::40,::40],scale=2000)
+
+	pyplot.tight_layout()
+	pyplot.savefig(plotfile)
+	return(plotfile)
