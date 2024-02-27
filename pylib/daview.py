@@ -43,6 +43,7 @@ pyplot.switch_backend('agg')
 import matplotlib.colors as colors
 import matplotlib.cm as mplcm
 from mpl_toolkits.basemap import Basemap, shiftgrid, addcyclic
+from mpl_toolkits.axes_grid1.inset_locator import inset_axes
 import pandas
 import numpy
 import domaindic
@@ -1682,23 +1683,25 @@ def mpl_globalview(plotfile,data,title,clevs=range(0,10,1),cpallet="jet",extend=
     pyplot.savefig(plotfile,bbox_inches='tight',dpi=200)
 
 
-def mpl_plot_field(data,plotfile,domain="global",varname="hloswind",textout=False):
+def mpl_plot_field(data,plotfile,domain="global",varname="hloswind",textout=False,clevs=None,dlevs=None):
+	if clevs is None : clevs = [0,1,2,3,4,5,10,15,20,25,35,45]
+	if dlevs is None : dlevs = [0,1,2,3,4,5,10]
 	hgtmin=domaindic.dom_hgtmin[domain]
 	hgtmax=domaindic.dom_hgtmax[domain]
 	plotfile1=plotfile+"_"+domain+"_obs"
 	title1="Observation (magnitude) at altitude ["+str(int(hgtmin))+"m to "+str(int(hgtmax))+"m ]"
 	gridded_data_obs=obslib.gridded_rms_1x1deg(data,varname=varname,fieldname="observed")
-	plot=mpl_globalview(plotfile1,gridded_data_obs,title=title1,clevs=[0,1,2,3,4,5,10,15,20,25,35,45],extend="max",plotmode="shaded")
+	plot=mpl_globalview(plotfile1,gridded_data_obs,title=title1,clevs=clevs,extend="max",plotmode="shaded")
 	if textout: obslib.obs_frame_ascii(gridded_data,plotfile1)
 	plotfile2=plotfile+"_"+domain+"_bkg"
 	title2="Background (magnitude) at altitude ["+str(int(hgtmin))+"m to "+str(int(hgtmax))+"m ]"
 	gridded_data_bkg=obslib.gridded_rms_1x1deg(data,varname=varname,fieldname="background")
-	plot=mpl_globalview(plotfile2,gridded_data_bkg,title=title2,clevs=[0,1,2,3,4,5,10,15,20,25,35,45],extend="max",plotmode="shaded")
+	plot=mpl_globalview(plotfile2,gridded_data_bkg,title=title2,clevs=clevs,extend="max",plotmode="shaded")
 	if textout: obslib.obs_frame_ascii(gridded_data,plotfile2)
 	plotfile3=plotfile+"_"+domain+"_omb"
 	title3="OBS minus BKG (rms) at altitude ["+str(int(hgtmin))+"m to "+str(int(hgtmax))+"m ]"
 	gridded_data_omb=obslib.gridded_rms_1x1deg(data,varname=varname,fieldname="obs_minus_bkg")
-	plot=mpl_globalview(plotfile3,gridded_data_omb,title=title3,clevs=[0,1,2,3,4,5,10],extend="max",plotmode="shaded")
+	plot=mpl_globalview(plotfile3,gridded_data_omb,title=title3,clevs=dlevs,extend="max",plotmode="shaded")
 	if textout: obslib.obs_frame_ascii(gridded_data,plotfile3)
 	return(gridded_data_omb)
 
@@ -1749,6 +1752,46 @@ def mpl_truncate_colormap(cpallet, minval=0.0, maxval=1.0, n=100):
         'trunc({n},{a:.2f},{b:.2f})'.format(n=cmap.name, a=minval, b=maxval),
         cmap(numpy.linspace(minval, maxval, n)))
     return new_cmap
+
+def mpl_plot_ose_scalar(plotdic):
+	data_ctl=plotdic["data_ctl"]
+	data_exp=plotdic["data_exp"]
+	plotfile=plotdic["plotfile"]
+	axlbl_y_ctl=plotdic["ctlname"]
+	axlbl_y_exp=plotdic["expname"]
+
+	integrated_q_diff = data_exp - data_ctl
+
+	fig, axes = pyplot.subplots(nrows=3, ncols=1,figsize=[8,20], subplot_kw={'projection': ccrs.PlateCarree(central_longitude=0)})
+	plot=[None]*3
+	axlbly=[None]*3
+
+	plot[0]=data_ctl.plot(ax=axes[0], cmap='Blues', transform=ccrs.PlateCarree())
+	m = Basemap(projection='cyl',llcrnrlat=-90,urcrnrlat=90,llcrnrlon=-180,urcrnrlon=180,resolution='c',ax=axes[0])
+	m.drawcoastlines()
+	axlbly[0]=axes[0].text(-0.1, 0.5, axlbl_y_ctl, va='center', ha='center', rotation='vertical', transform=axes[0].transAxes)
+	axins = inset_axes(axes[0], width = "5%", height = "100%", loc = 'lower left', bbox_to_anchor = (1.09, 0., 1, 1), bbox_transform = axes[0].transAxes, borderpad = 0)
+	fig.colorbar(plot[0], cax = axins)	
+
+	plot[1]=data_exp.plot(ax=axes[1], cmap='Blues', transform=ccrs.PlateCarree())
+	m = Basemap(projection='cyl',llcrnrlat=-90,urcrnrlat=90,llcrnrlon=-180,urcrnrlon=180,resolution='c',ax=axes[1])
+	m.drawcoastlines()
+	axlbly[1]=axes[1].text(-0.1, 0.5, axlbl_y_ctl, va='center', ha='center', rotation='vertical', transform=axes[1].transAxes)
+	axins = inset_axes(axes[1], width = "5%", height = "100%", loc = 'lower left', bbox_to_anchor = (1.09, 0., 1, 1), bbox_transform = axes[1].transAxes, borderpad = 0)
+	fig.colorbar(plot[1], cax = axins)	
+
+	plot[2]=integrated_q_diff.plot(ax=axes[2],vmin=-6,vmax=6, cmap='RdBu_r', transform=ccrs.PlateCarree())
+	m = Basemap(projection='cyl',llcrnrlat=-90,urcrnrlat=90,llcrnrlon=-180,urcrnrlon=180,resolution='c',ax=axes[2])
+	m.drawcoastlines()
+	axlbly[2]=axes[2].text(-0.1, 0.5, 'EXP-CTL', va='center', ha='center', rotation='vertical', transform=axes[2].transAxes)
+	axins = inset_axes(axes[2], width = "5%", height = "100%", loc = 'lower left', bbox_to_anchor = (1.09, 0., 1, 1), bbox_transform = axes[2].transAxes, borderpad = 0)
+	fig.colorbar(plot[2], cax = axins)	
+
+	#im = axes[0].imshow(data_ctl)	
+
+	pyplot.tight_layout(pad=10)
+	pyplot.savefig(plotfile)
+	return(plotfile)
 
 
 
@@ -1978,4 +2021,16 @@ def xar_quot_rsqure(rho_ctl):
 	R_square_ctl = R_ctl**2
 	rho_ctl['density'] = rho_ctl['unspecified'] / R_square_ctl
 	return(rho_ctl)
+
+def xar_qrhodh(q_ctl,rho_ctl):
+	if "density" not in rho_ctl.data_vars:
+		rho_ctl=xar_quot_rsqure(rho_ctl)
+	thickness=xar_layer_thickness(q_ctl)
+	weighted_q_ctl = q_ctl.q * thickness*rho_ctl['density'].values
+	return(weighted_q_ctl)
+
+def xar_ipw(q_ctl,rho_ctl):
+	weighted_q_ctl = xar_qrhodh(q_ctl,rho_ctl)
+	data_ctl = weighted_q_ctl.sum('hybrid_ht')
+	return(data_ctl)
 
