@@ -1762,7 +1762,7 @@ def mpl_plot_ose_scalar(plotdic):
 
 	integrated_q_diff = data_exp - data_ctl
 
-	fig, axes = pyplot.subplots(nrows=3, ncols=1,figsize=[8,20], subplot_kw={'projection': ccrs.PlateCarree(central_longitude=0)})
+	fig, axes = pyplot.subplots(nrows=3, ncols=1,figsize=[20,10], subplot_kw={'projection': ccrs.PlateCarree(central_longitude=0)})
 	plot=[None]*3
 	axlbly=[None]*3
 
@@ -1788,8 +1788,7 @@ def mpl_plot_ose_scalar(plotdic):
 	fig.colorbar(plot[2], cax = axins)	
 
 	#im = axes[0].imshow(data_ctl)	
-
-	pyplot.tight_layout(pad=10)
+	fig.tight_layout()
 	pyplot.savefig(plotfile)
 	return(plotfile)
 
