@@ -2124,30 +2124,30 @@ def xar_plot_ose_scalar(plotdic):
 	return(plotfile)
 
 def xar_plot_ose_vector(plotdic):
-	vimt_ctl=plotdic["data_ctl"]
-	vimt_exp=plotdic["data_exp"]
+	data_ctl=plotdic["data_ctl"]
+	data_exp=plotdic["data_exp"]
 	plotfile=plotdic["plotfile"]
-	ctlname=plotdic["ctlname"]
-	expname=plotdic["expname"]
+	axlbl_y_ctl=plotdic["ctlname"]
+	axlbl_y_exp=plotdic["expname"]
 
-	integrated_q_u_ctl = vimt_ctl.u
-	integrated_q_v_ctl = vimt_ctl.v
-	integrated_q_u_exp = vimt_exp.u
-	integrated_q_v_exp = vimt_exp.v
+	integrated_q_u_ctl = data_ctl.u
+	integrated_q_v_ctl = data_ctl.v
+	integrated_q_u_exp = data_exp.u
+	integrated_q_v_exp = data_exp.v
 
-	lon=vimt_ctl.lon
-	lat=vimt_ctl.lat
+	lon=data_ctl.lon
+	lat=data_ctl.lat
 
 	fig, axes = pyplot.subplots(nrows=3, ncols=1,figsize=[20,10], subplot_kw={'projection': ccrs.PlateCarree(central_longitude=0)})
 
 	m = Basemap(projection='cyl', llcrnrlat=-90, urcrnrlat=90,llcrnrlon=-180, urcrnrlon=180, resolution='c',ax=axes[0])
 	m.drawcoastlines()
-	axes[0].text(-0.1, 0.5, 'CONTROL (noSatTCWV)', va='center', ha='center', rotation='vertical', transform=axes[0].transAxes)
+	axes[0].text(-0.1, 0.5, axlbl_y_ctl, va='center', ha='center', rotation='vertical', transform=axes[0].transAxes)
 	axes[0].quiver(lon[::40], lat[::40], integrated_q_u_ctl.isel(time=0).values[::40,::40 ], integrated_q_v_ctl.isel(time=0).values[::40,::40],scale=10000)
 
 	m = Basemap(projection='cyl', llcrnrlat=-90, urcrnrlat=90,llcrnrlon=-180, urcrnrlon=180, resolution='c',ax=axes[1])
 	m.drawcoastlines()
-	axes[1].text(-0.1, 0.5, 'EXPERIMENT (withSatTCWV)', va='center', ha='center', rotation='vertical', transform=axes[1].transAxes)
+	axes[1].text(-0.1, 0.5, axlbl_y_exp, va='center', ha='center', rotation='vertical', transform=axes[1].transAxes)
 	axes[1].quiver(lon[::40], lat[::40], integrated_q_u_exp.isel(time=0).values[::40,::40 ], integrated_q_v_exp.isel(time=0).values[::40,::40],scale=10000)
 
 	integrated_q_u_diff = integrated_q_u_exp-integrated_q_u_ctl
