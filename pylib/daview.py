@@ -2034,3 +2034,14 @@ def xar_ipw(q_ctl,rho_ctl):
 	data_ctl = weighted_q_ctl.sum('hybrid_ht')
 	return(data_ctl)
 
+def xar_orthogrid_wind(u_wind_ctl,v_wind_ctl):
+	v_wind_ctl_interp = v_wind_ctl.interp(latitude=u_wind_ctl.latitude, longitude=u_wind_ctl.longitude)
+	return(v_wind_ctl_interp)
+
+def xar_qtransdh(q_ctl,rho_ctl,u_wind_ctl):
+	if "density" not in rho_ctl.data_vars:
+		rho_ctl=xar_quot_rsqure(rho_ctl)
+	thickness=xar_layer_thickness(q_ctl)
+	weighted_q_u_ctl = q_ctl.q * thickness*rho_ctl['density'].values*u_wind_ctl['u'].values
+	return(weighted_q_u_ctl)
+
