@@ -1766,21 +1766,21 @@ def mpl_plot_ose_scalar(plotdic):
 	plot=[None]*3
 	axlbly=[None]*3
 
-	plot[0]=data_ctl.plot(ax=axes[0], cmap='Blues', transform=ccrs.PlateCarree())
+	plot[0]=data_ctl.plot(ax=axes[0], cmap='Blues', transform=ccrs.PlateCarree(),add_colorbar=False)
 	m = Basemap(projection='cyl',llcrnrlat=-90,urcrnrlat=90,llcrnrlon=-180,urcrnrlon=180,resolution='c',ax=axes[0])
 	m.drawcoastlines()
 	axlbly[0]=axes[0].text(-0.1, 0.5, axlbl_y_ctl, va='center', ha='center', rotation='vertical', transform=axes[0].transAxes)
 	axins = inset_axes(axes[0], width = "5%", height = "100%", loc = 'lower left', bbox_to_anchor = (1.09, 0., 1, 1), bbox_transform = axes[0].transAxes, borderpad = 0)
 	fig.colorbar(plot[0], cax = axins)	
 
-	plot[1]=data_exp.plot(ax=axes[1], cmap='Blues', transform=ccrs.PlateCarree())
+	plot[1]=data_exp.plot(ax=axes[1], cmap='Blues', transform=ccrs.PlateCarree(),add_colorbar=False)
 	m = Basemap(projection='cyl',llcrnrlat=-90,urcrnrlat=90,llcrnrlon=-180,urcrnrlon=180,resolution='c',ax=axes[1])
 	m.drawcoastlines()
 	axlbly[1]=axes[1].text(-0.1, 0.5, axlbl_y_ctl, va='center', ha='center', rotation='vertical', transform=axes[1].transAxes)
 	axins = inset_axes(axes[1], width = "5%", height = "100%", loc = 'lower left', bbox_to_anchor = (1.09, 0., 1, 1), bbox_transform = axes[1].transAxes, borderpad = 0)
 	fig.colorbar(plot[1], cax = axins)	
 
-	plot[2]=integrated_q_diff.plot(ax=axes[2],vmin=-6,vmax=6, cmap='RdBu_r', transform=ccrs.PlateCarree())
+	plot[2]=integrated_q_diff.plot(ax=axes[2],vmin=-6,vmax=6, cmap='RdBu_r', transform=ccrs.PlateCarree(),add_colorbar=False)
 	m = Basemap(projection='cyl',llcrnrlat=-90,urcrnrlat=90,llcrnrlon=-180,urcrnrlon=180,resolution='c',ax=axes[2])
 	m.drawcoastlines()
 	axlbly[2]=axes[2].text(-0.1, 0.5, 'EXP-CTL', va='center', ha='center', rotation='vertical', transform=axes[2].transAxes)
