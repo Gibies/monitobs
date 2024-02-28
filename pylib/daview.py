@@ -231,22 +231,6 @@ def get_keyrange(dataset,keyfield):
     lblist=list(lblset)
     return(lblist)
 
-def mpl_plot_keyfield(dataset,plotfile,tagmark="",lblst=[],text="",textpos=(0.25, -0.20)):
-    colors = ["b","g","y","r"]
-    cmap= matplotlib.colors.ListedColormap(colors)
-    clevs=range(0,24,6)
-    fig = pyplot.figure()
-    #colors = (0,0,0)
-    area = 1.0      #numpy.pi*
-    alpha=0.5
-    parallels = numpy.arange(-80.,90,20.)
-    meridians = numpy.arange(-180.,180.,30.)
-    plot1=pyplot.subplot(212)
-    fig= plot_cyl(dataset,fig,plot1,colors,area,alpha,parallels,meridians,tagmark=tagmark,lblst=lblst,text=text,textpos=textpos)
-    #######
-    pyplot.savefig(plotfile,bbox_inches='tight',dpi=200)
-    return(fig)
-
 def get_cnlev(data):
 	minval=numpy.nanmin(data.values)
 	maxval=numpy.nanmax(data.values)
@@ -260,204 +244,6 @@ def satpassloc(df):
 	return(tmXBValues,tmXBLabels)
 
 
-def ngl_plot_raster_fill(dataset={},data_hoff=None,cnlev=None,clrindx=None,title="",lstr="",rstr="",foottext="",plot_btmlev=0.0,plot_toplev=20000.0,plotfile="test",wks_type="png",cmapfile=cmapfile,fillval=-999.99):
-	if "cnlev" not in dataset: dataset.update({"cnlev":[-25,-10,-5,-2,-1,-0.5,0.0,0.5,1,2,5,10,25]})
-	if "cnlev" in dataset: cnlev=dataset["cnlev"]
-	if "clrindx" not in dataset: dataset.update({"clrindx":range(172,204,1)+range(218,255,1)})
-	if "clrindx" in dataset: clrindx=dataset["clrindx"]
-	if "data" in dataset: data_hoff=dataset["data"]
-	if "title" in dataset: title=dataset["title"]
-	if "lstr" in dataset: lstr=dataset["lstr"]
-	if "rstr" in dataset: rstr=dataset["rstr"]
-	if "foottext" in dataset: foottext=dataset["foottext"]
-	if "plot_btmlev" in dataset: plot_btmlev=dataset["plot_btmlev"]
-	if "plot_toplev" in dataset: plot_toplev=dataset["plot_toplev"]
-	if "plotfile" in dataset: plotfile=dataset["plotfile"]
-	if "wks_type" in dataset: wks_type=dataset["wks_type"]
-	if "cmapfile" in dataset: cmapfile=dataset["cmapfile"]
-	if "fillval" in dataset: fillval=dataset["fillval"]
-	print(plotfile+"."+wks_type)
-	#if "height" not in data_hoff.columns:
- 	#   col0=data_hoff.columns[0]
-	#   data_hoff.rename(columns = {col0:"height"}, inplace = True)
-	#   data_hoff=data_hoff.set_index("height")
-	print(data_hoff)
-	#data_hoff=data_hoff.truncate(plot_btmlev,plot_toplev)
-	data_hoff.fillna(fillval,inplace=True)
-	height=list(data_hoff.index)
-	series=list(data_hoff.columns)
-	tindx=list(range(0,len(series),1))
-	hindx=list(range(0,len(height),1))
-
-	if "tmXBValues" in dataset: 
-		tmxbvals=dataset["tmXBValues"]
-	else:
-		tmxbvals=range(0,len(series))
-
-	if "tmXBLabels" in dataset:
-		tmxblbls=dataset["tmXBLabels"]
-	else:
-		tmxblbls=[str(int(series[lb]))+"" for lb in range(0,len(series))]
-
-	if "tmYLValues" in dataset:
-		tmylvals=dataset["tmYLValues"]
-	else:
-		tmylvals=height[::2]
-		#tmylvals=[2000,4000,6000,8000,10000,12000,14000,16000,18000,20000]
-	
-	if "tmYLLabels" in dataset:
-		tmyllbls=dataset["tmYLLabels"]
-	else:
-		tmyllbls=[str(int(hgt/1000))+"km" for hgt in tmylvals]
-		#tmyllbls=["2km","4km","6km","8km","10km","12km","14km","16km","18km","20km"]
-
-
-	print(tmylvals,tmyllbls)
-	
-	print(min(data_hoff),max(data_hoff))
-
-	print(height)
-	print(tmylvals)
-	print(series)
-	print(tmxbvals)
-
-	cmap = Ngl.read_colormap_file(cmapfile)[clrindx,:]
-	wks = Ngl.open_wks(wks_type,plotfile)
-	resources = Ngl.Resources()
-
-	resources.tiMainString   = "~F25~"+title  # Main title.
-	resources.tiLeftString   = "~F25~"+title  # Main title.
-	resources.tiRightString   = "~F25~"+title  # Main title.
-
-	if "sfXArray" in dataset: resources.sfXArray = dataset["sfXArray"]
-	resources.sfXCStartV = tmxbvals[0]  # Indicate start and end of left
-	resources.sfXCEndV   = tmxbvals[-1]   # Y axes values.
-	resources.tmXBMode      = "Explicit"   # Define your own tick mark labels.
-	resources.tmXBLabelFont = "times-roman"  # Change font of labels.
-	resources.tmXBLabelFontHeightF = 0.015 # Change font height of labels.
-	resources.tmXBMinorOn   = False        # No minor tick marks.
-	resources.tmXBValues    = tmxbvals # Location to put tick mark labels
-	resources.tmXBLabels    = tmxblbls
-	resources.tmXBLabelAngleF = 45
-	resources.tmXBLabelJust = "TopRight"
-	if "trXAxisType" in dataset: resources.trXAxisType = dataset["trXAxisType"]
-	if "trXCoordPoints" in dataset: resources.trXCoordPoints = dataset["trXCoordPoints"]
-	if "trXReverse" in dataset:
-		resources.trXReverse  = dataset["trXReverse"]
-	else:
-		resources.trXReverse  = False    # Reverse the X values.
-	print(resources.trXReverse)
-
-	#resources.tiYAxisString  = "~F25~Height"  # Y axes label.
-	resources.sfYCStartV = tmylvals[0]  # Indicate start and end of left
-	resources.sfYCEndV   = tmylvals[-1]   # Y axes values.
-	resources.tmYLMode      = "Explicit" # Define own tick mark labels.
-	resources.tmYLLabelFont = "times-roman"  # Change the font.
-	resources.tmYLMinorOn   = True        # No minor tick marks.
-	resources.tmYLValues    = tmylvals
-	resources.tmYLLabels    = tmyllbls
-	if "trYReverse" in dataset:
-                resources.trYReverse  = dataset["trYReverse"]
-	else:
-		resources.trYReverse  = False    # Reverse the Y values.
-	resources.trYLog      = False    # Use log scale.
-
-	resources.lbLabelBarOn 	= True
-	resources.pmLabelBarDisplayMode = "Always"    # Turn off label bar.
-
-
-	resources.cnFillOn      = True  # Turn on contour level fill.
-	resources.cnFillMode	= "RasterFill"
-	resources.cnLinesOn	= False
-	resources.cnLineLabelsOn	= False
-	resources.cnInfoLabelOn	= False
-	resources.cnLevelSelectionMode = "ExplicitLevels"
-	resources.cnLevels	= cnlev #[0,10,20,30,40,50,60,70,80,90,100,150,200,250,300,350,400,450,500,550,600,650,700,750]
-	resources.cnFillPalette = cmap
-	resources.cnLineLabelAngleF = 0. # Draw contour line labels right-side up.
-    	resources.sfMissingValueV = fillval
-
-	resources.nglDraw  = False  # Don't draw the plot or advance the
-	resources.nglFrame = False  # frame in the call to Ngl.contour.
-
-	resources.nglMaximize = False
-	print(data_hoff)
-	contour = Ngl.contour(wks, data_hoff.values, resources)  # Create a contour plot.
-
-	Ngl.draw(contour)  # Draw the contour plot.
-
-	txres               = Ngl.Resources()    # Annotate plot with some text.
-	txres.txFontHeightF = 0.015
-	txres.txAngleF      = 0.
-	Ngl.text_ndc(wks,"~F25~"+foottext,.5,.05,txres)
-
-	Ngl.frame(wks) # Advance the frame.
-
-
-def ngl_plot_hoff(data_hoff,cnlev,clrindx,title="",lstr="",rstr="",foottext="",plot_btmlev=0.0,plot_toplev=20000.0,plotfile="test",wks_type="png",cmapfile=cmapfile,fillval=-999.99):
-	data_hoff=data_hoff.truncate(plot_btmlev,plot_toplev)
-	data_hoff.fillna(fillval,inplace=True)
-	height=list(data_hoff.index)
-	time=list(data_hoff.columns)
-	tindx=list(range(0,len(time),1))
-	hindx=list(range(0,len(height),1))
-
-	cmap = Ngl.read_colormap_file(cmapfile)[clrindx,:]
-	wks = Ngl.open_wks(wks_type,plotfile)
-	resources = Ngl.Resources()
-
-	resources.tiMainString   = "~F25~"+title  # Main title.
-	resources.tiLeftString   = "~F25~"+title  # Main title.
-	resources.tiRightString   = "~F25~"+title  # Main title.
-
-	resources.tmXBMode      = "Explicit"   # Define your own tick mark labels.
-	resources.tmXBLabelFont = "times-roman"  # Change font of labels.
-	resources.tmXBLabelFontHeightF = 0.015 # Change font height of labels.
-	resources.tmXBMinorOn   = False        # No minor tick marks.
-	resources.tmXBValues    = tindx[3::40] # Location to put tick mark labels
-	resources.tmXBLabels    = time[3::40]
-	resources.tmXBLabelAngleF = 20
-	resources.tmXBLabelJust = "TopRight"
-	resources.trXReverse  = True    # Reverse the X values.
-
-	#resources.tiYAxisString  = "~F25~Height"  # Y axes label.
-	resources.sfYCStartV = height[0]  # Indicate start and end of left
-	resources.sfYCEndV   = height[-1]   # Y axes values.
-	resources.tmYLMode      = "Explicit" # Define own tick mark labels.
-	resources.tmYLLabelFont = "times-roman"  # Change the font.
-	resources.tmYLMinorOn   = True        # No minor tick marks.
-	resources.tmYLValues    = [2000,4000,6000,8000,10000,12000,14000,16000,18000,20000]
-	resources.tmYLLabels    = ["2km","4km","6km","8km","10km","12km","14km","16km","18km","20km"]
-	resources.trYReverse  = False    # Reverse the Y values.
-	resources.trYLog      = False    # Use log scale.
-
-	resources.lbLabelBarOn 	= True
-	resources.pmLabelBarDisplayMode = "Always"    # Turn off label bar.
-
-	resources.cnFillOn          = True  # Turn on contour level fill.
-	resources.cnLinesOn	= False
-	resources.cnLineLabelsOn	= False
-	resources.cnInfoLabelOn	= False
-	resources.cnLevelSelectionMode = "ExplicitLevels"
-	resources.cnLevels	= cnlev #[0,10,20,30,40,50,60,70,80,90,100,150,200,250,300,350,400,450,500,550,600,650,700,750]
-	resources.cnFillPalette = cmap
-	resources.cnLineLabelAngleF = 0. # Draw contour line labels right-side up.
-    	resources.sfMissingValueV = fillval
-
-	resources.nglDraw  = False  # Don't draw the plot or advance the
-	resources.nglFrame = False  # frame in the call to Ngl.contour.
-
-	resources.nglMaximize = False
-	contour = Ngl.contour(wks, data_hoff.values, resources)  # Create a contour plot.
-
-	Ngl.draw(contour)  # Draw the contour plot.
-
-	txres               = Ngl.Resources()    # Annotate plot with some text.
-	txres.txFontHeightF = 0.015
-	txres.txAngleF      = 0.
-	Ngl.text_ndc(wks,"~F25~"+foottext,.5,.05,txres)
-
-	Ngl.frame(wks) # Advance the frame.
 
 def get_fillval(dataset,fillvalfix=-999.99):
 	try:fillval = dataset["_FillValue"]
@@ -606,154 +392,7 @@ def get_vector_data(dataset):
     if grid_type is None:
        dataset = get_2d_lat(dataset)
        dataset = get_2d_lon(dataset)
-    
     return(dataset)
-
-def get_colrindx(colrdic):
-    if "colrindx" not in colrdic or colrdic["colrindx"] is None:
-    	try:colrmin=colrdic["colrmin"]
-	except:colrmin=0
-    	try:colrmax=colrdic["colrmax"]
-	except:colrmax=170
-	colrindx=numpy.arange(colrmin,colrmax,1)
-    else:
-    	colrindx=colrdic["colrindx"]
-    return(colrindx)
-
-def ngl_print_rgb(colrdic):
-    colrindx=get_colrindx(colrdic)
-    cmap = Ngl.read_colormap_file(cmapfile)[colrindx,:]
-    print(cmap)
-
-def ngl_orth_plot(wks,data,res):
-	res.vpWidthF               =  0.8               #-- width of plot
-	res.vpHeightF              =  0.8               #-- height of plot
-	res.mpFillOn               =  True              #-- map fill on
-	res.mpOceanFillColor       = "Transparent"      #-- default: dark blue
-	res.mpLandFillColor        = "Gray90"           #-- default: dark red
-	res.mpInlandWaterFillColor = "Transparent"      #-- default: white
-	res.mpProjection           = "Orthographic"     #-- projection type
-	res.tiMainString           = "Orthographic projection" #-- title
-	#-- create the plot
-	map = Ngl.map(wks,res)
-	return(map)
-
-def ngl_cyl_plot(wks,dataset,res):
-    res.mpDataBaseVersion      = "MediumRes"
-    res.mpFillOn              = True
-    res.mpFillColors = [0,-1,-1,-1]
-    res.mpFillAreaSpecifiers  = ["land"]
-    res.mpSpecifiedFillColors = ["gray65"]
-    res.mpGridLatSpacingF =  10.                  #-- grid lat spacing
-    res.mpGridLonSpacingF =  10.                  #-- grid lon spacing
-    res.mpLimitMode       = "LatLon"              #-- must be set using minLatF/maxLatF/minLonF/maxLonF
-    res.mpMinLatF    = -90
-    res.mpMaxLatF    = 90
-    res.mpMinLonF    = 0
-    res.mpMaxLonF    = 360
-    res.nglDraw               = False               #-- don't draw individual plots
-    res.nglFrame              = False               #-- don't advance frame
-
-    if dataset["plot_type"] in ["contour","vector_scalar",]:
-	print(res.sfXArray.shape)
-	print(res.sfYArray.shape)
-	print(res.cnLevels)
-    						#plot1=Ngl.gsn_csm_contour_map_ce(wks,data,res) is not available
-    if dataset["plot_type"] is "vector_scalar":
-	uwnd=dataset["zonal_data"]
-	vwnd=dataset["merid_data"]
-    	data=dataset["data"]
-	print(uwnd.shape)
-	print(vwnd.shape)
-	print(data.shape)
-	res.vcMonoLineArrowColor = True  
-    	plot1=Ngl.vector_scalar_map(wks, uwnd, vwnd, data, res)
-    if dataset["plot_type"] in ["vector",]:
-	uwnd=dataset["zonal_data"]
-	vwnd=dataset["merid_data"]
-	print(uwnd.shape)
-	print(vwnd.shape)
-	res.vcMonoLineArrowColor = False  # Draw vectors in color.
-    	plot1=Ngl.vector_map(wks, uwnd, vwnd, res)
-    if dataset["plot_type"] in ["contour",]:
-	data=dataset["data"]
-	print(data.shape)
-	plot1=Ngl.contour_map(wks,data,res)
-    return(plot1)
-	
-
-def ngl_get_subplot(dataset,wks):
-    data=dataset["data"]
-    lat2d=dataset["lat2d"]
-    lon2d=dataset["lon2d"]
-    if "cnlev" in dataset:
-	cnlev= dataset["cnlev"]
-    else:
-	cnlev= list(numpy.arange(0.,32.,2.))
-	print(cnlev)
-    if "title" in dataset: 
-	title=dataset["title"]
-    else:
-	title=""
-    colrindx=get_colrindx(dataset)
-    cmap = Ngl.read_colormap_file(cmapfile)[colrindx,:]
-    res = Ngl.Resources()
-    if "draworder" in dataset:
-    	res.mpFillDrawOrder   = dataset["draworder"]
-    
-    dataset["plot_type"]="contour"
-
-    if dataset["plot_type"] in ["contour","vector_scalar",]:
-    	res.cnFillOn = True
-   	res.cnLineOn = False
-    	res.cnLineLabelsOn        = False
-    	res.cnInfoLabelOn         = False
-    	res.cnLevelSelectionMode = "ExplicitLevels"
-    	res.cnLevels             = cnlev
-    	res.cnFillPalette               = cmap
-
-    if dataset["plot_type"] in ["vector","vector_scalar",]:
-    	res.vcLevelPalette       = cmap
-	res.vcMinFracLengthF     = 0.1   # Increase length of
-	res.vcMinMagnitudeF      = 0.001  # vectors.
-	res.vcRefLengthF         = 0.045
-	res.vcRefMagnitudeF      = 2.0
-
-    res.lbOrientation  = "Horizontal"
-    res.sfXArray     = lon2d
-    res.sfYArray     = lat2d
-    res.sfMissingValueV = get_fillval(dataset)
-    res.gsnAddCyclic = False  
-    res.tiMainString = title
-    if "gsnLeftString" in dataset:
-    	res.gsnLeftString = dataset["gsnLeftString"]
-    else:
-	res.gsnLeftString = ""
-    plot1=cyl_plot(wks,dataset,res)
-    return(plot1)
-
-
-def ngl_plot_data(dicset_list,plotfile,wks_type):
-    wkres = Ngl.Resources()
-    wks = Ngl.open_wks(wks_type,plotfile,wkres)
-    plot = []
-    for count,dataset in enumerate(dicset_list):
-	if dataset["plot_type"] in ["contour"]:
-		dataset=get_data(dataset)
-	else:
-		dataset=get_vector_data(dataset)
-	plot1=get_subplot(dataset,wks)
-	plot.append(plot1)
-    count=len(plot)
-    panelres                  =  Ngl.Resources()
-    panelres.nglPanelLabelBar =  False           #-- common labelbar
-    panelres.nglPanelYWhiteSpacePercent =  0        #-- reduce space between the panel plots
-    panelres.nglPanelXWhiteSpacePercent =  0        #-- reduce space between the panel plots
-    panelres.nglPanelTop      =  0.95               #-- top position of panel
-    #-- create the panel
-    Ngl.panel(wks,plot,[count,1],panelres)
-    Ngl.end()
-    return(plot)
 
 def get_dataset_bias(dataset,dataref):
 	dataset_bias=dataset.copy()
@@ -768,31 +407,6 @@ def get_dataset_bias(dataset,dataref):
 	dataset_bias.update({"data":bias})
 	return(dataset_bias)
 
-
-def ngl_plot_bias(dicset_list,plotfile,wks_type):
-    wkres = Ngl.Resources()
-    wks = Ngl.open_wks(wks_type,plotfile,wkres)
-    plot = []
-    for count,dicset1 in enumerate(dicset_list):
-	dataset=get_data(dicset1)
-	if count is 0:
-		dataref=dataset
-	else:
-		dataset=get_dataset_bias(dataset,dataref)
-	print(count)
-	print(dataset)
-	plot1=get_subplot(dataset,wks)
-	plot.append(plot1)
-    count=len(plot)
-    panelres                  =  Ngl.Resources()
-    panelres.nglPanelLabelBar =  False           #-- common labelbar
-    panelres.nglPanelYWhiteSpacePercent =  0        #-- reduce space between the panel plots
-    panelres.nglPanelXWhiteSpacePercent =  0        #-- reduce space between the panel plots
-    panelres.nglPanelTop      =  0.95               #-- top position of panel
-    #-- create the panel
-    Ngl.panel(wks,plot,[count,1],panelres)
-    Ngl.end()
-    return(plot)
 
 def correct_cnlev(dataset,lev):
     if dataset["fvarname"] in ["air_temperature",]:
@@ -820,160 +434,6 @@ def convert_theta_to_airt(dataset,lev):
 	print("File variable name is "+str(dataset["fvarname"]))
     return(dataset)
 
-def ngl_plot_stdlev(dicset_list,plotfile,wks_type,lev_list=vardic.stdlev):
-    dicset=dicset_list[0].copy()
-    wkres = Ngl.Resources()
-    wks = Ngl.open_wks(wks_type,plotfile,wkres)
-    plot = []
-    for count,lev in enumerate(lev_list):
-	dataset=dicset.copy()
-	dataset.update({"title":""})
-	dataset.update({"gsnLeftString":"Level "+str(lev)+" hPa"})
-	fnampreix=dataset["filename"].split('.')[0]
-	dataset.update({"filename":fnampreix+".nc"})
-	lev_index=obslib.str_list_index(lev,vardic.lev_list)
-	print(lev,lev_index, vardic.lev_list)
-	dataset.update({"lev_index":lev_index})
-	if dataset["plot_type"] in ["contour"]:
-		dataset=get_data(dataset)
-	else:
-		dataset=get_vector_data(dataset)
-	dataset=convert_theta_to_airt(dataset,lev)
-	plot1=get_subplot(dataset,wks)
-	plot.append(plot1)
-    count=len(plot)
-    panelres                  =  Ngl.Resources()
-    panelres.nglPanelLabelBar =  False           #-- common labelbar
-    panelres.nglPanelYWhiteSpacePercent =  0        #-- reduce space between the panel plots
-    panelres.nglPanelXWhiteSpacePercent =  0        #-- reduce space between the panel plots
-    panelres.nglPanelTop      =  0.95               #-- top position of panel
-    #-- create the panel
-    Ngl.panel(wks,plot,[count,1],panelres)
-    Ngl.end()
-    return(plot)
-
-
-
-
-def ngl_plot_databias(dicset_list,plotfile,wks_type):
-    wkres = Ngl.Resources()
-    #wkres.wkColorMap = "default"
-    wks = Ngl.open_wks(wks_type,plotfile,wkres)
-    plot = []
-    if len(dicset_list) == 2:
-	dicset1=dicset_list[0]
-	dicset2=dicset_list[1]
-	dataset1=get_data(dicset1)
-	plot1=get_subplot(dataset1,wks)
-	plot.append(plot1)
-	dataset2=get_data(dicset2)
-	plot2=get_subplot(dataset2,wks)
-	plot.append(plot2)
-	dataset3=get_dataset_bias(dataset2,dataset1)
-	plot3=get_subplot(dataset3,wks)
-	plot.append(plot3)
-    count=len(plot)
-    panelres                  =  Ngl.Resources()
-    panelres.nglPanelLabelBar =  False           #-- common labelbar
-    panelres.nglPanelYWhiteSpacePercent =  0        #-- reduce space between the panel plots
-    panelres.nglPanelXWhiteSpacePercent =  0        #-- reduce space between the panel plots
-    panelres.nglPanelTop      =  0.95               #-- top position of panel
-    #-- create the panel
-    Ngl.panel(wks,plot,[count,1],panelres)
-    Ngl.end()
-    return(plot)
-
-def ngl_plot_grid_data(data,plotfile,wks_type):
-	wkres = Ngl.Resources()
-	wkres.wkColorMap = "default"
-	wks = Ngl.open_wks(wks_type,plotfile,wkres)
-	res = Ngl.Resources()
-	plot = Ngl.contour_map(wks,data,res)
-	return(plot)
-
-def mpl_truncate_colormap(cpallet, minval=0.0, maxval=1.0, n=100):
-    cmap=mplcm.get_cmap(cpallet)
-    new_cmap = colors.LinearSegmentedColormap.from_list(
-        'trunc({n},{a:.2f},{b:.2f})'.format(n=cmap.name, a=minval, b=maxval),
-        cmap(numpy.linspace(minval, maxval, n)))
-    return new_cmap
-
-def mpl_plot_location(data,plotfile,plotmode="cyl"):
-    fig = pyplot.figure()
-    colors = (0,0,0)
-    area = 1.0      #numpy.pi*
-    alpha=0.5
-    parallels = numpy.arange(-80.,90,20.)
-    meridians = numpy.arange(-180.,180.,30.)
-    if plotmode is "ortho": 
-	plot1=pyplot.subplot(121)
-	fig = plot_ortho(data,fig,plot1,colors,area,alpha,parallels,meridians,polelat=10,polelon=70)
-	plot2=pyplot.subplot(122)
-	fig = plot_ortho(data,fig,plot2,colors,area,alpha,parallels,meridians,polelat=10,polelon=250)
-    if plotmode is "merc":
-	plot=pyplot.subplot(211)
-    	fig= plot_merc(data,fig,plot,colors,area,alpha,parallels,meridians)
-    if plotmode is "cyl":
-	plot=pyplot.subplot(211)
-    	fig= plot_cyl(data,fig,plot,colors,area,alpha,parallels,meridians)
-    pyplot.savefig(plotfile,bbox_inches='tight',dpi=200)
-    return(fig)
-
-def mpl_plot_merc(data,figure,plot,colors,area,alpha,parallels,meridians):
-    plot = Basemap(projection='merc',llcrnrlat=-85,urcrnrlat=85,llcrnrlon=-180,urcrnrlon=180,lat_ts=20,resolution='c')
-    plot.drawlsmask(land_color='wheat',ocean_color='lightblue',lakes=True)
-    #map.bluemarble(scale=0.5);
-    plot.drawcoastlines()
-    #map.drawcountries()
-    plot.drawparallels(parallels,labels=[True,False,True,False],fontsize=5)
-    plot.drawmeridians(meridians,labels=[False,False,False,True],fontsize=5,rotation=45)
-    x, y = plot(list(data.Longitude.values), list(data.Latitude.values))
-    plot = pyplot.scatter(x,y,s=area,c=colors,alpha=alpha)
-    return(figure)
-
-def mpl_plot_cyl(data,figure,plot,colors,area,alpha,parallels,meridians):
-    plot = Basemap(projection='cyl', resolution='c', llcrnrlat= -90.,urcrnrlat= 90.,llcrnrlon=-180.,urcrnrlon=180.)
-    plot.drawlsmask(land_color='wheat',ocean_color='lightblue',lakes=True)
-    #map.bluemarble(scale=0.5);
-    plot.drawcoastlines()
-    #map.drawcountries()
-    plot.drawparallels(parallels,labels=[True,False,True,False],fontsize=5)
-    plot.drawmeridians(meridians,labels=[False,False,False,True],fontsize=5,rotation=45)
-    x, y = plot(list(data.Longitude.values), list(data.Latitude.values))
-    plot = pyplot.scatter(x,y,s=area,c=colors,alpha=alpha)
-    return(figure)
-
-def mpl_plot_ortho(data,figure,plot,colors,area,alpha,parallels,meridians,polelat,polelon):
-    plot=Basemap(lat_0=polelat, lon_0=polelon, projection='ortho',resolution='l' )
-    plot.drawlsmask(land_color='wheat',ocean_color='lightblue',lakes=True)
-    plot.drawcoastlines()
-    #plot.readshapefile('/home/gibies/maskfiles/AllIndia/AllIndia', 'AllIndia')
-    plot.drawparallels(parallels,labels=[True,False,True,False],fontsize=5)
-    plot.drawmeridians(meridians,labels=[False,False,False,True],fontsize=5)
-    x, y = plot(list(data.Longitude.values), list(data.Latitude.values))
-    plot = pyplot.scatter(x,y,s=area,c=colors,alpha=alpha)
-    return(figure)
-
-def mpl_globalview(plotfile,data,title,clevs=range(0,10,1),cpallet="jet",extend="max",plotmode="shaded"):
-    cmap=mplcm.get_cmap(cpallet, len(clevs) - 1)
-    glat=data.index
-    glon=data.columns
-    x,y=numpy.meshgrid(glon,glat)
-    fig = pyplot.figure()
-    map = Basemap(projection='cyl', resolution='c', llcrnrlat= -90.,urcrnrlat= 90.,llcrnrlon=-180.,urcrnrlon=180.)
-    #map.bluemarble(scale=0.5);
-    map.drawcoastlines()
-    map.drawparallels(numpy.arange( -90., 90.,30.),labels=[1,0,0,0],fontsize=5)
-    map.drawmeridians(numpy.arange(-180.,180.,30.),labels=[0,0,0,1],fontsize=5,rotation=45)
-    #map.drawcountries()
-    if plotmode is "shaded": plot = map.contourf(x,y,data,clevs, cmap=cmap,extend=extend)
-    if plotmode is "button": plot = map.scatter(x,y,data,clevs, cmap=cmap,extend=extend)
-    pyplot.title(title)
-    #ax = fig.add_subplot(311)
-    cbar=fig.colorbar(plot,orientation='horizontal')
-    cbar.ax.tick_params(labelsize=5)
-    pyplot.savefig(plotfile,bbox_inches='tight',dpi=200)
-
 
 def plot_field(data,plotfile,domain="global",varname="hloswind",textout=False):
 	hgtmin=domaindic.dom_hgtmin[domain]
@@ -995,194 +455,22 @@ def plot_field(data,plotfile,domain="global",varname="hloswind",textout=False):
 	if textout: obslib.obs_frame_ascii(gridded_data,plotfile3)
 	return(gridded_data_omb)
 
-def mpl_plot_colourbutton():
-   lon=data[:,1]
-   lat=data[:,0]
-   val=data[:,2]
-
-   cmap=daview.truncate_colormap('jet',minval=0.35, maxval=1.0, n=100)
-   cticks=[1,2,5,10,25,50,100,200]
-   colrs=cmap              #["lightblue","lightgreen","yellow","orange","red"]
-   cnorm=matplotlib.colors.LogNorm(1,250)
-   ##########################
-   m1 = Basemap(projection='cyl', resolution='l', llcrnrlat=-90, llcrnrlon=0, urcrnrlat=90, urcrnrlon=360)
-   m1.drawcoastlines()
-   m1.drawcoastlines(color='white', linewidth=0.2)
-   m1.drawparallels(numpy.arange(-90.,90.,30.),labels=[1,0,0,0],fontsize=7)
-   m1.drawmeridians(numpy.arange(0.,360.,60.),labels=[0,0,0,1],fontsize=7)
-   lons,lats=m1(lon,lat)
-   sc1=m1.scatter(lons, lats,c=val,cmap=colrs,marker = 'o',s=5,norm=cnorm)
-   del val
-   #plt.clim(0,150)
-   #cbar=plt.colorbar(sc1)
-   cbar=plt.colorbar(sc1,ticks=cticks,orientation="vertical",extend="max",shrink=0.9, pad=0.01)
-   ticklabs = cbar.ax.get_yticklabels()
-   cbar.ax.set_yticklabels(cticks, fontsize=7)
-   sc1 = plt.annotate("(a) Reception count (0.5 deg grid)",fontsize=7, xy=(0.01, 1.05), xycoords='axes fraction')
-   
-   #fig2, ax2 = plt.subplots(212,figsize=(10,8))
-   plot2=plt.subplot(212)
-   return(sc1)
-
-
-#############################################################################################################################
-###  Merged from imdaanowcast package
-#############################################################################################################################
-
-def ngl_resof(plotinfo):
-    if "res" in plotinfo:
-        res=plotinfo["res"]
-    else:
-        res = Ngl.Resources()
-    return(res)
-
-def ngl_gen_wks(plotinfo):
-    plotfile=plotinfo["plotfile"]
-    wks_type=plotinfo["wks_type"]
-    wkres = Ngl.Resources()
-    wkres.wkColorMap = "gibies_colourmap_20150117"
-    wks = Ngl.open_wks(wks_type,plotfile,wkres)
-    plotinfo.update({"wks":wks})
-    return(plotinfo)
-
-
-def ngl_get_colrindx(colrdic):
-    if "colrindx" not in colrdic or colrdic["colrindx"] is None:
-    	try:colrmin=colrdic["colrmin"]
-	except:colrmin=0
-    	try:colrmax=colrdic["colrmax"]
-	except:colrmax=170
-	colrindx=numpy.arange(colrmin,colrmax,1)
-    else:
-    	colrindx=colrdic["colrindx"]
-    return(colrindx)
-
-def ngl_get_cmap(plotinfo):
-    colrindx=get_colrindx(plotinfo)
-    cmap = Ngl.read_colormap_file(cmapfile)[colrindx,:]
-    if "revcmap" in plotinfo and plotinfo["revcmap"]: cmap=cmap[::-1,:]
-    plotinfo.update({"cmap":cmap})
-    return(plotinfo)
 
 def print_rgb(colrdic):
     if "cmap" not in colrdic: colrdic=get_cmap(colrdic)
     cmap=colrdic["cmap"]
     print(cmap)
 
-def mpl_truncate_colormap(cpallet, minval=0.0, maxval=1.0, n=100):
-    cmap=mplcm.get_cmap(cpallet)
-    new_cmap = colors.LinearSegmentedColormap.from_list(
-        'trunc({n},{a:.2f},{b:.2f})'.format(n=cmap.name, a=minval, b=maxval),
-        cmap(numpy.linspace(minval, maxval, n)))
-    return new_cmap
-
 def check_plot(plotinfo):
     outfile=os.path.abspath(plotinfo["plotfile"]+"."+plotinfo["wks_type"])
     outfile=subprocess.call("ls "+outfile, shell=True)
     return(outfile)
-
-def ngl_test_ngl(plotinfo={}):
-    if "plotfile" not in plotinfo: plotinfo={"plotfile":"palette_check"}
-    if "wks_type" not in plotinfo: plotinfo.update({"wks_type":"png"})
-    outfile=os.path.abspath(plotinfo["plotfile"]+"."+plotinfo["wks_type"])
-    if "wks" not in plotinfo: plotinfo=gen_wks(plotinfo)
-    os.environ["NCARG_COLORMAPS"]=PALETTE
-    os.environ["PYNGL_COLORMAPS"]=PALETTE
-    cmapfile=subprocess.call("ls "+PALETTE+"/gibies_colourmap_20150117.rgb", shell=True)
-    
-    plot=Ngl.draw_colormap(plotinfo["wks"])
-    Ngl.end()
-    outfile=check_plot(plotinfo)
-    print(cmapfile,outfile)
-    return(outfile)
-
-def ngl_write_tlstring(plotinfo):
-    vpx = Ngl.get_float(plotinfo["plot"],"vpXF")
-    vpy = Ngl.get_float(plotinfo["plot"],"vpYF")
-    vpw = Ngl.get_float(plotinfo["plot"],"vpWidthF")
-    vph = Ngl.get_float(plotinfo["plot"],"vpHeightF")
-    if not "tlsres" in plotinfo:
-	plotinfo.update({"tlsres":Ngl.Resources()})
-	plotinfo["tlsres"].txFontHeightF = 0.014
-	plotinfo["tlsres"].txJust        = "CenterLeft"
-    if not "tlstring" in plotinfo: 
- 	print("No string for Top Left corner")
-        plotinfo.update({"tlstring":"____"})
-    Ngl.text_ndc(plotinfo["wks"], plotinfo["tlstring"], vpx+0.05*vpw, vpy, plotinfo["tlsres"])
-    return(plotinfo)
-
-def ngl_write_trstring(plotinfo):
-    vpx = Ngl.get_float(plotinfo["plot"],"vpXF")
-    vpy = Ngl.get_float(plotinfo["plot"],"vpYF")
-    vpw = Ngl.get_float(plotinfo["plot"],"vpWidthF")
-    vph = Ngl.get_float(plotinfo["plot"],"vpHeightF")
-    if not "trsres" in plotinfo:
-	plotinfo.update({"trsres":Ngl.Resources()})
-	plotinfo["trsres"].txFontHeightF = 0.014
-	plotinfo["trsres"].txJust        = "CenterRight"
-    if not "trstring" in plotinfo: 
- 	print("No string for Top Right corner")
-        plotinfo.update({"trstring":"____"})
-    Ngl.text_ndc(plotinfo["wks"], plotinfo["trstring"], vpx+0.95*vpw, vpy, plotinfo["trsres"])
-    return(plotinfo)
-
-def ngl_write_blstring(plotinfo):
-    vpx = Ngl.get_float(plotinfo["plot"],"vpXF")
-    vpy = Ngl.get_float(plotinfo["plot"],"vpYF")
-    vpw = Ngl.get_float(plotinfo["plot"],"vpWidthF")
-    vph = Ngl.get_float(plotinfo["plot"],"vpHeightF")
-    if not "blsres" in plotinfo:
-	plotinfo.update({"blsres":Ngl.Resources()})
-	plotinfo["blsres"].txFontHeightF = 0.014
-	plotinfo["blsres"].txJust        = "CenterLeft"
-    if not "blstring" in plotinfo: 
- 	print("No string for Bottom Left corner")
-        plotinfo.update({"blstring":"____"})
-    Ngl.text_ndc(plotinfo["wks"], plotinfo["blstring"], vpx+0.05*vpw, vpy-1.2*vph, plotinfo["blsres"])
-    return(plotinfo)
-
-def ngl_write_brstring(plotinfo):
-    vpx = Ngl.get_float(plotinfo["plot"],"vpXF")
-    vpy = Ngl.get_float(plotinfo["plot"],"vpYF")
-    vpw = Ngl.get_float(plotinfo["plot"],"vpWidthF")
-    vph = Ngl.get_float(plotinfo["plot"],"vpHeightF")
-    if not "brsres" in plotinfo:
-	plotinfo.update({"brsres":Ngl.Resources()})
-	plotinfo["brsres"].txFontHeightF = 0.014
-	plotinfo["brsres"].txJust        = "CenterRight"
-    if not "brstring" in plotinfo: 
- 	print("No string for Bottom Right corner")
-        plotinfo.update({"brstring":"____"})
-    Ngl.text_ndc(plotinfo["wks"], plotinfo["brstring"], vpx+0.95*vpw, vpy-1.2*vph, plotinfo["brsres"])
-    return(plotinfo)
 
 def write_info_text(plotinfo):
     if "tlstring" in plotinfo : plotinfo=write_tlstring(plotinfo)
     if "trstring" in plotinfo : plotinfo=write_trstring(plotinfo)
     if "blstring" in plotinfo : plotinfo=write_blstring(plotinfo)
     if "brstring" in plotinfo : plotinfo=write_brstring(plotinfo)
-    return(plotinfo)
-
-def ngl_add_info_string(plotinfo):
-    #-- add units and copyrights to wks
-    plot=plotinfo["plot"]
-    wks=plotinfo["wks"]
-    vpx = Ngl.get_float(plot,"vpXF")             #-- retrieve value of res.vpXF from plot
-    vpy = Ngl.get_float(plot,"vpYF")             #-- retrieve value of res.vpYF from plot
-    vpw = Ngl.get_float(plot,"vpWidthF")         #-- retrieve value of res.vpWidthF from plot
-    vph = Ngl.get_float(plot,"vpHeightF")        #-- retrieve value of res.vpHeightF from plot
-
-    print(plot,vpx,vpy,vpw,vph)
-
-    units = "test_unit"
-    txres = Ngl.Resources()
-    txres.txFontHeightF = 0.014                 #-- font size for left, center and right string
-    txres.txJust        = "CenterCenter"        #-- text justification
-    Ngl.text_ndc(wks, "["+units+"]", vpx-0.04, vpy, txres)  #-- add text to wks
-
-    txres.txFontHeightF = 0.012                 #-- font size for left, center and right string
-    Ngl.text_ndc(wks,"footnote", vpx+vpw-0.07, vpy-vph, txres) #-- plot copyright info
-    #plotinfo.update({"wks":wks})
     return(plotinfo)
 
 
@@ -1392,6 +680,58 @@ def umff_to_grib2(infile,outfile=None):
 #############################################################################################################################
 ### Matlab Plotting Library based functions
 #############################################################################################################################
+
+def mpl_truncate_colormap(cpallet, minval=0.0, maxval=1.0, n=100):
+    cmap=mplcm.get_cmap(cpallet)
+    new_cmap = colors.LinearSegmentedColormap.from_list(
+        'trunc({n},{a:.2f},{b:.2f})'.format(n=cmap.name, a=minval, b=maxval),
+        cmap(numpy.linspace(minval, maxval, n)))
+    return new_cmap
+
+def mpl_truncate_colormap(cpallet, minval=0.0, maxval=1.0, n=100):
+    cmap=mplcm.get_cmap(cpallet)
+    new_cmap = colors.LinearSegmentedColormap.from_list(
+        'trunc({n},{a:.2f},{b:.2f})'.format(n=cmap.name, a=minval, b=maxval),
+        cmap(numpy.linspace(minval, maxval, n)))
+    return new_cmap
+
+def mpl_plot_location(data,plotfile,plotmode="cyl"):
+    fig = pyplot.figure()
+    colors = (0,0,0)
+    area = 1.0      #numpy.pi*
+    alpha=0.5
+    parallels = numpy.arange(-80.,90,20.)
+    meridians = numpy.arange(-180.,180.,30.)
+    if plotmode is "ortho": 
+	plot1=pyplot.subplot(121)
+	fig = plot_ortho(data,fig,plot1,colors,area,alpha,parallels,meridians,polelat=10,polelon=70)
+	plot2=pyplot.subplot(122)
+	fig = plot_ortho(data,fig,plot2,colors,area,alpha,parallels,meridians,polelat=10,polelon=250)
+    if plotmode is "merc":
+	plot=pyplot.subplot(211)
+    	fig= plot_merc(data,fig,plot,colors,area,alpha,parallels,meridians)
+    if plotmode is "cyl":
+	plot=pyplot.subplot(211)
+    	fig= plot_cyl(data,fig,plot,colors,area,alpha,parallels,meridians)
+    pyplot.savefig(plotfile,bbox_inches='tight',dpi=200)
+    return(fig)
+
+def mpl_plot_keyfield(dataset,plotfile,tagmark="",lblst=[],text="",textpos=(0.25, -0.20)):
+    colors = ["b","g","y","r"]
+    cmap= matplotlib.colors.ListedColormap(colors)
+    clevs=range(0,24,6)
+    fig = pyplot.figure()
+    #colors = (0,0,0)
+    area = 1.0      #numpy.pi*
+    alpha=0.5
+    parallels = numpy.arange(-80.,90,20.)
+    meridians = numpy.arange(-180.,180.,30.)
+    plot1=pyplot.subplot(212)
+    fig= plot_cyl(dataset,fig,plot1,colors,area,alpha,parallels,meridians,tagmark=tagmark,lblst=lblst,text=text,textpos=textpos)
+    #######
+    pyplot.savefig(plotfile,bbox_inches='tight',dpi=200)
+    return(fig)
+
 def mpl_plot_keyfield(dataset,plotfile,tagmark="",lblst=[],text="",textpos=(0.25, -0.20)):
     colors = ["b","g","y","r"]
     cmap= matplotlib.colors.ListedColormap(colors)
@@ -1490,6 +830,41 @@ def mpl_plot_merc(data,figure,plot,colors,area,alpha,parallels,meridians):
     plot = pyplot.scatter(x,y,s=area,c=colors,alpha=alpha)
     return(figure)
 
+def mpl_plot_cyl(data,figure,plot,colors,area,alpha,parallels,meridians):
+    plot = Basemap(projection='cyl', resolution='c', llcrnrlat= -90.,urcrnrlat= 90.,llcrnrlon=-180.,urcrnrlon=180.)
+    plot.drawlsmask(land_color='wheat',ocean_color='lightblue',lakes=True)
+    #map.bluemarble(scale=0.5);
+    plot.drawcoastlines()
+    #map.drawcountries()
+    plot.drawparallels(parallels,labels=[True,False,True,False],fontsize=5)
+    plot.drawmeridians(meridians,labels=[False,False,False,True],fontsize=5,rotation=45)
+    x, y = plot(list(data.Longitude.values), list(data.Latitude.values))
+    plot = pyplot.scatter(x,y,s=area,c=colors,alpha=alpha)
+    return(figure)
+
+def mpl_plot_ortho(data,figure,plot,colors,area,alpha,parallels,meridians,polelat,polelon):
+    plot=Basemap(lat_0=polelat, lon_0=polelon, projection='ortho',resolution='l' )
+    plot.drawlsmask(land_color='wheat',ocean_color='lightblue',lakes=True)
+    plot.drawcoastlines()
+    #plot.readshapefile('/home/gibies/maskfiles/AllIndia/AllIndia', 'AllIndia')
+    plot.drawparallels(parallels,labels=[True,False,True,False],fontsize=5)
+    plot.drawmeridians(meridians,labels=[False,False,False,True],fontsize=5)
+    x, y = plot(list(data.Longitude.values), list(data.Latitude.values))
+    plot = pyplot.scatter(x,y,s=area,c=colors,alpha=alpha)
+    return(figure)
+
+def mpl_plot_merc(data,figure,plot,colors,area,alpha,parallels,meridians):
+    plot = Basemap(projection='merc',llcrnrlat=-85,urcrnrlat=85,llcrnrlon=-180,urcrnrlon=180,lat_ts=20,resolution='c')
+    plot.drawlsmask(land_color='wheat',ocean_color='lightblue',lakes=True)
+    #map.bluemarble(scale=0.5);
+    plot.drawcoastlines()
+    #map.drawcountries()
+    plot.drawparallels(parallels,labels=[True,False,True,False],fontsize=5)
+    plot.drawmeridians(meridians,labels=[False,False,False,True],fontsize=5,rotation=45)
+    x, y = plot(list(data.Longitude.values), list(data.Latitude.values))
+    plot = pyplot.scatter(x,y,s=area,c=colors,alpha=alpha)
+    return(figure)
+
 def mpl_plot_cyl(datalist,figure,plot,colors,area,alpha,parallels,meridians,tagmark="",lblst=[],text="",textpos=(0.25, -0.20),display_count=True,title=""):
     plot = Basemap(projection='cyl', resolution='c', llcrnrlat= -90.,urcrnrlat= 90.,llcrnrlon= -180.,urcrnrlon=180.)
     #plot = Basemap(projection='cyl', resolution='c', llcrnrlat= 0.,urcrnrlat= 40.,llcrnrlon= 60.,urcrnrlon=95.)
@@ -1529,15 +904,31 @@ def mpl_plot_ortho(data,figure,plot,colors,area,alpha,parallels,meridians,polela
     plot=Basemap(lat_0=polelat, lon_0=polelon, projection='ortho',resolution='l' )
     plot.drawlsmask(land_color='wheat',ocean_color='lightblue',lakes=True)
     plot.drawcoastlines()
-    #plot.readshapefile('/home/gibies/maskfiles/AllIndia/AllIndia', 'AllIndia')
     plot.drawparallels(parallels,labels=[True,False,True,False],fontsize=5)
     plot.drawmeridians(meridians,labels=[False,False,False,True],fontsize=5)
     x, y = plot(list(data.Longitude.values), list(data.Latitude.values))
     plot = pyplot.scatter(x,y,s=area,c=colors,alpha=alpha)
     return(figure)
 
-    #m.readshapefile('/home/gibies/maskfiles/AllIndia/AllIndia', 'AllIndia')
-    
+def mpl_globalview(plotfile,data,title,clevs=range(0,10,1),cpallet="jet",extend="max",plotmode="shaded"):
+    cmap=mplcm.get_cmap(cpallet, len(clevs) - 1)
+    glat=data.index
+    glon=data.columns
+    x,y=numpy.meshgrid(glon,glat)
+    fig = pyplot.figure()
+    map = Basemap(projection='cyl', resolution='c', llcrnrlat= -90.,urcrnrlat= 90.,llcrnrlon=-180.,urcrnrlon=180.)
+    #map.bluemarble(scale=0.5);
+    map.drawcoastlines()
+    map.drawparallels(numpy.arange( -90., 90.,30.),labels=[1,0,0,0],fontsize=5)
+    map.drawmeridians(numpy.arange(-180.,180.,30.),labels=[0,0,0,1],fontsize=5,rotation=45)
+    #map.drawcountries()
+    if plotmode is "shaded": plot = map.contourf(x,y,data,clevs, cmap=cmap,extend=extend)
+    if plotmode is "button": plot = map.scatter(x,y,data,clevs, cmap=cmap,extend=extend)
+    pyplot.title(title)
+    #ax = fig.add_subplot(311)
+    cbar=fig.colorbar(plot,orientation='horizontal')
+    cbar.ax.tick_params(labelsize=5)
+    pyplot.savefig(plotfile,bbox_inches='tight',dpi=200)
 
 def mpl_plot_shaded(plotfile,data,title,clevs=range(0,10,1),cpallet="jet",extend="max"):
     cmap=mplcm.get_cmap(cpallet, len(clevs) - 1)
@@ -1558,24 +949,6 @@ def mpl_plot_shaded(plotfile,data,title,clevs=range(0,10,1),cpallet="jet",extend
     cbar.ax.tick_params(labelsize=5)
     pyplot.savefig(plotfile,bbox_inches='tight',dpi=200)
 
-#def plot_button(plotfile,data,title,clevs,cpallet,extend="max"):
-#    cmap=mplcm.get_cmap(cpallet, len(clevs) - 1)
-#    glat=data.index
-#    glon=data.columns
-#    x,y=numpy.meshgrid(glon,glat)
-#    fig = pyplot.figure()
-#    map = Basemap(projection='cyl', resolution='c', llcrnrlat= -90.,urcrnrlat= 90.,llcrnrlon=-180.,urcrnrlon=180.)
-#    #map.bluemarble(scale=0.5);
-#    map.drawcoastlines()
-#    map.drawparallels(numpy.arange( -90., 90.,30.),labels=[1,0,0,0],fontsize=5)
-#    map.drawmeridians(numpy.arange(-180.,180.,30.),labels=[0,0,0,1],fontsize=5,rotation=45)
-#    #map.drawcountries()
-#    plot = map.contour(x,y,data,clevs, cmap=cmap,extend=extend)
-#    pyplot.title(title)
-#    #ax = fig.add_subplot(311)
-#    cbar=fig.colorbar(plot,orientation='vertical')
-#    cbar.ax.tick_params(labelsize=5)
-#    pyplot.savefig(plotfile,bbox_inches='tight',dpi=200)
 
 def mpl_plot_button(plotfile,data,title,clevs=range(0,10,1),cpallet="jet",extend="max"):
     cmap=mplcm.get_cmap(cpallet, len(clevs) - 1)
@@ -1682,6 +1055,35 @@ def mpl_globalview(plotfile,data,title,clevs=range(0,10,1),cpallet="jet",extend=
     cbar.ax.tick_params(labelsize=5)
     pyplot.savefig(plotfile,bbox_inches='tight',dpi=200)
 
+def mpl_plot_colourbutton():
+   lon=data[:,1]
+   lat=data[:,0]
+   val=data[:,2]
+
+   cmap=daview.truncate_colormap('jet',minval=0.35, maxval=1.0, n=100)
+   cticks=[1,2,5,10,25,50,100,200]
+   colrs=cmap              #["lightblue","lightgreen","yellow","orange","red"]
+   cnorm=matplotlib.colors.LogNorm(1,250)
+   ##########################
+   m1 = Basemap(projection='cyl', resolution='l', llcrnrlat=-90, llcrnrlon=0, urcrnrlat=90, urcrnrlon=360)
+   m1.drawcoastlines()
+   m1.drawcoastlines(color='white', linewidth=0.2)
+   m1.drawparallels(numpy.arange(-90.,90.,30.),labels=[1,0,0,0],fontsize=7)
+   m1.drawmeridians(numpy.arange(0.,360.,60.),labels=[0,0,0,1],fontsize=7)
+   lons,lats=m1(lon,lat)
+   sc1=m1.scatter(lons, lats,c=val,cmap=colrs,marker = 'o',s=5,norm=cnorm)
+   del val
+   #plt.clim(0,150)
+   #cbar=plt.colorbar(sc1)
+   cbar=plt.colorbar(sc1,ticks=cticks,orientation="vertical",extend="max",shrink=0.9, pad=0.01)
+   ticklabs = cbar.ax.get_yticklabels()
+   cbar.ax.set_yticklabels(cticks, fontsize=7)
+   sc1 = plt.annotate("(a) Reception count (0.5 deg grid)",fontsize=7, xy=(0.01, 1.05), xycoords='axes fraction')
+   
+   #fig2, ax2 = plt.subplots(212,figsize=(10,8))
+   plot2=plt.subplot(212)
+   return(sc1)
+
 
 def mpl_plot_field(data,plotfile,domain="global",varname="hloswind",textout=False,clevs=None,dlevs=None):
 	if clevs is None : clevs = [0,1,2,3,4,5,10,15,20,25,35,45]
@@ -1753,50 +1155,152 @@ def mpl_truncate_colormap(cpallet, minval=0.0, maxval=1.0, n=100):
         cmap(numpy.linspace(minval, maxval, n)))
     return new_cmap
 
-def mpl_plot_ose_scalar(plotdic):
-	data_ctl=plotdic["data_ctl"]
-	data_exp=plotdic["data_exp"]
-	plotfile=plotdic["plotfile"]
-	axlbl_y_ctl=plotdic["ctlname"]
-	axlbl_y_exp=plotdic["expname"]
-
-	integrated_q_diff = data_exp - data_ctl
-
-	fig, axes = pyplot.subplots(nrows=3, ncols=1,figsize=[20,10], subplot_kw={'projection': ccrs.PlateCarree(central_longitude=0)})
-	plot=[None]*3
-	axlbly=[None]*3
-
-	plot[0]=data_ctl.plot(ax=axes[0], cmap='Blues', transform=ccrs.PlateCarree(),add_colorbar=False)
-	m = Basemap(projection='cyl',llcrnrlat=-90,urcrnrlat=90,llcrnrlon=-180,urcrnrlon=180,resolution='c',ax=axes[0])
-	m.drawcoastlines()
-	axlbly[0]=axes[0].text(-0.1, 0.5, axlbl_y_ctl, va='center', ha='center', rotation='vertical', transform=axes[0].transAxes)
-	axins = inset_axes(axes[0], width = "5%", height = "100%", loc = 'lower left', bbox_to_anchor = (1.09, 0., 1, 1), bbox_transform = axes[0].transAxes, borderpad = 0)
-	fig.colorbar(plot[0], cax = axins)	
-
-	plot[1]=data_exp.plot(ax=axes[1], cmap='Blues', transform=ccrs.PlateCarree(),add_colorbar=False)
-	m = Basemap(projection='cyl',llcrnrlat=-90,urcrnrlat=90,llcrnrlon=-180,urcrnrlon=180,resolution='c',ax=axes[1])
-	m.drawcoastlines()
-	axlbly[1]=axes[1].text(-0.1, 0.5, axlbl_y_ctl, va='center', ha='center', rotation='vertical', transform=axes[1].transAxes)
-	axins = inset_axes(axes[1], width = "5%", height = "100%", loc = 'lower left', bbox_to_anchor = (1.09, 0., 1, 1), bbox_transform = axes[1].transAxes, borderpad = 0)
-	fig.colorbar(plot[1], cax = axins)	
-
-	plot[2]=integrated_q_diff.plot(ax=axes[2],vmin=-6,vmax=6, cmap='RdBu_r', transform=ccrs.PlateCarree(),add_colorbar=False)
-	m = Basemap(projection='cyl',llcrnrlat=-90,urcrnrlat=90,llcrnrlon=-180,urcrnrlon=180,resolution='c',ax=axes[2])
-	m.drawcoastlines()
-	axlbly[2]=axes[2].text(-0.1, 0.5, 'EXP-CTL', va='center', ha='center', rotation='vertical', transform=axes[2].transAxes)
-	axins = inset_axes(axes[2], width = "5%", height = "100%", loc = 'lower left', bbox_to_anchor = (1.09, 0., 1, 1), bbox_transform = axes[2].transAxes, borderpad = 0)
-	fig.colorbar(plot[2], cax = axins)	
-
-	#im = axes[0].imshow(data_ctl)	
-	fig.tight_layout()
-	pyplot.savefig(plotfile)
-	return(plotfile)
-
 
 
 #############################################################################################################################
 ### NCAR Graghics Library based functions
 #############################################################################################################################
+
+def ngl_plot_stdlev(dicset_list,plotfile,wks_type,lev_list=vardic.stdlev):
+    dicset=dicset_list[0].copy()
+    wkres = Ngl.Resources()
+    wks = Ngl.open_wks(wks_type,plotfile,wkres)
+    plot = []
+    for count,lev in enumerate(lev_list):
+	dataset=dicset.copy()
+	dataset.update({"title":""})
+	dataset.update({"gsnLeftString":"Level "+str(lev)+" hPa"})
+	fnampreix=dataset["filename"].split('.')[0]
+	dataset.update({"filename":fnampreix+".nc"})
+	lev_index=obslib.str_list_index(lev,vardic.lev_list)
+	print(lev,lev_index, vardic.lev_list)
+	dataset.update({"lev_index":lev_index})
+	if dataset["plot_type"] in ["contour"]:
+		dataset=get_data(dataset)
+	else:
+		dataset=get_vector_data(dataset)
+	dataset=convert_theta_to_airt(dataset,lev)
+	plot1=get_subplot(dataset,wks)
+	plot.append(plot1)
+    count=len(plot)
+    panelres                  =  Ngl.Resources()
+    panelres.nglPanelLabelBar =  False           #-- common labelbar
+    panelres.nglPanelYWhiteSpacePercent =  0        #-- reduce space between the panel plots
+    panelres.nglPanelXWhiteSpacePercent =  0        #-- reduce space between the panel plots
+    panelres.nglPanelTop      =  0.95               #-- top position of panel
+    #-- create the panel
+    Ngl.panel(wks,plot,[count,1],panelres)
+    Ngl.end()
+    return(plot)
+
+
+
+
+def ngl_plot_databias(dicset_list,plotfile,wks_type):
+    wkres = Ngl.Resources()
+    #wkres.wkColorMap = "default"
+    wks = Ngl.open_wks(wks_type,plotfile,wkres)
+    plot = []
+    if len(dicset_list) == 2:
+	dicset1=dicset_list[0]
+	dicset2=dicset_list[1]
+	dataset1=get_data(dicset1)
+	plot1=get_subplot(dataset1,wks)
+	plot.append(plot1)
+	dataset2=get_data(dicset2)
+	plot2=get_subplot(dataset2,wks)
+	plot.append(plot2)
+	dataset3=get_dataset_bias(dataset2,dataset1)
+	plot3=get_subplot(dataset3,wks)
+	plot.append(plot3)
+    count=len(plot)
+    panelres                  =  Ngl.Resources()
+    panelres.nglPanelLabelBar =  False           #-- common labelbar
+    panelres.nglPanelYWhiteSpacePercent =  0        #-- reduce space between the panel plots
+    panelres.nglPanelXWhiteSpacePercent =  0        #-- reduce space between the panel plots
+    panelres.nglPanelTop      =  0.95               #-- top position of panel
+    #-- create the panel
+    Ngl.panel(wks,plot,[count,1],panelres)
+    Ngl.end()
+    return(plot)
+
+def ngl_plot_grid_data(data,plotfile,wks_type):
+	wkres = Ngl.Resources()
+	wkres.wkColorMap = "default"
+	wks = Ngl.open_wks(wks_type,plotfile,wkres)
+	res = Ngl.Resources()
+	plot = Ngl.contour_map(wks,data,res)
+	return(plot)
+
+
+def ngl_resof(plotinfo):
+    if "res" in plotinfo:
+        res=plotinfo["res"]
+    else:
+        res = Ngl.Resources()
+    return(res)
+
+def ngl_gen_wks(plotinfo):
+    plotfile=plotinfo["plotfile"]
+    wks_type=plotinfo["wks_type"]
+    wkres = Ngl.Resources()
+    wkres.wkColorMap = "gibies_colourmap_20150117"
+    wks = Ngl.open_wks(wks_type,plotfile,wkres)
+    plotinfo.update({"wks":wks})
+    return(plotinfo)
+
+
+def ngl_get_colrindx(colrdic):
+    if "colrindx" not in colrdic or colrdic["colrindx"] is None:
+    	try:colrmin=colrdic["colrmin"]
+	except:colrmin=0
+    	try:colrmax=colrdic["colrmax"]
+	except:colrmax=170
+	colrindx=numpy.arange(colrmin,colrmax,1)
+    else:
+    	colrindx=colrdic["colrindx"]
+    return(colrindx)
+
+def ngl_get_cmap(plotinfo):
+    colrindx=get_colrindx(plotinfo)
+    cmap = Ngl.read_colormap_file(cmapfile)[colrindx,:]
+    if "revcmap" in plotinfo and plotinfo["revcmap"]: cmap=cmap[::-1,:]
+    plotinfo.update({"cmap":cmap})
+    return(plotinfo)
+
+def ngl_test_ngl(plotinfo={}):
+    if "plotfile" not in plotinfo: plotinfo={"plotfile":"palette_check"}
+    if "wks_type" not in plotinfo: plotinfo.update({"wks_type":"png"})
+    outfile=os.path.abspath(plotinfo["plotfile"]+"."+plotinfo["wks_type"])
+    if "wks" not in plotinfo: plotinfo=gen_wks(plotinfo)
+    os.environ["NCARG_COLORMAPS"]=PALETTE
+    os.environ["PYNGL_COLORMAPS"]=PALETTE
+    cmapfile=subprocess.call("ls "+PALETTE+"/gibies_colourmap_20150117.rgb", shell=True)
+    
+    plot=Ngl.draw_colormap(plotinfo["wks"])
+    Ngl.end()
+    outfile=check_plot(plotinfo)
+    print(cmapfile,outfile)
+    return(outfile)
+
+def ngl_add_info_string(plotinfo):
+    #-- add units and copyrights to wks
+    plot=plotinfo["plot"]
+    wks=plotinfo["wks"]
+    vpx = Ngl.get_float(plot,"vpXF")             #-- retrieve value of res.vpXF from plot
+    vpy = Ngl.get_float(plot,"vpYF")             #-- retrieve value of res.vpYF from plot
+    vpw = Ngl.get_float(plot,"vpWidthF")         #-- retrieve value of res.vpWidthF from plot
+    vph = Ngl.get_float(plot,"vpHeightF")        #-- retrieve value of res.vpHeightF from plot
+    print(plot,vpx,vpy,vpw,vph)
+    units = "test_unit"
+    txres = Ngl.Resources()
+    txres.txFontHeightF = 0.014                 #-- font size for left, center and right string
+    txres.txJust        = "CenterCenter"        #-- text justification
+    Ngl.text_ndc(wks, "["+units+"]", vpx-0.04, vpy, txres)  #-- add text to wks
+    txres.txFontHeightF = 0.012                 #-- font size for left, center and right string
+    Ngl.text_ndc(wks,"footnote", vpx+vpw-0.07, vpy-vph, txres) #-- plot copyright info
+    #plotinfo.update({"wks":wks})
+    return(plotinfo)
 
 
 def ngl_plot_filename(datafield,plotdir,init_date,fcst_hour,prefix="",sufix=""):
@@ -1828,6 +1332,177 @@ def ngl_plot_all(datadir,plotdir,init_date,init_hour,fcst_lead,field_list=None,f
             plotfile=plot_data([datafield],datadir,plotdir,init_date,init_hour,fcst_hour,fname)
     Ngl.end()
     return(plotfile)
+
+def ngl_cyl_plot(wks,dataset,res):
+    res.mpDataBaseVersion      = "MediumRes"
+    res.mpFillOn              = True
+    res.mpFillColors = [0,-1,-1,-1]
+    res.mpFillAreaSpecifiers  = ["land"]
+    res.mpSpecifiedFillColors = ["gray65"]
+    res.mpGridLatSpacingF =  10.                  #-- grid lat spacing
+    res.mpGridLonSpacingF =  10.                  #-- grid lon spacing
+    res.mpLimitMode       = "LatLon"              #-- must be set using minLatF/maxLatF/minLonF/maxLonF
+    res.mpMinLatF    = -90
+    res.mpMaxLatF    = 90
+    res.mpMinLonF    = 0
+    res.mpMaxLonF    = 360
+    res.nglDraw               = False               #-- don't draw individual plots
+    res.nglFrame              = False               #-- don't advance frame
+
+    if dataset["plot_type"] in ["contour","vector_scalar",]:
+	print(res.sfXArray.shape)
+	print(res.sfYArray.shape)
+	print(res.cnLevels)
+    						#plot1=Ngl.gsn_csm_contour_map_ce(wks,data,res) is not available
+    if dataset["plot_type"] is "vector_scalar":
+	uwnd=dataset["zonal_data"]
+	vwnd=dataset["merid_data"]
+    	data=dataset["data"]
+	print(uwnd.shape)
+	print(vwnd.shape)
+	print(data.shape)
+	res.vcMonoLineArrowColor = True  
+    	plot1=Ngl.vector_scalar_map(wks, uwnd, vwnd, data, res)
+    if dataset["plot_type"] in ["vector",]:
+	uwnd=dataset["zonal_data"]
+	vwnd=dataset["merid_data"]
+	print(uwnd.shape)
+	print(vwnd.shape)
+	res.vcMonoLineArrowColor = False  # Draw vectors in color.
+    	plot1=Ngl.vector_map(wks, uwnd, vwnd, res)
+    if dataset["plot_type"] in ["contour",]:
+	data=dataset["data"]
+	print(data.shape)
+	plot1=Ngl.contour_map(wks,data,res)
+    return(plot1)
+	
+
+def ngl_get_subplot(dataset,wks):
+    data=dataset["data"]
+    lat2d=dataset["lat2d"]
+    lon2d=dataset["lon2d"]
+    if "cnlev" in dataset:
+	cnlev= dataset["cnlev"]
+    else:
+	cnlev= list(numpy.arange(0.,32.,2.))
+	print(cnlev)
+    if "title" in dataset: 
+	title=dataset["title"]
+    else:
+	title=""
+    colrindx=get_colrindx(dataset)
+    cmap = Ngl.read_colormap_file(cmapfile)[colrindx,:]
+    res = Ngl.Resources()
+    if "draworder" in dataset:
+    	res.mpFillDrawOrder   = dataset["draworder"]
+    
+    dataset["plot_type"]="contour"
+
+    if dataset["plot_type"] in ["contour","vector_scalar",]:
+    	res.cnFillOn = True
+   	res.cnLineOn = False
+    	res.cnLineLabelsOn        = False
+    	res.cnInfoLabelOn         = False
+    	res.cnLevelSelectionMode = "ExplicitLevels"
+    	res.cnLevels             = cnlev
+    	res.cnFillPalette               = cmap
+
+    if dataset["plot_type"] in ["vector","vector_scalar",]:
+    	res.vcLevelPalette       = cmap
+	res.vcMinFracLengthF     = 0.1   # Increase length of
+	res.vcMinMagnitudeF      = 0.001  # vectors.
+	res.vcRefLengthF         = 0.045
+	res.vcRefMagnitudeF      = 2.0
+
+    res.lbOrientation  = "Horizontal"
+    res.sfXArray     = lon2d
+    res.sfYArray     = lat2d
+    res.sfMissingValueV = get_fillval(dataset)
+    res.gsnAddCyclic = False  
+    res.tiMainString = title
+    if "gsnLeftString" in dataset:
+    	res.gsnLeftString = dataset["gsnLeftString"]
+    else:
+	res.gsnLeftString = ""
+    plot1=cyl_plot(wks,dataset,res)
+    return(plot1)
+
+
+def ngl_plot_data(dicset_list,plotfile,wks_type):
+    wkres = Ngl.Resources()
+    wks = Ngl.open_wks(wks_type,plotfile,wkres)
+    plot = []
+    for count,dataset in enumerate(dicset_list):
+	if dataset["plot_type"] in ["contour"]:
+		dataset=get_data(dataset)
+	else:
+		dataset=get_vector_data(dataset)
+	plot1=get_subplot(dataset,wks)
+	plot.append(plot1)
+    count=len(plot)
+    panelres                  =  Ngl.Resources()
+    panelres.nglPanelLabelBar =  False           #-- common labelbar
+    panelres.nglPanelYWhiteSpacePercent =  0        #-- reduce space between the panel plots
+    panelres.nglPanelXWhiteSpacePercent =  0        #-- reduce space between the panel plots
+    panelres.nglPanelTop      =  0.95               #-- top position of panel
+    #-- create the panel
+    Ngl.panel(wks,plot,[count,1],panelres)
+    Ngl.end()
+    return(plot)
+
+def ngl_plot_bias(dicset_list,plotfile,wks_type):
+    wkres = Ngl.Resources()
+    wks = Ngl.open_wks(wks_type,plotfile,wkres)
+    plot = []
+    for count,dicset1 in enumerate(dicset_list):
+	dataset=get_data(dicset1)
+	if count is 0:
+		dataref=dataset
+	else:
+		dataset=get_dataset_bias(dataset,dataref)
+	print(count)
+	print(dataset)
+	plot1=get_subplot(dataset,wks)
+	plot.append(plot1)
+    count=len(plot)
+    panelres                  =  Ngl.Resources()
+    panelres.nglPanelLabelBar =  False           #-- common labelbar
+    panelres.nglPanelYWhiteSpacePercent =  0        #-- reduce space between the panel plots
+    panelres.nglPanelXWhiteSpacePercent =  0        #-- reduce space between the panel plots
+    panelres.nglPanelTop      =  0.95               #-- top position of panel
+    #-- create the panel
+    Ngl.panel(wks,plot,[count,1],panelres)
+    Ngl.end()
+    return(plot)
+
+def ngl_get_colrindx(colrdic):
+    if "colrindx" not in colrdic or colrdic["colrindx"] is None:
+    	try:colrmin=colrdic["colrmin"]
+	except:colrmin=0
+    	try:colrmax=colrdic["colrmax"]
+	except:colrmax=170
+	colrindx=numpy.arange(colrmin,colrmax,1)
+    else:
+    	colrindx=colrdic["colrindx"]
+    return(colrindx)
+
+def ngl_print_rgb(colrdic):
+    colrindx=get_colrindx(colrdic)
+    cmap = Ngl.read_colormap_file(cmapfile)[colrindx,:]
+    print(cmap)
+
+def ngl_orth_plot(wks,data,res):
+	res.vpWidthF               =  0.8               #-- width of plot
+	res.vpHeightF              =  0.8               #-- height of plot
+	res.mpFillOn               =  True              #-- map fill on
+	res.mpOceanFillColor       = "Transparent"      #-- default: dark blue
+	res.mpLandFillColor        = "Gray90"           #-- default: dark red
+	res.mpInlandWaterFillColor = "Transparent"      #-- default: white
+	res.mpProjection           = "Orthographic"     #-- projection type
+	res.tiMainString           = "Orthographic projection" #-- title
+	#-- create the plot
+	map = Ngl.map(wks,res)
+	return(map)
 
 def ngl_vcstyle(plotinfo):
     res=resof(plotinfo)
@@ -1929,6 +1604,67 @@ def ngl_get_subplot(dataset,plotinfo):
     plot1=cyl_plot(dataset,plotinfo)
     return(plot1)
 
+
+def ngl_write_tlstring(plotinfo):
+    vpx = Ngl.get_float(plotinfo["plot"],"vpXF")
+    vpy = Ngl.get_float(plotinfo["plot"],"vpYF")
+    vpw = Ngl.get_float(plotinfo["plot"],"vpWidthF")
+    vph = Ngl.get_float(plotinfo["plot"],"vpHeightF")
+    if not "tlsres" in plotinfo:
+	plotinfo.update({"tlsres":Ngl.Resources()})
+	plotinfo["tlsres"].txFontHeightF = 0.014
+	plotinfo["tlsres"].txJust        = "CenterLeft"
+    if not "tlstring" in plotinfo: 
+ 	print("No string for Top Left corner")
+        plotinfo.update({"tlstring":"____"})
+    Ngl.text_ndc(plotinfo["wks"], plotinfo["tlstring"], vpx+0.05*vpw, vpy, plotinfo["tlsres"])
+    return(plotinfo)
+
+def ngl_write_trstring(plotinfo):
+    vpx = Ngl.get_float(plotinfo["plot"],"vpXF")
+    vpy = Ngl.get_float(plotinfo["plot"],"vpYF")
+    vpw = Ngl.get_float(plotinfo["plot"],"vpWidthF")
+    vph = Ngl.get_float(plotinfo["plot"],"vpHeightF")
+    if not "trsres" in plotinfo:
+	plotinfo.update({"trsres":Ngl.Resources()})
+	plotinfo["trsres"].txFontHeightF = 0.014
+	plotinfo["trsres"].txJust        = "CenterRight"
+    if not "trstring" in plotinfo: 
+ 	print("No string for Top Right corner")
+        plotinfo.update({"trstring":"____"})
+    Ngl.text_ndc(plotinfo["wks"], plotinfo["trstring"], vpx+0.95*vpw, vpy, plotinfo["trsres"])
+    return(plotinfo)
+
+def ngl_write_blstring(plotinfo):
+    vpx = Ngl.get_float(plotinfo["plot"],"vpXF")
+    vpy = Ngl.get_float(plotinfo["plot"],"vpYF")
+    vpw = Ngl.get_float(plotinfo["plot"],"vpWidthF")
+    vph = Ngl.get_float(plotinfo["plot"],"vpHeightF")
+    if not "blsres" in plotinfo:
+	plotinfo.update({"blsres":Ngl.Resources()})
+	plotinfo["blsres"].txFontHeightF = 0.014
+	plotinfo["blsres"].txJust        = "CenterLeft"
+    if not "blstring" in plotinfo: 
+ 	print("No string for Bottom Left corner")
+        plotinfo.update({"blstring":"____"})
+    Ngl.text_ndc(plotinfo["wks"], plotinfo["blstring"], vpx+0.05*vpw, vpy-1.2*vph, plotinfo["blsres"])
+    return(plotinfo)
+
+def ngl_write_brstring(plotinfo):
+    vpx = Ngl.get_float(plotinfo["plot"],"vpXF")
+    vpy = Ngl.get_float(plotinfo["plot"],"vpYF")
+    vpw = Ngl.get_float(plotinfo["plot"],"vpWidthF")
+    vph = Ngl.get_float(plotinfo["plot"],"vpHeightF")
+    if not "brsres" in plotinfo:
+	plotinfo.update({"brsres":Ngl.Resources()})
+	plotinfo["brsres"].txFontHeightF = 0.014
+	plotinfo["brsres"].txJust        = "CenterRight"
+    if not "brstring" in plotinfo: 
+ 	print("No string for Bottom Right corner")
+        plotinfo.update({"brstring":"____"})
+    Ngl.text_ndc(plotinfo["wks"], plotinfo["brstring"], vpx+0.95*vpw, vpy-1.2*vph, plotinfo["brsres"])
+    return(plotinfo)
+
 def ngl_cyl_plot(dataset,plotinfo):
     wks=plotinfo["wks"]
     res=resof(plotinfo)
@@ -1992,6 +1728,167 @@ def ngl_cyl_plot(dataset,plotinfo):
     plotinfo=write_info_text(plotinfo)
     return(plotinfo["plot"])
 	
+def ngl_plot_hoff(data_hoff,cnlev,clrindx,title="",lstr="",rstr="",foottext="",plot_btmlev=0.0,plot_toplev=20000.0,plotfile="test",wks_type="png",cmapfile=cmapfile,fillval=-999.99):
+	data_hoff=data_hoff.truncate(plot_btmlev,plot_toplev)
+	data_hoff.fillna(fillval,inplace=True)
+	height=list(data_hoff.index)
+	time=list(data_hoff.columns)
+	tindx=list(range(0,len(time),1))
+	hindx=list(range(0,len(height),1))
+	cmap = Ngl.read_colormap_file(cmapfile)[clrindx,:]
+	wks = Ngl.open_wks(wks_type,plotfile)
+	resources = Ngl.Resources()
+	resources.tiMainString   = "~F25~"+title  # Main title.
+	resources.tiLeftString   = "~F25~"+title  # Main title.
+	resources.tiRightString   = "~F25~"+title  # Main title.
+	resources.tmXBMode      = "Explicit"   # Define your own tick mark labels.
+	resources.tmXBLabelFont = "times-roman"  # Change font of labels.
+	resources.tmXBLabelFontHeightF = 0.015 # Change font height of labels.
+	resources.tmXBMinorOn   = False        # No minor tick marks.
+	resources.tmXBValues    = tindx[3::40] # Location to put tick mark labels
+	resources.tmXBLabels    = time[3::40]
+	resources.tmXBLabelAngleF = 20
+	resources.tmXBLabelJust = "TopRight"
+	resources.trXReverse  = True    # Reverse the X values.
+	#resources.tiYAxisString  = "~F25~Height"  # Y axes label.
+	resources.sfYCStartV = height[0]  # Indicate start and end of left
+	resources.sfYCEndV   = height[-1]   # Y axes values.
+	resources.tmYLMode      = "Explicit" # Define own tick mark labels.
+	resources.tmYLLabelFont = "times-roman"  # Change the font.
+	resources.tmYLMinorOn   = True        # No minor tick marks.
+	resources.tmYLValues    = [2000,4000,6000,8000,10000,12000,14000,16000,18000,20000]
+	resources.tmYLLabels    = ["2km","4km","6km","8km","10km","12km","14km","16km","18km","20km"]
+	resources.trYReverse  = False    # Reverse the Y values.
+	resources.trYLog      = False    # Use log scale.
+	resources.lbLabelBarOn 	= True
+	resources.pmLabelBarDisplayMode = "Always"    # Turn off label bar.
+	resources.cnFillOn          = True  # Turn on contour level fill.
+	resources.cnLinesOn	= False
+	resources.cnLineLabelsOn	= False
+	resources.cnInfoLabelOn	= False
+	resources.cnLevelSelectionMode = "ExplicitLevels"
+	resources.cnLevels	= cnlev #[0,10,20,30,40,50,60,70,80,90,100,150,200,250,300,350,400,450,500,550,600,650,700,750]
+	resources.cnFillPalette = cmap
+	resources.cnLineLabelAngleF = 0. # Draw contour line labels right-side up.
+    	resources.sfMissingValueV = fillval
+	resources.nglDraw  = False  # Don't draw the plot or advance the
+	resources.nglFrame = False  # frame in the call to Ngl.contour.
+	resources.nglMaximize = False
+	contour = Ngl.contour(wks, data_hoff.values, resources)  # Create a contour plot.
+	Ngl.draw(contour)  # Draw the contour plot.
+	txres               = Ngl.Resources()    # Annotate plot with some text.
+	txres.txFontHeightF = 0.015
+	txres.txAngleF      = 0.
+	Ngl.text_ndc(wks,"~F25~"+foottext,.5,.05,txres)
+	Ngl.frame(wks) # Advance the frame.
+
+def ngl_plot_raster_fill(dataset={},data_hoff=None,cnlev=None,clrindx=None,title="",lstr="",rstr="",foottext="",plot_btmlev=0.0,plot_toplev=20000.0,plotfile="test",wks_type="png",cmapfile=cmapfile,fillval=-999.99):
+	if "cnlev" not in dataset: dataset.update({"cnlev":[-25,-10,-5,-2,-1,-0.5,0.0,0.5,1,2,5,10,25]})
+	if "cnlev" in dataset: cnlev=dataset["cnlev"]
+	if "clrindx" not in dataset: dataset.update({"clrindx":range(172,204,1)+range(218,255,1)})
+	if "clrindx" in dataset: clrindx=dataset["clrindx"]
+	if "data" in dataset: data_hoff=dataset["data"]
+	if "title" in dataset: title=dataset["title"]
+	if "lstr" in dataset: lstr=dataset["lstr"]
+	if "rstr" in dataset: rstr=dataset["rstr"]
+	if "foottext" in dataset: foottext=dataset["foottext"]
+	if "plot_btmlev" in dataset: plot_btmlev=dataset["plot_btmlev"]
+	if "plot_toplev" in dataset: plot_toplev=dataset["plot_toplev"]
+	if "plotfile" in dataset: plotfile=dataset["plotfile"]
+	if "wks_type" in dataset: wks_type=dataset["wks_type"]
+	if "cmapfile" in dataset: cmapfile=dataset["cmapfile"]
+	if "fillval" in dataset: fillval=dataset["fillval"]
+	print(plotfile+"."+wks_type)
+	#if "height" not in data_hoff.columns:
+ 	#   col0=data_hoff.columns[0]
+	#   data_hoff.rename(columns = {col0:"height"}, inplace = True)
+	#   data_hoff=data_hoff.set_index("height")
+	print(data_hoff)
+	#data_hoff=data_hoff.truncate(plot_btmlev,plot_toplev)
+	data_hoff.fillna(fillval,inplace=True)
+	height=list(data_hoff.index)
+	series=list(data_hoff.columns)
+	tindx=list(range(0,len(series),1))
+	hindx=list(range(0,len(height),1))
+	if "tmXBValues" in dataset: 
+		tmxbvals=dataset["tmXBValues"]
+	else:
+		tmxbvals=range(0,len(series))
+	if "tmXBLabels" in dataset:
+		tmxblbls=dataset["tmXBLabels"]
+	else:
+		tmxblbls=[str(int(series[lb]))+"" for lb in range(0,len(series))]
+	if "tmYLValues" in dataset:
+		tmylvals=dataset["tmYLValues"]
+	else:
+		tmylvals=height[::2]
+		#tmylvals=[2000,4000,6000,8000,10000,12000,14000,16000,18000,20000]
+	if "tmYLLabels" in dataset:
+		tmyllbls=dataset["tmYLLabels"]
+	else:
+		tmyllbls=[str(int(hgt/1000))+"km" for hgt in tmylvals]
+		#tmyllbls=["2km","4km","6km","8km","10km","12km","14km","16km","18km","20km"]
+	cmap = Ngl.read_colormap_file(cmapfile)[clrindx,:]
+	wks = Ngl.open_wks(wks_type,plotfile)
+	resources = Ngl.Resources()
+	resources.tiMainString   = "~F25~"+title  # Main title.
+	resources.tiLeftString   = "~F25~"+title  # Main title.
+	resources.tiRightString   = "~F25~"+title  # Main title.
+	if "sfXArray" in dataset: resources.sfXArray = dataset["sfXArray"]
+	resources.sfXCStartV = tmxbvals[0]  # Indicate start and end of left
+	resources.sfXCEndV   = tmxbvals[-1]   # Y axes values.
+	resources.tmXBMode      = "Explicit"   # Define your own tick mark labels.
+	resources.tmXBLabelFont = "times-roman"  # Change font of labels.
+	resources.tmXBLabelFontHeightF = 0.015 # Change font height of labels.
+	resources.tmXBMinorOn   = False        # No minor tick marks.
+	resources.tmXBValues    = tmxbvals # Location to put tick mark labels
+	resources.tmXBLabels    = tmxblbls
+	resources.tmXBLabelAngleF = 45
+	resources.tmXBLabelJust = "TopRight"
+	if "trXAxisType" in dataset: resources.trXAxisType = dataset["trXAxisType"]
+	if "trXCoordPoints" in dataset: resources.trXCoordPoints = dataset["trXCoordPoints"]
+	if "trXReverse" in dataset:
+		resources.trXReverse  = dataset["trXReverse"]
+	else:
+		resources.trXReverse  = False    # Reverse the X values.
+	print(resources.trXReverse)
+	#resources.tiYAxisString  = "~F25~Height"  # Y axes label.
+	resources.sfYCStartV = tmylvals[0]  # Indicate start and end of left
+	resources.sfYCEndV   = tmylvals[-1]   # Y axes values.
+	resources.tmYLMode      = "Explicit" # Define own tick mark labels.
+	resources.tmYLLabelFont = "times-roman"  # Change the font.
+	resources.tmYLMinorOn   = True        # No minor tick marks.
+	resources.tmYLValues    = tmylvals
+	resources.tmYLLabels    = tmyllbls
+	if "trYReverse" in dataset:
+                resources.trYReverse  = dataset["trYReverse"]
+	else:
+		resources.trYReverse  = False    # Reverse the Y values.
+	resources.trYLog      = False    # Use log scale.
+	resources.lbLabelBarOn 	= True
+	resources.pmLabelBarDisplayMode = "Always"    # Turn off label bar.
+	resources.cnFillOn      = True  # Turn on contour level fill.
+	resources.cnFillMode	= "RasterFill"
+	resources.cnLinesOn	= False
+	resources.cnLineLabelsOn	= False
+	resources.cnInfoLabelOn	= False
+	resources.cnLevelSelectionMode = "ExplicitLevels"
+	resources.cnLevels	= cnlev #[0,10,20,30,40,50,60,70,80,90,100,150,200,250,300,350,400,450,500,550,600,650,700,750]
+	resources.cnFillPalette = cmap
+	resources.cnLineLabelAngleF = 0. # Draw contour line labels right-side up.
+    	resources.sfMissingValueV = fillval
+	resources.nglDraw  = False  # Don't draw the plot or advance the
+	resources.nglFrame = False  # frame in the call to Ngl.contour.
+	resources.nglMaximize = False
+	print(data_hoff)
+	contour = Ngl.contour(wks, data_hoff.values, resources)  # Create a contour plot.
+	Ngl.draw(contour)  # Draw the contour plot.
+	txres               = Ngl.Resources()    # Annotate plot with some text.
+	txres.txFontHeightF = 0.015
+	txres.txAngleF      = 0.
+	Ngl.text_ndc(wks,"~F25~"+foottext,.5,.05,txres)
+	Ngl.frame(wks) # Advance the frame.
+
 
 #############################################################################################################################
 ### XARRAY based functions
@@ -2033,3 +1930,127 @@ def xar_ipw(q_ctl,rho_ctl):
 	data_ctl = weighted_q_ctl.sum('hybrid_ht')
 	return(data_ctl)
 
+def xar_regrid(v_wind_ctl,q_ctl=None,lon=None,lat=None):
+	if q_ctl is not None:
+		lon = q_ctl.longitude
+		lat = q_ctl.latitude
+	v_wind_ctl_interp = v_wind_ctl.interp(latitude=lat, longitude=lon)
+	return(v_wind_ctl_interp)
+
+def xar_qtransdh(q_ctl,rho_ctl,u_wind_ctl=None):
+	if "density" not in rho_ctl.data_vars:
+		rho_ctl=xar_quot_rsqure(rho_ctl)
+	thickness=xar_layer_thickness(q_ctl)
+	if u_wind_ctl is None:
+		weighted_q_ctl = q_ctl.q * thickness*rho_ctl['density'].values
+	else:
+	   if "u" in u_wind_ctl.data_vars:
+		weighted_q_u_ctl = q_ctl.q * thickness*rho_ctl['density'].values*u_wind_ctl['u'].values
+	   if "v" in u_wind_ctl.data_vars:
+		weighted_q_u_ctl = q_ctl.q * thickness*rho_ctl['density'].values*u_wind_ctl['v'].values
+	return(weighted_q_u_ctl)
+
+def xar_height_integral(weighted_q_u_ctl):
+	u_ctl = weighted_q_u_ctl.sum('hybrid_ht')
+	return(u_ctl)
+
+def xar_vimt(q_ctl,rho_ctl,u_wind_ctl,v_wind_ctl):
+	u_wind_ctl=xar_regrid(u_wind_ctl,q_ctl)
+	weighted_q_u_ctl = xar_qtransdh(q_ctl,rho_ctl,u_wind_ctl)
+	u_ctl = xar_height_integral(weighted_q_u_ctl)
+	v_wind_ctl=xar_regrid(v_wind_ctl,q_ctl)
+	weighted_q_v_ctl = xar_qtransdh(q_ctl,rho_ctl,v_wind_ctl)
+	v_ctl = xar_height_integral(weighted_q_v_ctl)
+	dataset=xarray.Dataset(
+		data_vars=dict(
+        		u=(["time","lat", "lon"], u_ctl),
+        		v=(["time","lat", "lon"], v_ctl),
+    				),
+    		coords=dict(
+        		lon=q_ctl.longitude.values,
+        		lat=q_ctl.latitude.values,
+        		time=q_ctl.t.values,
+        		#reference_time=q_ctl.reference_time,
+    				),
+    		#attrs=dict(description="Vertical Integrated Moisture Transport."),
+				)
+	return(dataset)
+	
+
+def xar_plot_ose_scalar(plotdic):
+	data_ctl=plotdic["data_ctl"]
+	data_exp=plotdic["data_exp"]
+	plotfile=plotdic["plotfile"]
+	axlbl_y_ctl=plotdic["ctlname"]
+	axlbl_y_exp=plotdic["expname"]
+
+	data_diff = data_exp - data_ctl
+
+	fig, axes = pyplot.subplots(nrows=3, ncols=1,figsize=[8,20], subplot_kw={'projection': ccrs.PlateCarree(central_longitude=0)})
+	plot=[None]*3
+	axlbly=[None]*3
+
+	plot[0]=data_ctl.plot(ax=axes[0], cmap='Blues', transform=ccrs.PlateCarree(),add_colorbar=False)
+	m = Basemap(projection='cyl',llcrnrlat=-90,urcrnrlat=90,llcrnrlon=-180,urcrnrlon=180,resolution='c',ax=axes[0])
+	m.drawcoastlines()
+	axlbly[0]=axes[0].text(-0.1, 0.5, axlbl_y_ctl, va='center', ha='center', rotation='vertical', transform=axes[0].transAxes)
+	axins = inset_axes(axes[0], width = "5%", height = "100%", loc = 'lower left', bbox_to_anchor = (1.09, 0., 1, 1), bbox_transform = axes[0].transAxes, borderpad = 0)
+	fig.colorbar(plot[0], cax = axins)	
+
+	plot[1]=data_exp.plot(ax=axes[1], cmap='Blues', transform=ccrs.PlateCarree(),add_colorbar=False)
+	m = Basemap(projection='cyl',llcrnrlat=-90,urcrnrlat=90,llcrnrlon=-180,urcrnrlon=180,resolution='c',ax=axes[1])
+	m.drawcoastlines()
+	axlbly[1]=axes[1].text(-0.1, 0.5, axlbl_y_ctl, va='center', ha='center', rotation='vertical', transform=axes[1].transAxes)
+	axins = inset_axes(axes[1], width = "5%", height = "100%", loc = 'lower left', bbox_to_anchor = (1.09, 0., 1, 1), bbox_transform = axes[1].transAxes, borderpad = 0)
+	fig.colorbar(plot[1], cax = axins)	
+
+	plot[2]=data_diff.plot(ax=axes[2],vmin=-6,vmax=6, cmap='RdBu_r', transform=ccrs.PlateCarree(),add_colorbar=False)
+	m = Basemap(projection='cyl',llcrnrlat=-90,urcrnrlat=90,llcrnrlon=-180,urcrnrlon=180,resolution='c',ax=axes[2])
+	m.drawcoastlines()
+	axlbly[2]=axes[2].text(-0.1, 0.5, 'EXP-CTL', va='center', ha='center', rotation='vertical', transform=axes[2].transAxes)
+	axins = inset_axes(axes[2], width = "5%", height = "100%", loc = 'lower left', bbox_to_anchor = (1.09, 0., 1, 1), bbox_transform = axes[2].transAxes, borderpad = 0)
+	fig.colorbar(plot[2], cax = axins)	
+
+	#im = axes[0].imshow(data_ctl)	
+
+	pyplot.tight_layout(pad=10)
+	pyplot.savefig(plotfile)
+	return(plotfile)
+
+def xar_plot_ose_vector(plotdic):
+	data_ctl=plotdic["data_ctl"]
+	data_exp=plotdic["data_exp"]
+	plotfile=plotdic["plotfile"]
+	axlbl_y_ctl=plotdic["ctlname"]
+	axlbl_y_exp=plotdic["expname"]
+
+	u_ctl = data_ctl.u
+	v_ctl = data_ctl.v
+	u_exp = data_exp.u
+	v_exp = data_exp.v
+
+	lon=data_ctl.lon
+	lat=data_ctl.lat
+
+	fig, axes = pyplot.subplots(nrows=3, ncols=1,figsize=[20,10], subplot_kw={'projection': ccrs.PlateCarree(central_longitude=0)})
+
+	m = Basemap(projection='cyl', llcrnrlat=-90, urcrnrlat=90,llcrnrlon=-180, urcrnrlon=180, resolution='c',ax=axes[0])
+	m.drawcoastlines()
+	axes[0].text(-0.1, 0.5, axlbl_y_ctl, va='center', ha='center', rotation='vertical', transform=axes[0].transAxes)
+	axes[0].quiver(lon[::40], lat[::40], u_ctl.isel(time=0).values[::40,::40 ], v_ctl.isel(time=0).values[::40,::40],scale=10000)
+
+	m = Basemap(projection='cyl', llcrnrlat=-90, urcrnrlat=90,llcrnrlon=-180, urcrnrlon=180, resolution='c',ax=axes[1])
+	m.drawcoastlines()
+	axes[1].text(-0.1, 0.5, axlbl_y_exp, va='center', ha='center', rotation='vertical', transform=axes[1].transAxes)
+	axes[1].quiver(lon[::40], lat[::40], u_exp.isel(time=0).values[::40,::40 ], v_exp.isel(time=0).values[::40,::40],scale=10000)
+
+	u_diff = u_exp-u_ctl
+	v_diff = v_exp-v_ctl
+	m = Basemap(projection='cyl',llcrnrlat=-90,urcrnrlat=90,llcrnrlon=-180,urcrnrlon=180,resolution='c',ax=axes[2])
+	m.drawcoastlines()
+	axes[2].text(-0.1, 0.5, 'EXP-CTL', va='center', ha='center', rotation='vertical', transform=axes[2].transAxes)
+	axes[2].quiver(lon[::40], lat[::40], u_diff.isel(time=0).values[::40,::40 ], v_diff.isel(time=0).values[::40,::40],scale=2000)
+
+	pyplot.tight_layout()
+	pyplot.savefig(plotfile)
+	return(plotfile)
