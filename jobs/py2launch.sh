@@ -34,7 +34,7 @@ module load gnu/xarray/0.11.3
 #module load gnu/netcdf4/1.5.3-netcdf4.6.0hdf51.10.0
 #module load gnu/lib/netcdf_c_f_cxx/4.6.1_4.4.4_4.3.0
 #module load gnu/user-specific/iris_grib/1.13.0_1.26.0
-
+#module load gnu/mule/MULE-2022.05.1
 module list
 
 which python
