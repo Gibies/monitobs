@@ -64,8 +64,17 @@ diaglev=int(os.environ.get('GEN_MODE',0))
 def errprint(*args, **kwargs):
     if diaglev > 0: print(*args, file=sys.stderr, **kwargs)
 
-def load_cubes(infile):
-    file_cubes=iris.load(infile)
+def load_cubes(infile,cnst=None,callback=None,stashcode=None,option=0):
+    opt=str(option)
+    if stashcode is not None: cnst=iris.AttributeConstraint(STASH=stashcode)
+    switcher = {
+       "0" :lambda: iris.load(infile,constraints=cnst, callback=callback),
+       "1" :lambda: iris.load_cubes(infile,constraints=cnst, callback=callback),
+       "2" :lambda: iris.load_cube(infile,constraint=cnst, callback=callback),
+       "3" :lambda: iris.load_raw(infile,constraints=cnst, callback=callback),
+    }
+    func = switcher.get(opt, lambda: 'Invalid option')
+    file_cubes = func()
     return(file_cubes)
 
 def umff_to_grib2(infile,outfile=None):
