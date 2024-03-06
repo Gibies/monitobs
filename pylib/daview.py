@@ -1922,19 +1922,19 @@ def xar_slice(data,dimnam,dim_min=None,dim_max=None,dim_skip=None):
 	if "dim1" in data.dims: data=data.rename({"dim1":dimnam})
 	return(data)
 
-def xar_qrhodh(q_ctl,rho_ctl,varname,levdim):
-	qdata=q_ctl.q
+def xar_qrhodh(q_ctl,rho_ctl,levdim,rhonam,humnam):
+	if humnam in q_ctl.data_vars: qdata=q_ctl[humnam]
 	if "density" in rho_ctl.data_vars:
-		rhodata=rho_ctl.density
+		rhodata=rho_ctl["density"]
 	else:
-		rhodata=xar_quot_rsqure(rho_ctl,varname,levdim)
+		rhodata=xar_quot_rsqure(rho_ctl,rhonam,levdim)
 	thickness=xar_layer_thickness(q_ctl,levdim)
 	qdata = xar_slice(qdata,levdim,None, -1)
 	weighted_q_ctl = qdata * thickness * rhodata.values
 	return(weighted_q_ctl)
 
-def xar_ipw(q_ctl,rho_ctl,varname,levdim):
-	weighted_q_ctl = xar_qrhodh(q_ctl,rho_ctl,varname,levdim)
+def xar_ipw(q_ctl,rho_ctl,levdim,rhonam,humnam):
+	weighted_q_ctl = xar_qrhodh(q_ctl,rho_ctl,levdim,rhonam,humnam)
 	data_ctl = weighted_q_ctl.sum(levdim)
 	return(data_ctl)
 
@@ -2144,7 +2144,8 @@ def irx_cube_array(cube,varname,dims=None,coords=None):
 def irx_load_cubray(infile,varname,callback=None,stashcode=None,option=2,dims=None,coords=None):
 	cube=iri_load_cubes(infile,cnst=varname,callback=callback,stashcode=stashcode,option=option)
 	data=irx_cube_array(cube,varname,dims=dims,coords=coords)
-	return(data)
+	daset=data.to_dataset()
+	return(daset)
 
 def irx_layer_thickness(q_ctl):
 	level_height = q_ctl.coord('level_height').points
