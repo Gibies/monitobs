@@ -57,6 +57,8 @@ odb_nml=os.environ.get('odb_index_nml',OBSNML+"/odb_index_nml")
 varno_nml=os.environ.get('odb_varno_nml',OBSNML+"/odb_varno_nml")
 subtype_nml=os.environ.get('obs_subtype_nml',OBSNML+"/obs_subtype.nml")
 
+def load_file_cubes(infile,cnst=None,callback=None,stashcode=None,option=0):
+	return(daview.iri_load_cubes(infile,cnst=cnst,callback=callback,stashcode=stashcode,option=option))
 
 def today(fmtstr="%Y%m%d"):
 	return(obslib.today(fmtstr))
