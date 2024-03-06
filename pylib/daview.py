@@ -126,6 +126,15 @@ def get_keyrange(dataset,keyfield):
     return(lblist)
 
 def data_check(data):
+def get_keyrange(dataset,keyfield):
+    lblset=set()
+    for data in dataset["data"]:
+       for keyfieldvalue in data[keyfield]:
+          lblset.add(keyfieldvalue)
+    lblist=list(lblset)
+    return(lblist)
+
+def data_check(data):
         #x=numpy.array(data.Longitude.values)
         #y=numpy.array(data.Latitude.values)
 	#xcheck=(x*10%10)
@@ -2078,15 +2087,6 @@ def xar_plot_ose_stream(plotdic):
 	axlbl_y_ctl=plotdic["ctlname"]
 	axlbl_y_exp=plotdic["expname"]
 
-	u_ctl = data_ctl.u
-	v_ctl = data_ctl.v
-	u_exp = data_exp.u
-	v_exp = data_exp.v
-
-	lon=data_ctl.lon
-	lat=data_ctl.lat
-
-	mag_ctl = numpy.sqrt(u_ctl.isel(time=0).values**2 + v_ctl.isel(time=0).values**2)
 	mag_exp = numpy.sqrt(u_exp.isel(time=0).values**2 + v_exp.isel(time=0).values**2)
 
 	fig, axes = pyplot.subplots(nrows=3, ncols=1,figsize=[20,15], subplot_kw={'projection': ccrs.PlateCarree(central_longitude=0)})
@@ -2094,14 +2094,14 @@ def xar_plot_ose_stream(plotdic):
 	m = Basemap(projection='cyl', llcrnrlat=-90, urcrnrlat=90,llcrnrlon=-180, urcrnrlon=180, resolution='c',ax=axes[0])
 	m.drawcoastlines()
 	axes[0].text(-0.1, 0.5, axlbl_y_ctl, va='center', ha='center', rotation='vertical', transform=axes[0].transAxes)
-	c_ctl=axes[0].streamplot(lon, lat, u_ctl.isel(time=0).values, v_ctl.isel(time=0).values,color=mag_ctl,cmap='jet')
-	#pyplot.colorbar(c_ctl,ax=axes[0])
+	c_ctl=axes[0].streamplot(lon, lat, u_ctl.isel(time=0).values, v_ctl.isel(time=0).values,mag_ctl,cmap='jet')
+	pyplot.colorbar(c_ctl,ax=axes[0])
 
 	m = Basemap(projection='cyl', llcrnrlat=-90, urcrnrlat=90,llcrnrlon=-180, urcrnrlon=180, resolution='c',ax=axes[1])
 	m.drawcoastlines()
 	axes[1].text(-0.1, 0.5, axlbl_y_exp, va='center', ha='center', rotation='vertical', transform=axes[1].transAxes)
-	c_exp=axes[1].streamplot(lon, lat, u_exp.isel(time=0).values, v_exp.isel(time=0).values,color=mag_exp,cmap='jet')
-	#pyplot.colorbar(c_exp,ax=axes[1])
+	c_exp=axes[1].streamplot(lon, lat, u_exp.isel(time=0).values, v_exp.isel(time=0).values,mag_exp,cmap='jet')
+	pyplot.colorbar(c_exp,ax=axes[1])
 
 	u_diff = u_exp-u_ctl
 	v_diff = v_exp-v_ctl
@@ -2109,8 +2109,8 @@ def xar_plot_ose_stream(plotdic):
 	m = Basemap(projection='cyl',llcrnrlat=-90,urcrnrlat=90,llcrnrlon=-180,urcrnrlon=180,resolution='c',ax=axes[2])
 	m.drawcoastlines()
 	axes[2].text(-0.1, 0.5, 'EXP-CTL', va='center', ha='center', rotation='vertical', transform=axes[2].transAxes)
-	c_diff=axes[2].streamplot(lon, lat, u_diff.isel(time=0).values, v_diff.isel(time=0).values,color=mag_diff,cmap='RdBu_r')
-	#pyplot.colorbar(c_diff,ax=axes[2])
+	c_diff=axes[2].streamplot(lon, lat, u_diff.isel(time=0).values, v_diff.isel(time=0).values[::20,::20],mag_diff[::20,::20],cmap='RdBu_r')
+	pyplot.colorbar(c_diff,ax=axes[2])
 	
 	pyplot.tight_layout()
 	pyplot.savefig(plotfile)
