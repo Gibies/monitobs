@@ -113,15 +113,6 @@ def get_keyrange(dataset,keyfield):
     return(lblist)
 
 def data_check(data):
-def get_keyrange(dataset,keyfield):
-    lblset=set()
-    for data in dataset["data"]:
-       for keyfieldvalue in data[keyfield]:
-          lblset.add(keyfieldvalue)
-    lblist=list(lblset)
-    return(lblist)
-
-def data_check(data):
         #x=numpy.array(data.Longitude.values)
         #y=numpy.array(data.Latitude.values)
 	#xcheck=(x*10%10)
@@ -1909,30 +1900,42 @@ def xar_slice_indian(data):
 	ind_data=xarray.open_dataset(data).sel(hybrid_ht=0,longitude=slice(60,100),latitude=slice(0,40))
 	return(ind_data)
 
-def xar_layer_thickness(q_ctl):
-	thickness = xarray.DataArray(data=numpy.zeros(len(q_ctl.hybrid_ht)),dims=["hybrid_ht"],coords={"hybrid_ht": q_ctl.hybrid_ht},name="thickness")
-	thickness = thickness.isel(hybrid_ht=slice(None, -1))
-	for i in range(1, len(q_ctl.hybrid_ht) - 1):
-	    thickness[i] = ((q_ctl.hybrid_ht[i] - q_ctl.hybrid_ht[i - 1]) / 2) + ((q_ctl.hybrid_ht[i + 1] - q_ctl.hybrid_ht[i]) / 2)
-	thickness[0] = (q_ctl.hybrid_ht[1] - q_ctl.hybrid_ht[0]) / 2
+def xar_layer_thickness(q_ctl,levdim):
+	level_height = q_ctl.coords[levdim]	#hybrid_ht
+	thickness = xarray.DataArray(data=numpy.zeros(len(level_height)),dims=[levdim],coords={levdim: level_height},name="thickness")
+	thickness = xar_slice(thickness,levdim,None, -1)
+	for i in range(1, len(level_height) - 1):
+	    thickness[i] = ((level_height[i] - level_height[i - 1]) / 2) + ((level_height[i + 1] - level_height[i]) / 2)
+	thickness[0] = (level_height[1] - level_height[0]) / 2
 	return(thickness)
 
-def xar_quot_rsqure(rho_ctl):
-	R_ctl = rho_ctl.hybrid_ht + 6371*(10**3)
+def xar_quot_rsqure(rho_ctl,varname,levdim):
+	level_height = rho_ctl.coords[levdim]
+	R_ctl = level_height + 6371*(10**3)
 	R_square_ctl = R_ctl**2
-	rho_ctl['density'] = rho_ctl['unspecified'] / R_square_ctl
-	return(rho_ctl)
+	data = rho_ctl[varname] / R_square_ctl
+	return(data)
 
-def xar_qrhodh(q_ctl,rho_ctl):
-	if "density" not in rho_ctl.data_vars:
-		rho_ctl=xar_quot_rsqure(rho_ctl)
-	thickness=xar_layer_thickness(q_ctl)
-	weighted_q_ctl = q_ctl.q * thickness*rho_ctl['density'].values
+def xar_slice(data,dimnam,dim_min=None,dim_max=None,dim_skip=None):
+	if dimnam in data.dims: data=data.rename({dimnam:"dim1"})
+	data = data.isel(dim1=slice(dim_min,dim_max,dim_skip))
+	if "dim1" in data.dims: data=data.rename({"dim1":dimnam})
+	return(data)
+
+def xar_qrhodh(q_ctl,rho_ctl,varname,levdim):
+	qdata=q_ctl.q
+	if "density" in rho_ctl.data_vars:
+		rhodata=rho_ctl.density
+	else:
+		rhodata=xar_quot_rsqure(rho_ctl,varname,levdim)
+	thickness=xar_layer_thickness(q_ctl,levdim)
+	qdata = xar_slice(qdata,levdim,None, -1)
+	weighted_q_ctl = qdata * thickness * rhodata.values
 	return(weighted_q_ctl)
 
-def xar_ipw(q_ctl,rho_ctl):
-	weighted_q_ctl = xar_qrhodh(q_ctl,rho_ctl)
-	data_ctl = weighted_q_ctl.sum('hybrid_ht')
+def xar_ipw(q_ctl,rho_ctl,varname,levdim):
+	weighted_q_ctl = xar_qrhodh(q_ctl,rho_ctl,varname,levdim)
+	data_ctl = weighted_q_ctl.sum(levdim)
 	return(data_ctl)
 
 def xar_regrid(v_wind_ctl,q_ctl=None,lon=None,lat=None):
@@ -2122,3 +2125,52 @@ def iri_load_cubes(infile,cnst=None,callback=None,stashcode=None,option=0):
     file_cubes = func()
     return(file_cubes)
 
+#############################################################################################################################
+### IRIS and XARRAY combination based functions
+#############################################################################################################################
+
+def irx_cube_array(cube,varname,dims=None,coords=None):
+	data1=cube.data
+	if dims is None: dims=["level_height","latitude","longitude"]
+	if coords is None: 
+		coords={}
+		for dimnam in dims:
+			coords.update({dimnam:cube.coord(dimnam).points,})
+			#coords.update({"level_height":cube.coord("level_height").points,})
+			#model_level_number: 71; latitude: 1536; longitude: 2048
+	data=xarray.DataArray(data=data1,dims=dims,coords=coords,name=varname)
+	return(data)
+
+def irx_load_cubray(infile,varname,callback=None,stashcode=None,option=2,dims=None,coords=None):
+	cube=iri_load_cubes(infile,cnst=varname,callback=callback,stashcode=stashcode,option=option)
+	data=irx_cube_array(cube,varname,dims=dims,coords=coords)
+	return(data)
+
+def irx_layer_thickness(q_ctl):
+	level_height = q_ctl.coord('level_height').points
+	thickness = xarray.DataArray(data=numpy.zeros(len(level_height)),dims=["hybrid_ht"],coords={"hybrid_ht": level_height},name="thickness")
+	thickness = thickness.isel(hybrid_ht=slice(None, -1))
+	for i in range(1, len(level_height) - 1):
+	    thickness[i] = ((level_height[i] - level_height[i - 1]) / 2) + ((level_height[i + 1] - level_height[i]) / 2)
+	thickness[0] = (level_height[1] - level_height[0]) / 2
+	return(thickness)
+
+def irx_quot_rsqure(rho_ctl):
+	level_height = rho_ctl.coord('level_height').points
+	#R_ctl = iris.coords.AuxCoord(level_height + 6371*(10**3))
+	#R_square_ctl = R_ctl.points[:]**2
+	R_ctl = level_height + 6371*(10**3)
+	R_square_ctl = R_ctl**2
+	data1=rho_ctl.data
+	data = data1 / R_square_ctl
+	return(data)
+
+	#model_level_number = q_ctl.coord('model_level_number').points
+	#altitude = q_ctl.coord('altitude').points
+	#sigma = q_ctl.coord('sigma').points
+
+	#thickness = numpy.zeros(len(level_height)-1)
+
+	#for i in range(1, len(level_height) - 1):
+	#    thickness[i] = ((level_height[i] - level_height[i - 1]) / 2) + ((level_height[i + 1] - level_height[i]) / 2)
+	#thickness[0] = (level_height[1] - level_height[0]) / 2
