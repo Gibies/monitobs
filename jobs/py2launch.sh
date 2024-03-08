@@ -8,6 +8,10 @@ PYSCRYPT=$(realpath $1)
 shift
 ARGS=$@
 
+export CUSLIB="${PYSCRYPT%/jobs/*}/customlib"
+if [ ! -d ${CUSLIB} ]; then export CUSLIB="${PKGHOME}/customlib"; fi
+echo ${CUSLIB}
+
 #gnu/python/3.9.1
 module load pbs
 module load craype-broadwell
