@@ -1887,6 +1887,21 @@ def ngl_plot_raster_fill(dataset={},data_hoff=None,cnlev=None,clrindx=None,title
 
 
 #############################################################################################################################
+### NCAR Input Output Library (NIO) based functions
+#############################################################################################################################
+
+
+def nio_write(daset,filenam,dimlist,varlist):
+	fileptr=Nio.open_file(filenam, "c")
+	for dimnam in dimlist:
+		dimptr=fileptr.create_dimension(dimnam,len(daset[dimnam]))
+		fileptr[dimnam]=daset[dimnam].values
+	for varnam in varlist:
+		fileptr[varnam]=daset[varnam]
+	fileptr.close()
+	return(filenam)
+
+#############################################################################################################################
 ### XARRAY based functions
 #############################################################################################################################
 
