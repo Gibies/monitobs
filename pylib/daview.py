@@ -1886,6 +1886,26 @@ def ngl_plot_raster_fill(dataset={},data_hoff=None,cnlev=None,clrindx=None,title
 	Ngl.frame(wks) # Advance the frame.
 
 
+
+#############################################################################################################################
+### NCAR Input Output Library (NIO) based functions
+#############################################################################################################################
+
+
+def nio_write(daset,filenam,dimlist,varlist):
+	fileptr=Nio.open_file(filenam, "c")
+	for dimnam in dimlist:
+		dimptr=fileptr.create_dimension(dimnam,len(daset[dimnam]))
+		#fileptr.dimensions[dimnam].assign_value(daset[dimnam])
+		dimvarptr = fileptr.create_variable(dimnam,"d", daset[dimnam].dims)
+		fileptr.variables[dimnam].assign_value(daset[dimnam])
+	for varnam in varlist:
+		varptr = fileptr.create_variable(varnam,"d", daset[varnam].dims)
+		fileptr.variables[varnam].assign_value(daset[varnam])
+	print(fileptr.variables.keys())
+	fileptr.close()
+	return(filenam)
+
 #############################################################################################################################
 ### XARRAY based functions
 #############################################################################################################################
@@ -1909,11 +1929,12 @@ def xar_layer_thickness(q_ctl,levdim):
 	thickness[0] = (level_height[1] - level_height[0]) / 2
 	return(thickness)
 
-def xar_quot_rsqure(rho_ctl,varname,levdim):
-	level_height = rho_ctl.coords[levdim]
-	R_ctl = level_height + 6371*(10**3)
-	R_square_ctl = R_ctl**2
-	data = rho_ctl[varname] / R_square_ctl
+def xar_quot_rsqure(daset,varname,levdim):
+	data1=daset[varname]
+	level_height = data1.coords[levdim]
+	R = level_height + 6371*(10**3)
+	R_square = R**2
+	data = data1 / R_square
 	return(data)
 
 def xar_slice(data,dimnam,dim_min=None,dim_max=None,dim_skip=None):
@@ -1922,68 +1943,95 @@ def xar_slice(data,dimnam,dim_min=None,dim_max=None,dim_skip=None):
 	if "dim1" in data.dims: data=data.rename({"dim1":dimnam})
 	return(data)
 
-def xar_qrhodh(q_ctl,rho_ctl,levdim,rhonam,humnam):
-	if humnam in q_ctl.data_vars: qdata=q_ctl[humnam]
-	if "density" in rho_ctl.data_vars:
-		rhodata=rho_ctl["density"]
+def xar_qrhodh(daset,levdim,rhonam,humnam):
+	if humnam in daset: qdata=daset[humnam]
+	if "density" in daset:
+		rhodata=daset["density"]
 	else:
-		rhodata=xar_quot_rsqure(rho_ctl,rhonam,levdim)
-	thickness=xar_layer_thickness(q_ctl,levdim)
+		rhodata=xar_quot_rsqure(daset[rhonam],rhonam,levdim)
+	thickness=xar_layer_thickness(qdata,levdim)
 	qdata = xar_slice(qdata,levdim,None, -1)
 	weighted_q_ctl = qdata * thickness * rhodata.values
 	return(weighted_q_ctl)
 
-def xar_ipw(q_ctl,rho_ctl,levdim,rhonam,humnam):
-	weighted_q_ctl = xar_qrhodh(q_ctl,rho_ctl,levdim,rhonam,humnam)
+def xar_ipw(daset,levdim,rhonam,humnam):
+	weighted_q_ctl = xar_qrhodh(daset,levdim,rhonam,humnam)
 	data_ctl = weighted_q_ctl.sum(levdim)
-	return(data_ctl)
+        dataset=xarray.Dataset(
+                data_vars=dict(
+                        ipw=(["lat", "lon"], data_ctl),
+                                ),
+                coords=dict(
+                        lon=daset[humnam].longitude.values,
+                        lat=daset[humnam].latitude.values,
+				),
+				)	
+	return(dataset)
 
-def xar_regrid(v_wind_ctl,q_ctl=None,lon=None,lat=None):
-	if q_ctl is not None:
-		lon = q_ctl.longitude
-		lat = q_ctl.latitude
-	v_wind_ctl_interp = v_wind_ctl.interp(latitude=lat, longitude=lon)
-	return(v_wind_ctl_interp)
+def xar_regrid(daset,varname,refer,q_ctl=None,lon=None,lat=None):
+	if daset[refer] is not None:
+		lon = daset[refer].longitude
+		lat = daset[refer].latitude
+	data= daset[varname]
+	datanew=data.interp(latitude=lat, longitude=lon)
+	daset[varname]=datanew
+	#if varname=="x_wind_int":
+		#daset[varname] = daset['x_wind'].interp(latitude=lat, longitude=lon)
+	#else:
+		#daset[varname] = daset['y_wind'].interp(latitude=lat, longitude=lon)
+	return(daset)
 
-def xar_qtransdh(q_ctl,rho_ctl,u_wind_ctl=None):
-	if "density" not in rho_ctl.data_vars:
-		rho_ctl=xar_quot_rsqure(rho_ctl)
-	thickness=xar_layer_thickness(q_ctl)
-	if u_wind_ctl is None:
-		weighted_q_ctl = q_ctl.q * thickness*rho_ctl['density'].values
-	else:
-	   if "u" in u_wind_ctl.data_vars:
-		weighted_q_u_ctl = q_ctl.q * thickness*rho_ctl['density'].values*u_wind_ctl['u'].values
-	   if "v" in u_wind_ctl.data_vars:
-		weighted_q_u_ctl = q_ctl.q * thickness*rho_ctl['density'].values*u_wind_ctl['v'].values
-	return(weighted_q_u_ctl)
+def xar_qtransdh(daset,levdim,rhonam,humnam,vectvar=None):
+	if humnam in daset: qdata=daset[humnam]
+	if "density" in daset:
+		rhodata=daset["density"]
+	else:	
+		rhodata=xar_quot_rsqure(daset,rhonam,levdim)
+	thickness=xar_layer_thickness(qdata,levdim)
+	qdata = xar_slice(qdata,levdim,None, -1)
+	if vectvar is None:
+		weighted_data = qdata * thickness*rhodata.values
+        else:
+                weighted_data = qdata * thickness*rhodata.values*daset[vectvar].values
+	return(weighted_data)
 
-def xar_height_integral(weighted_q_u_ctl):
-	u_ctl = weighted_q_u_ctl.sum('hybrid_ht')
+def xar_height_integral(weighted_q_u_ctl,levdim):
+	u_ctl = weighted_q_u_ctl.sum(levdim)
 	return(u_ctl)
 
-def xar_vimt(q_ctl,rho_ctl,u_wind_ctl,v_wind_ctl):
-	u_wind_ctl=xar_regrid(u_wind_ctl,q_ctl)
-	weighted_q_u_ctl = xar_qtransdh(q_ctl,rho_ctl,u_wind_ctl)
-	u_ctl = xar_height_integral(weighted_q_u_ctl)
-	v_wind_ctl=xar_regrid(v_wind_ctl,q_ctl)
-	weighted_q_v_ctl = xar_qtransdh(q_ctl,rho_ctl,v_wind_ctl)
-	v_ctl = xar_height_integral(weighted_q_v_ctl)
+def xar_vimt(daset,levdim,rhonam,humnam):
+	daset=xar_regrid(daset,"x_wind",humnam)
+	#print(daset)
+	weighted_q_u = xar_qtransdh(daset,levdim,rhonam,humnam,vectvar="x_wind")
+	u = xar_height_integral(weighted_q_u,levdim)
+	daset=xar_regrid(daset,"y_wind",humnam)
+	#print(daset)
+	weighted_q_v = xar_qtransdh(daset,levdim,rhonam,humnam,vectvar="y_wind")
+	v = xar_height_integral(weighted_q_v,levdim)
 	dataset=xarray.Dataset(
 		data_vars=dict(
-        		u=(["time","lat", "lon"], u_ctl),
-        		v=(["time","lat", "lon"], v_ctl),
+        		u=(["lat", "lon"], u),
+        		v=(["lat", "lon"], v),
     				),
     		coords=dict(
-        		lon=q_ctl.longitude.values,
-        		lat=q_ctl.latitude.values,
-        		time=q_ctl.t.values,
-        		#reference_time=q_ctl.reference_time,
+        		lon=daset[humnam].longitude.values,
+        		lat=daset[humnam].latitude.values,
+        		#time=daset[humnam].time.values,
+        		#reference_time=daset[humnam].reference_time,
     				),
     		#attrs=dict(description="Vertical Integrated Moisture Transport."),
 				)
 	return(dataset)
 	
+def xar_daset(q_ctl,rho_ctl,u_wind_ctl=None,v_wind_ctl=None):
+	daset={}
+	daset["sphum"]=q_ctl["specific_humidity"]
+	daset["rhorsq"]=rho_ctl["rhorsq"]
+	if u_wind_ctl is not None:
+		daset["x_wind"]=u_wind_ctl["x_wind"]
+	if v_wind_ctl is not None:
+		daset["y_wind"]=v_wind_ctl["y_wind"]
+	return(daset)
 
 def xar_plot_ose_scalar(plotdic):
 	data_ctl=plotdic["data_ctl"]
@@ -1992,27 +2040,31 @@ def xar_plot_ose_scalar(plotdic):
 	axlbl_y_ctl=plotdic["ctlname"]
 	axlbl_y_exp=plotdic["expname"]
 
-	data_diff = data_exp - data_ctl
+	ipw_ctl = data_ctl.ipw
+	ipw_exp = data_exp.ipw
 
-	fig, axes = pyplot.subplots(nrows=3, ncols=1,figsize=[8,20], subplot_kw={'projection': ccrs.PlateCarree(central_longitude=0)})
+	#data_diff = data_exp - data_ctl
+	ipw_diff = ipw_exp - ipw_ctl
+
+	fig, axes = pyplot.subplots(nrows=3, ncols=1,figsize=[20,15], subplot_kw={'projection': ccrs.PlateCarree(central_longitude=0)})
 	plot=[None]*3
 	axlbly=[None]*3
 
-	plot[0]=data_ctl.plot(ax=axes[0], cmap='Blues', transform=ccrs.PlateCarree(),add_colorbar=False)
+	plot[0]=ipw_ctl.plot(ax=axes[0], cmap='Blues', transform=ccrs.PlateCarree(),add_colorbar=False)
 	m = Basemap(projection='cyl',llcrnrlat=-90,urcrnrlat=90,llcrnrlon=-180,urcrnrlon=180,resolution='c',ax=axes[0])
 	m.drawcoastlines()
 	axlbly[0]=axes[0].text(-0.1, 0.5, axlbl_y_ctl, va='center', ha='center', rotation='vertical', transform=axes[0].transAxes)
 	axins = inset_axes(axes[0], width = "5%", height = "100%", loc = 'lower left', bbox_to_anchor = (1.09, 0., 1, 1), bbox_transform = axes[0].transAxes, borderpad = 0)
 	fig.colorbar(plot[0], cax = axins)	
 
-	plot[1]=data_exp.plot(ax=axes[1], cmap='Blues', transform=ccrs.PlateCarree(),add_colorbar=False)
+	plot[1]=ipw_exp.plot(ax=axes[1], cmap='Blues', transform=ccrs.PlateCarree(),add_colorbar=False)
 	m = Basemap(projection='cyl',llcrnrlat=-90,urcrnrlat=90,llcrnrlon=-180,urcrnrlon=180,resolution='c',ax=axes[1])
 	m.drawcoastlines()
 	axlbly[1]=axes[1].text(-0.1, 0.5, axlbl_y_ctl, va='center', ha='center', rotation='vertical', transform=axes[1].transAxes)
 	axins = inset_axes(axes[1], width = "5%", height = "100%", loc = 'lower left', bbox_to_anchor = (1.09, 0., 1, 1), bbox_transform = axes[1].transAxes, borderpad = 0)
 	fig.colorbar(plot[1], cax = axins)	
 
-	plot[2]=data_diff.plot(ax=axes[2],vmin=-6,vmax=6, cmap='RdBu_r', transform=ccrs.PlateCarree(),add_colorbar=False)
+	plot[2]=ipw_diff.plot(ax=axes[2],vmin=-6,vmax=6, cmap='RdBu_r', transform=ccrs.PlateCarree(),add_colorbar=False)
 	m = Basemap(projection='cyl',llcrnrlat=-90,urcrnrlat=90,llcrnrlon=-180,urcrnrlon=180,resolution='c',ax=axes[2])
 	m.drawcoastlines()
 	axlbly[2]=axes[2].text(-0.1, 0.5, 'EXP-CTL', va='center', ha='center', rotation='vertical', transform=axes[2].transAxes)
@@ -2021,7 +2073,7 @@ def xar_plot_ose_scalar(plotdic):
 
 	#im = axes[0].imshow(data_ctl)	
 
-	pyplot.tight_layout(pad=10)
+	pyplot.tight_layout()
 	pyplot.savefig(plotfile)
 	return(plotfile)
 
@@ -2042,19 +2094,21 @@ def xar_plot_ose_vector(plotdic):
 
 	mag_ctl = numpy.sqrt(u_ctl.isel(time=0).values**2 + v_ctl.isel(time=0).values**2)
 	mag_exp = numpy.sqrt(u_exp.isel(time=0).values**2 + v_exp.isel(time=0).values**2)
+	#mag_ctl = numpy.sqrt(u_ctl.values**2 + v_ctl.values**2)
+	#mag_exp = numpy.sqrt(u_exp.values**2 + v_exp.values**2)
 
 	fig, axes = pyplot.subplots(nrows=3, ncols=1,figsize=[20,15], subplot_kw={'projection': ccrs.PlateCarree(central_longitude=0)})
 
 	m = Basemap(projection='cyl', llcrnrlat=-90, urcrnrlat=90,llcrnrlon=-180, urcrnrlon=180, resolution='c',ax=axes[0])
 	m.drawcoastlines()
 	axes[0].text(-0.1, 0.5, axlbl_y_ctl, va='center', ha='center', rotation='vertical', transform=axes[0].transAxes)
-	c_ctl=axes[0].quiver(lon[::40], lat[::40], u_ctl.isel(time=0).values[::40,::40 ], v_ctl.isel(time=0).values[::40,::40],mag_ctl[::40,::40],cmap='jet',scale=10000)
+	c_ctl=axes[0].quiver(lon[::40], lat[::40], u_ctl.isel(time=0).values[::40,::40 ], v_ctl.isel(time=0).values[::40,::40],mag_ctl[::40,::40],cmap='jet')
 	pyplot.colorbar(c_ctl,ax=axes[0])
 
 	m = Basemap(projection='cyl', llcrnrlat=-90, urcrnrlat=90,llcrnrlon=-180, urcrnrlon=180, resolution='c',ax=axes[1])
 	m.drawcoastlines()
 	axes[1].text(-0.1, 0.5, axlbl_y_exp, va='center', ha='center', rotation='vertical', transform=axes[1].transAxes)
-	c_exp=axes[1].quiver(lon[::40], lat[::40], u_exp.isel(time=0).values[::40,::40 ], v_exp.isel(time=0).values[::40,::40],mag_exp[::40,::40],cmap='jet',scale=10000)
+	c_exp=axes[1].quiver(lon[::40], lat[::40], u_exp.isel(time=0).values[::40,::40 ], v_exp.isel(time=0).values[::40,::40],mag_exp[::40,::40],cmap='jet')
 	pyplot.colorbar(c_exp,ax=axes[1])
 
 	u_diff = u_exp-u_ctl
@@ -2063,7 +2117,7 @@ def xar_plot_ose_vector(plotdic):
 	m = Basemap(projection='cyl',llcrnrlat=-90,urcrnrlat=90,llcrnrlon=-180,urcrnrlon=180,resolution='c',ax=axes[2])
 	m.drawcoastlines()
 	axes[2].text(-0.1, 0.5, 'EXP-CTL', va='center', ha='center', rotation='vertical', transform=axes[2].transAxes)
-	c_diff=axes[2].quiver(lon[::20], lat[::20], u_diff.isel(time=0).values[::20,::20], v_diff.isel(time=0).values[::20,::20],mag_diff[::20,::20],cmap='RdBu_r',scale=2000)
+	c_diff=axes[2].quiver(lon[::20], lat[::20], u_diff.isel(time=0).values[::20,::20], v_diff.isel(time=0).values[::20,::20],mag_diff[::20,::20],cmap='RdBu_r')
 	pyplot.colorbar(c_diff,ax=axes[2])
 	
 	pyplot.tight_layout()
@@ -2136,6 +2190,7 @@ def irx_cube_array(cube,varname,dims=None,coords=None):
 		coords={}
 		for dimnam in dims:
 			coords.update({dimnam:cube.coord(dimnam).points,})
+			#print(dimnam)
 			#coords.update({"level_height":cube.coord("level_height").points,})
 			#model_level_number: 71; latitude: 1536; longitude: 2048
 	data=xarray.DataArray(data=data1,dims=dims,coords=coords,name=varname)
@@ -2143,6 +2198,7 @@ def irx_cube_array(cube,varname,dims=None,coords=None):
 
 def irx_load_cubray(infile,varname,callback=None,stashcode=None,option=2,dims=None,coords=None):
 	cube=iri_load_cubes(infile,cnst=varname,callback=callback,stashcode=stashcode,option=option)
+	#print(cube)
 	data=irx_cube_array(cube,varname,dims=dims,coords=coords)
 	daset=data.to_dataset()
 	return(daset)
