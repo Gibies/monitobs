@@ -6,7 +6,7 @@ export PYSCRIPT=$1
 shift
 export ARGS=$@
 
-wait_flag=1
+wait_flag=0
 QUEUE_MAMU="NCMRWF1"
 LOGDIR="/scratch/${USER}/logs"
 PBSDIR="/scratch/${USER}/jobs"
