@@ -1906,20 +1906,6 @@ def nio_write(daset,filenam,dimlist,varlist):
 	fileptr.close()
 	return(filenam)
 
-#############################################################################################################################
-### NCAR Input Output Library (NIO) based functions
-#############################################################################################################################
-
-
-def nio_write(daset,filenam,dimlist,varlist):
-	fileptr=Nio.open_file(filenam, "c")
-	for dimnam in dimlist:
-		dimptr=fileptr.create_dimension(dimnam,len(daset[dimnam]))
-		fileptr[dimnam]=daset[dimnam].values
-	for varnam in varlist:
-		fileptr[varnam]=daset[varnam]
-	fileptr.close()
-	return(filenam)
 
 #############################################################################################################################
 ### XARRAY based functions
@@ -2025,13 +2011,13 @@ def xar_vimt(daset,levdim,rhonam,humnam):
 	v = xar_height_integral(weighted_q_v,levdim)
 	dataset=xarray.Dataset(
 		data_vars=dict(
-        		u=(["lat", "lon"], u),
-        		v=(["lat", "lon"], v),
+        		u=(["time","lat", "lon"], u),
+        		v=(["time","lat", "lon"], v),
     				),
     		coords=dict(
         		lon=daset[humnam].longitude.values,
         		lat=daset[humnam].latitude.values,
-        		#time=daset[humnam].time.values,
+        		time=daset[humnam].time.values,
         		#reference_time=daset[humnam].reference_time,
     				),
     		#attrs=dict(description="Vertical Integrated Moisture Transport."),
