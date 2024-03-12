@@ -6,11 +6,13 @@ export PYSCRIPT=$1
 shift
 export ARGS=$@
 
+wait_flag=0
 QUEUE_MAMU="serial1"
 LOGDIR="/scratch/${USER}/logs"
 PBSDIR="/scratch/${USER}/jobs"
-PBSFILE="${PBSDIR}/run_task_vimt.pbs"
-TASKNAM="vimt"
+PYFILE=${PYSCRIPT##*/}
+TASKNAM=${PYFILE%.py}
+PBSFILE="${PBSDIR}/run_task_${TASKNAM}.pbs"
 RUNTIME=$(date +%Y%m%d_%H%M)
 
 if [ ! -d ${LOGDIR} ]; then mkdir -p ${LOGDIR}; fi
@@ -39,5 +41,9 @@ EOF
 jobid=$(qsub ${PBSFILE})
 
 echo ${jobid}
+	cnt=${wait_flag}
+	while [[ ${cnt} -ne 0 ]]; do
+		cnt=$(qstat -w -u ${USER}|grep ${jobid}|wc -l)
+	done
 
-qstat -w -u ${USER}|grep ${jobid}
+ls -lrt ${LOGDIR}
