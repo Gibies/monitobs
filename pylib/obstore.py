@@ -1675,21 +1675,51 @@ def obstore_write_batches(DT,obsfile,nmlfile,obsgroup,subtypegroup,elistgroup,da
     #print(filedata)
     return(filedata)
 
+def obstore_batch_datalen(obstore_info):
+	batchcount=obstore_info["batchcount"]
+	if "batch_ele_cnt" in obstore_info: 
+		batch_ele_cnt=obstore_info["batch_ele_cnt"]
+	else:
+		batch_ele_cnt=[None]*batchcount
+	if "batch_obs_cnt" in obstore_info: 
+		batch_obs_cnt=obstore_info["batch_obs_cnt"]
+	else:
+		batch_obs_cnt=[None]*batchcount
+	if "batch_dat_len" in obstore_info: 
+		batch_dat_len=obstore_info["batch_dat_len"]
+	else:
+		batch_dat_len=[None]*batchcount
+	for batch_indx in range(0,batchcount,1):
+		elist = obstore_info["elistgroup"][batch_indx]
+		elecnt=numpy.sum(elist.LDC)
+		data = obstore_info["datagroup"][batch_indx]
+		obscnt=len(data)
+		datlen=obscnt*elecnt
+		batch_ele_cnt[batch_indx]=elecnt
+		batch_obs_cnt[batch_indx]=obscnt
+		batch_dat_len[batch_indx]=datlen
+	obstore_info.update({"batch_ele_cnt":batch_ele_cnt})
+	obstore_info.update({"batch_obs_cnt":batch_obs_cnt})
+	obstore_info.update({"batch_dat_len":batch_dat_len})
+	return(obstore_info)
+
 def totobs(obstore_info):
+ 	batchcount=obstore_info["batchcount"]
+	obstore_info=obstore_batch_datalen(obstore_info)
+	print(obstore_info)
     	outpath = obstore_info["outpath"]
-    	batch_obs_cnt = obstore_info["count_list"]
-	elistgroup = obstore_info["elistgroup"]
+	batch_obs_cnt=obstore_info["batch_obs_cnt"]
+	batch_ele_cnt=obstore_info["batch_ele_cnt"]
+	batch_dat_len=obstore_info["batch_dat_len"]
+	datlen=numpy.sum(batch_dat_len)
 	#############################################################################
 	with file(outpath+"/totobs.dat", "w") as datout:
 		fmt01 = '%15.0i'
     	   	numpy.savetxt(datout, X=batch_obs_cnt, delimiter="\n",fmt=fmt01)
-	obscnt=numpy.sum(batch_obs_cnt)
-	elist=elistgroup[0]
-	elecnt=numpy.sum(elist.LDC)
-	datlen=obscnt*elecnt
 	with file(outpath+"/cnt.dat", "w") as datout:
 		fmt01 = '%15.0i'
-    	   	numpy.savetxt(datout, X=[datlen,elecnt], delimiter="\n",fmt=fmt01)
+		for batch_indx in range(0,batchcount,1):
+    	   		numpy.savetxt(datout, X=[batch_dat_len[batch_indx],batch_ele_cnt[batch_indx]], delimiter="\n",fmt=fmt01)
 	############################################################################
 	obstore_info["datlen"]=datlen
 	return(obstore_info)
@@ -1742,8 +1772,7 @@ def obstore_create_file(obstore_info,diagflg=0,callsignflag=False,filedata=None,
 	diagout=None
     print("Writting "+str(batchcount)+" batches of data to "+ output_file)
     obslib.mkdir(output_file.rsplit("/",1)[0])
-    if "count_list" in obstore_info:
-    	obstore_info=totobs(obstore_info)
+    obstore_info=totobs(obstore_info)
     datlen=obstore_info["datlen"]
     with open(output_file, "wb+") as obsfile:
 	hdrsize=obsheader.write_obsheader(obsfile,nmlfile,obsgroup,maxindx=maxindx,callsignflag=callsignflag)

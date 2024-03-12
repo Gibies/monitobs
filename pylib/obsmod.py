@@ -417,31 +417,6 @@ def symobs_main(Tnode,outpath,inpath,nmlpath,obstypelist=[],maxindx=MAXINDX,subt
         datagroup=symobs.symulate_obstore(outpath,inpath,nmlpath,Tnode,obstype,maxindx=maxindx,subtypelist=subtypelist)
         ######################
         
-def symobs_buoy_nio(Tnode,outpath,inpath,nmlpath,obstypelist=[],maxindx=MAXINDX,subtypelist=None,synbuoyloc=None):
-    if len(obstypelist) == 0:
-        obstypelist=obsdic.obstypelist
-    for obstype in obstypelist:
-        infodic={}
-        infodic["obstype"] = obstype
-        infodic["syntype"] = [ 10300, ]
-        infodic["timeinfo"] = Tnode
-        infodic["synbuoyloc"] = synbuoyloc
-        infodic["array_weight"] = 2
-        infodic["latmin"] = -20.0
-        infodic["latmax"] = 30.0
-        infodic["lonmin"] = 30.0
-        infodic["lonmax"] = 120.0
-        infodic["header_offset"] = 339
-        infodic["lut_ncols"] = LUTSIZE
-        infodic["maxindx"] = maxindx
-        infodic["inpath"] = inpath
-        infodic["outpath"] = outpath
-        infodic["nmlpath"] = nmlpath
-        infodic["subtypelist"] = subtypelist
-        #infodic["elistgroup"] = elistgroup
-        datagroup=symobs.sose_merge_data(infodic)
-        ######################
-        
 def obstore_write(data,keynmlfile,outpath,btchcnt=None,cntmax=None,DT=None,diagflag=0,missing_value=-1073741824.00000):
 	outfile=obstore.obstore_write(data,keynmlfile,outpath,btchcnt=btchcnt,cntmax=cntmax,DT=DT,diagflag=diagflag,missing_value=missing_value)
 	return(outfile)

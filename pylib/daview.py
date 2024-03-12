@@ -1907,6 +1907,21 @@ def nio_write(daset,filenam,dimlist,varlist):
 	return(filenam)
 
 #############################################################################################################################
+### NCAR Input Output Library (NIO) based functions
+#############################################################################################################################
+
+
+def nio_write(daset,filenam,dimlist,varlist):
+	fileptr=Nio.open_file(filenam, "c")
+	for dimnam in dimlist:
+		dimptr=fileptr.create_dimension(dimnam,len(daset[dimnam]))
+		fileptr[dimnam]=daset[dimnam].values
+	for varnam in varlist:
+		fileptr[varnam]=daset[varnam]
+	fileptr.close()
+	return(filenam)
+
+#############################################################################################################################
 ### XARRAY based functions
 #############################################################################################################################
 
