@@ -48,7 +48,6 @@ import pandas
 import numpy
 import domaindic
 import math
-
 #import geocat.datafiles as gdf
 #from geocat.viz import cmaps as gvcmaps
 #from geocat.viz import util as gvutil
@@ -57,6 +56,7 @@ import cartopy
 import cartopy.crs as ccrs
 import xarray
 import iris
+from iris.util import new_axis
 
 cmapfile=os.environ.get('CMAP',PALETTE+"/gibies_colourmap_20150117.rgb")
 
@@ -2018,7 +2018,7 @@ def xar_vimt(daset,levdim,rhonam,humnam):
         		lon=daset[humnam].longitude.values,
         		lat=daset[humnam].latitude.values,
         		time=daset[humnam].time.values,
-        		#reference_time=daset[humnam].reference_time,
+        		reference_time=daset[humnam].reference_time,
     				),
     		#attrs=dict(description="Vertical Integrated Moisture Transport."),
 				)
@@ -2167,7 +2167,7 @@ def xar_plot_ose_stream(plotdic):
 
 
 
-def iri_load_cubes(infile,cnst=None,callback=None,stashcode=None,option=0):
+def iri_load_cubes(infile,cnst=None,callback=None,stashcode=None,option=0,dims=None):
     opt=str(option)
     if stashcode is not None: cnst=iris.AttributeConstraint(STASH=stashcode)
     switcher = {
@@ -2178,28 +2178,37 @@ def iri_load_cubes(infile,cnst=None,callback=None,stashcode=None,option=0):
     }
     func = switcher.get(opt, lambda: 'Invalid option')
     file_cubes = func()
-    return(file_cubes)
+    cubedims=[coord.name() for coord in file_cubes.dim_coords]
+    if dims is not None:
+	for dimnam in dims:
+	   if dimnam not in cubedims:
+		file_cube=new_axis(file_cubes,dimnam)
+    return(file_cube)
 
 #############################################################################################################################
 ### IRIS and XARRAY combination based functions
 #############################################################################################################################
 
 def irx_cube_array(cube,varname,dims=None,coords=None):
-	data1=cube.data
-	if dims is None: dims=["level_height","latitude","longitude"]
+	cubedims=[coord.name() for coord in cube.dim_coords]
+	print(cubedims)
+	if dims is None: dims=cubedims	#["level_height","latitude","longitude"]
 	if coords is None: 
 		coords={}
 		for dimnam in dims:
+		    if dimnam in cubedims:
 			coords.update({dimnam:cube.coord(dimnam).points,})
-			#print(dimnam)
-			#coords.update({"level_height":cube.coord("level_height").points,})
-			#model_level_number: 71; latitude: 1536; longitude: 2048
+		    else:
+			print("Dimension Missmatch")
+			#coords.update({dimnam:cube.coord(dimnam)})
+	print(dims)
+	print(coords)
+	data1=cube.data
 	data=xarray.DataArray(data=data1,dims=dims,coords=coords,name=varname)
 	return(data)
 
 def irx_load_cubray(infile,varname,callback=None,stashcode=None,option=2,dims=None,coords=None):
-	cube=iri_load_cubes(infile,cnst=varname,callback=callback,stashcode=stashcode,option=option)
-	#print(cube)
+	cube=iri_load_cubes(infile,cnst=varname,callback=callback,stashcode=stashcode,option=option,dims=dims)
 	data=irx_cube_array(cube,varname,dims=dims,coords=coords)
 	daset=data.to_dataset()
 	return(daset)
