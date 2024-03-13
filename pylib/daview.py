@@ -1893,16 +1893,14 @@ def ngl_plot_raster_fill(dataset={},data_hoff=None,cnlev=None,clrindx=None,title
 
 
 def nio_write(daset,filenam,dimlist,varlist):
-	fileptr=Nio.open_file(filenam, "c")
+	fileptr=Nio.open_file(filenam, "rw")
 	for dimnam in dimlist:
 		dimptr=fileptr.create_dimension(dimnam,len(daset[dimnam]))
-		#fileptr.dimensions[dimnam].assign_value(daset[dimnam])
 		dimvarptr = fileptr.create_variable(dimnam,"d", daset[dimnam].dims)
 		fileptr.variables[dimnam].assign_value(daset[dimnam])
 	for varnam in varlist:
 		varptr = fileptr.create_variable(varnam,"d", daset[varnam].dims)
 		fileptr.variables[varnam].assign_value(daset[varnam])
-	print(fileptr.variables.keys())
 	fileptr.close()
 	return(filenam)
 
@@ -2177,17 +2175,34 @@ def iri_load_cubes(infile,cnst=None,callback=None,stashcode=None,option=0,dims=N
        "3" :lambda: iris.load_raw(infile,constraints=cnst, callback=callback),
     }
     func = switcher.get(opt, lambda: 'Invalid option')
+<<<<<<< HEAD
     file_cubes = func()
     cubedims=[coord.name() for coord in file_cubes.dim_coords]
     cubeauxc=[coord.name() for coord in file_cubes.aux_coords]
+=======
+    cubes = func()
+    cubedims=[coord.name() for coord in cubes.dim_coords]
+    cubeauxc=[coord.name() for coord in cubes.aux_coords]
+>>>>>>> b82df0cdd4e5218fa52301863ecb1069e9cc1afb
     if dims is not None:
 	for dimnam in dims:
+<<<<<<< HEAD
+	   if dimnam in cubeauxc:
+		if len(cubes.coord(dimnam).points) is 1:
+		   cubes=new_axis(cubes,dimnam)
+    return(cubes)
+=======
 	   if dimnam not in cubedims:
 		if dimnam not in cubeauxc:
 			n_coord = file_cubes.coord(dimnam)
 			#dim_coord = iris.coords.DimCoord(n_coord.points, long_name=dimnam, units=n_coord.units)
 			file_cubes=new_axis(file_cubes,n_coord)
     return(file_cubes)
+<<<<<<< HEAD
+=======
+>>>>>>> f58a9d818339766acd4c6f66eab327102e759544
+>>>>>>> 5684f8599bd4af7ce1fcf13ef44892a62e56d46d
+>>>>>>> b82df0cdd4e5218fa52301863ecb1069e9cc1afb
 
 #############################################################################################################################
 ### IRIS and XARRAY combination based functions
@@ -2196,22 +2211,34 @@ def iri_load_cubes(infile,cnst=None,callback=None,stashcode=None,option=0,dims=N
 def irx_cube_array(cube,varnames,dims=None,coords=None):
 	cubedims=[coord.name() for coord in cube.dim_coords]
 	cubeauxc=[coord.name() for coord in cube.aux_coords]
+<<<<<<< HEAD
 	print(cubedims)
+=======
+	#cubescal=[coord.name() for coord in cube.sca_coords]
+>>>>>>> b82df0cdd4e5218fa52301863ecb1069e9cc1afb
 	if dims is None: dims=cubedims	#["level_height","latitude","longitude"]
+	datset=xarray.Dataset()
 	if coords is None: 
-		coords={}
+		coords=datset.coords
 		for dimnam in dims:
 		    if dimnam in cubedims:
 			coords.update({dimnam:cube.coord(dimnam).points,})
 		    else:
 			if dimnam in cubeauxc:
+<<<<<<< HEAD
                         	coords.update({dimnam:cube.coord(dimnam).points,})
 			print("Dimension Missmatch")
 			#coords.update({dimnam:cube.coord(dimnam)})
 	print(dims)
 	print(coords)
+=======
+			    coords.update({dimnam:cube.coord(dimnam).points,})
+			else:
+			    coords.update({dimnam:cube.coord(dimnam).points,})
+			    #print("Dimension Missmatch")
+			    #coords.update({dimnam:cube.coord(dimnam)})
+>>>>>>> b82df0cdd4e5218fa52301863ecb1069e9cc1afb
 	#datset=data.to_dataset()
-	datset=xarray.Dataset()
 	for var in varnames:
 		data1=cube.data
 		datset[var]=xarray.DataArray(data=data1,dims=dims,coords=coords,name=var)
@@ -2241,9 +2268,12 @@ def irx_quot_rsqure(rho_ctl):
 #############################################################################################################################
 
 def ixn_extract(infile,varnames,callback=None,stashcode=None,option=2,dims=None,coords=None,outfile=None,):
-	daset=irx_load_cubray(infile,varnames,callback=None,stashcode=None,option=2,dims=None,coords=None)
+	daset=irx_load_cubray(infile,varnames,callback=callback,stashcode=stashcode,option=option,dims=dims,coords=coords)
 	if outfile is None: outfile=infile.split(".")[0]+".nc"
 	if dims is None: dims=daset.dims
+	if coords is None: coords=daset.coords
+	print(dims)
+	print(coords)
 	print(outfile)
 	nio_write(daset,outfile,dims,varnames)
 	return(outfile)
