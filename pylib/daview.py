@@ -2179,18 +2179,15 @@ def iri_load_cubes(infile,cnst=None,callback=None,stashcode=None,option=0,dims=N
     func = switcher.get(opt, lambda: 'Invalid option')
     file_cubes = func()
     cubedims=[coord.name() for coord in file_cubes.dim_coords]
+    cubeauxc=[coord.name() for coord in file_cubes.aux_coords]
     if dims is not None:
 	for dimnam in dims:
 	   if dimnam not in cubedims:
-<<<<<<< HEAD
-		#n_coord = file_cubes.coord(dimnam)
-		#dim_coord = iris.coords.DimCoord(n_coord.points, long_name=dimnam, units=n_coord.units)
-		file_cube=new_axis(file_cubes,dimnam)
-    return(file_cube)
-=======
-		file_cubes=new_axis(file_cubes,dimnam)
+		if dimnam not in cubeauxc:
+			n_coord = file_cubes.coord(dimnam)
+			#dim_coord = iris.coords.DimCoord(n_coord.points, long_name=dimnam, units=n_coord.units)
+			file_cubes=new_axis(file_cubes,n_coord)
     return(file_cubes)
->>>>>>> f58a9d818339766acd4c6f66eab327102e759544
 
 #############################################################################################################################
 ### IRIS and XARRAY combination based functions
@@ -2198,6 +2195,7 @@ def iri_load_cubes(infile,cnst=None,callback=None,stashcode=None,option=0,dims=N
 
 def irx_cube_array(cube,varnames,dims=None,coords=None):
 	cubedims=[coord.name() for coord in cube.dim_coords]
+	cubeauxc=[coord.name() for coord in cube.aux_coords]
 	print(cubedims)
 	if dims is None: dims=cubedims	#["level_height","latitude","longitude"]
 	if coords is None: 
@@ -2206,6 +2204,8 @@ def irx_cube_array(cube,varnames,dims=None,coords=None):
 		    if dimnam in cubedims:
 			coords.update({dimnam:cube.coord(dimnam).points,})
 		    else:
+			if dimnam in cubeauxc:
+                        	coords.update({dimnam:cube.coord(dimnam).points,})
 			print("Dimension Missmatch")
 			#coords.update({dimnam:cube.coord(dimnam)})
 	print(dims)
