@@ -2182,6 +2182,8 @@ def iri_load_cubes(infile,cnst=None,callback=None,stashcode=None,option=0,dims=N
     if dims is not None:
 	for dimnam in dims:
 	   if dimnam not in cubedims:
+		#n_coord = file_cubes.coord(dimnam)
+		#dim_coord = iris.coords.DimCoord(n_coord.points, long_name=dimnam, units=n_coord.units)
 		file_cube=new_axis(file_cubes,dimnam)
     return(file_cube)
 
