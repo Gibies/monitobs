@@ -29,7 +29,7 @@ def errprint(*args, **kwargs):
 
 import datadic
 import subprocess
-
+import essio
 import obslib
 import pplib
 import vardic
@@ -1888,16 +1888,8 @@ def ngl_plot_raster_fill(dataset={},data_hoff=None,cnlev=None,clrindx=None,title
 
 
 def nio_write(datset,filenam,dimlist,varlist):
-	fileptr=Nio.open_file(filenam, "rw")
-	for dimnam in dimlist:
-		dimptr=fileptr.create_dimension(dimnam,len(datset[dimnam]))
-		dimvarptr = fileptr.create_variable(dimnam,"d", datset[dimnam].dims)
-		fileptr.variables[dimnam].assign_value(datset[dimnam])
-	for varnam in varlist:
-		varptr = fileptr.create_variable(varnam,"d", datset[varnam].dims)
-		fileptr.variables[varnam].assign_value(datset[varnam])
-	fileptr.close()
-	return(filenam)
+	datset=essio.nio_write(datset=datset,filenam=filenam,dimlist=dimlist,varlist=varlist)
+	return(datset)
 
 
 #############################################################################################################################
@@ -2161,46 +2153,19 @@ def xar_plot_ose_stream(plotdic):
 
 
 def iri_load_cubes(infile,cnst=None,callback=None,stashcode=None,option=0,dims=None):
-    opt=str(option)
-    if stashcode is not None: cnst=iris.AttributeConstraint(STASH=stashcode)
-    switcher = {
-       "0" :lambda: iris.load(infile,constraints=cnst, callback=callback),
-       "1" :lambda: iris.load_cubes(infile,constraints=cnst, callback=callback),
-       "2" :lambda: iris.load_cube(infile,constraint=cnst, callback=callback),
-       "3" :lambda: iris.load_raw(infile,constraints=cnst, callback=callback),
-    }
-    func = switcher.get(opt, lambda: 'Invalid option')
-    cubes = func()
-    cubedims=[coord.name() for coord in cubes.dim_coords]
-    cubeauxc=[coord.name() for coord in cubes.aux_coords]
-    if dims is not None:
-	for dimnam in dims:
-	   if dimnam in cubeauxc:
-		if len(cubes.coord(dimnam).points) is 1:
-		   cubes=new_axis(cubes,dimnam)
-    return(cubes)
+	cubes=essio.iri_load_cubes(infile=infile,cnst=cnst,callback=callback,stashcode=stashcode,option=option,dims=dims)
+	return(cubes)
 
 #############################################################################################################################
 ### IRIS and XARRAY combination based functions
 #############################################################################################################################
 
 def irx_cube_array(cube,varnames,dims=None,coords=None):
-	cubedims=[coord.name() for coord in cube.dim_coords]
-	cubeauxc=[coord.name() for coord in cube.aux_coords]
-	if dims is None: dims=cubedims	
-	datset=xarray.Dataset()
-	if coords is None: 
-		coords=datset.coords
-		for dimnam in dims:
-			coords.update({dimnam:cube.coord(dimnam).points,})
-	for var in varnames:
-		data1=cube.data
-		datset[var]=xarray.DataArray(data=data1,dims=dims,coords=coords,name=var)
+	datset=essio.irx_cube_array(cube=cube,varnames=varnames,dims=dims,coords=coords)
 	return(datset)
 
 def irx_load_cubray(infile,varnames,callback=None,stashcode=None,option=2,dims=None,coords=None):
-	cube=iri_load_cubes(infile,cnst=varnames,callback=callback,stashcode=stashcode,option=option,dims=dims)
-	datset=irx_cube_array(cube,varnames,dims=dims,coords=coords)
+	datset=essio.irx_load_cubray(infile=infile,varnames=varnames,callback=callback,stashcode=stashcode,option=option,dims=dims,coords=coords)
 	return(datset)
 
 def irx_layer_thickness(q):
@@ -2222,10 +2187,5 @@ def irx_quot_rsqure(rho):
 #############################################################################################################################
 
 def ixn_extract(infile,varnames,callback=None,stashcode=None,option=2,dims=None,coords=None,outfile=None,):
-	datset=irx_load_cubray(infile,varnames,callback=callback,stashcode=stashcode,option=option,dims=dims,coords=coords)
-	var_lst_str=obslib.underscore(varnames)
-	if outfile is None: outfile=infile.split(".")[0]+"_"+var_lst_str+".nc"
-	if dims is None: dims=datset.dims
-	if coords is None: coords=datset.coords
-	datset=nio_write(datset,outfile,dims,varnames)
+	datset=essio.ixn_extract(infile=infile,varnames=varnames,callback=callback,stashcode=stashcode,option=option,dims=dims,coords=coords,outfile=outfile)
 	return(datset)
