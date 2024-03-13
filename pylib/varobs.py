@@ -242,4 +242,6 @@ def read_batch(obsfile,batchid=1):
     obsmod.ascii_file_write(data,option=1)
     return(data)
 
-#def  
+def read_latlon(infilename,btchid=1): 
+    with open(infilename, "rb") as obsfile:
+	a=get_latlon(obsfile,batchid=btchid)

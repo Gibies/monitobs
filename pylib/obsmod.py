@@ -33,6 +33,7 @@ import ecbufr
 #import fsoi
 import symobs
 import daview
+import essio
 import sqlobs
 #import sqlodb
 #import obsgui
@@ -57,6 +58,11 @@ odb_nml=os.environ.get('odb_index_nml',OBSNML+"/odb_index_nml")
 varno_nml=os.environ.get('odb_varno_nml',OBSNML+"/odb_varno_nml")
 subtype_nml=os.environ.get('obs_subtype_nml',OBSNML+"/obs_subtype.nml")
 
+def iri_load_cubes(infile,cnst=None,callback=None,stashcode=None,option=0):
+	return(daview.iri_load_cubes(infile,cnst=cnst,callback=callback,stashcode=stashcode,option=option))
+
+def irx_load_cubray(infile,varname,callback=None,stashcode=None,option=2,dims=None,coords=None):
+	return(daview.irx_load_cubray(infile,varname,callback=callback,stashcode=stashcode,option=option,dims=dims,coords=coords))
 
 def today(fmtstr="%Y%m%d"):
 	return(obslib.today(fmtstr))
@@ -412,31 +418,6 @@ def symobs_main(Tnode,outpath,inpath,nmlpath,obstypelist=[],maxindx=MAXINDX,subt
         datagroup=symobs.symulate_obstore(outpath,inpath,nmlpath,Tnode,obstype,maxindx=maxindx,subtypelist=subtypelist)
         ######################
         
-def symobs_buoy_nio(Tnode,outpath,inpath,nmlpath,obstypelist=[],maxindx=MAXINDX,subtypelist=None,synbuoyloc=None):
-    if len(obstypelist) == 0:
-        obstypelist=obsdic.obstypelist
-    for obstype in obstypelist:
-        infodic={}
-        infodic["obstype"] = obstype
-        infodic["syntype"] = [ 10300, ]
-        infodic["timeinfo"] = Tnode
-        infodic["synbuoyloc"] = synbuoyloc
-        infodic["array_weight"] = 2
-        infodic["latmin"] = -20.0
-        infodic["latmax"] = 30.0
-        infodic["lonmin"] = 30.0
-        infodic["lonmax"] = 120.0
-        infodic["header_offset"] = 339
-        infodic["lut_ncols"] = LUTSIZE
-        infodic["maxindx"] = maxindx
-        infodic["inpath"] = inpath
-        infodic["outpath"] = outpath
-        infodic["nmlpath"] = nmlpath
-        infodic["subtypelist"] = subtypelist
-        #infodic["elistgroup"] = elistgroup
-        datagroup=symobs.sose_merge_data(infodic)
-        ######################
-        
 def obstore_write(data,keynmlfile,outpath,btchcnt=None,cntmax=None,DT=None,diagflag=0,missing_value=-1073741824.00000):
 	outfile=obstore.obstore_write(data,keynmlfile,outpath,btchcnt=btchcnt,cntmax=cntmax,DT=DT,diagflag=diagflag,missing_value=missing_value)
 	return(outfile)
@@ -451,3 +432,12 @@ def obstore_create_file(obstore_info,diagflg=0,callsignflag=False,filedata=None)
 def create_obstore(obstore_info,diagflg=0,callsignflag=False,filedata=None):
 	obstore_info=obstore_create_file(obstore_info,diagflg=diagflg,callsignflag=callsignflag,filedata=filedata)
 	return(obstore_info)
+
+def datset_extract(infile,varnames=None,dims=None,outfile=None):
+	datset=essio.ixn_extract(infile,varnames=varnames,dims=dims,outfile=outfile)
+	return(datset)
+
+def mkdir(path):
+	path=obslib.mkdir(path)
+	return(path)
+

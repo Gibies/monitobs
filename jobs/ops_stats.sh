@@ -1,5 +1,5 @@
 
-CYLCTIME=${1:-"20240214T0600Z"}
+CYLCTIME=${1:-"20240229T0000Z"}
 
 INPATH="/home/umprod/PS43/LOG_DA_RUN"
 OUTFILE="/scratch/${USER}/ops_count_obstore_info_${CYLCTIME}.txt"

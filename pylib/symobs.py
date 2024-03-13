@@ -1043,10 +1043,10 @@ def symulate_subtype(obs_info,obstypedic=None,maxindx=MAXINDX,temp=[],rhum=[],uw
 #        if "Vcomponent" in elenams: symulate_data(outfile,nmlfile,indx,"Vcomponent","vwnd",filevar,DT,obs_cnt,Latitude,Longitude,option="vwnd")
 def subtype_filter(subtypegroup, subtypelist):
 	indxlist=[]
-	for indx,subtype in enumerate(subtypegroup):
-	    if subtypelist is None:
+	if subtypelist is None:
 		indxlist = range(0,len(subtypegroup),1)
-	    else:
+	else:
+	    for indx,subtype in enumerate(subtypegroup):
 		if subtype in subtypelist: 
 			indxlist=indxlist+[indx]
 	return(indxlist)
@@ -1198,6 +1198,9 @@ def sose_merge_data(infodic):
 		fltrdata=fltrdata.append(synbuoy(datafilter,obs_info),ignore_index=True)
     		fltrdata=indexreset(fltrdata)
 		obstore_info["datagroup"][indx-1]=fltrdata
+	else:
+		fltrdata=obstore_info["datagroup"][indx-1]
+		print(subtype)
     #obstore_info["datagroup"] = datagroup
     obstore_info=obsmod.create_obstore(obstore_info)
     return(obstore_info)
@@ -1299,8 +1302,6 @@ def filtered_obstore_read(obstore_info,datafilter):
     if datafilter is not None: obstore_info=filter_data(obstore_info,datafilter)
     datagroup = obstore_info["datagroup"]
     return(obstore_info)
-
-
     
 def filter_data(obstore_info,datafilter):
     obstype = obstore_info["obstype"]
