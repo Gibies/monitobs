@@ -228,6 +228,10 @@ def getstring(ascii):
     string=''.join(chr(int(a)) for a in ascii)
     return(string)
 
+def underscore(list1):
+	stroflst='_'.join(itm for itm in list1)
+	return(stroflst)
+
 def str_list_index(val,listin):
 	indx = numpy.where(numpy.array(listin)==str(val))[0][0]
 	return(indx)

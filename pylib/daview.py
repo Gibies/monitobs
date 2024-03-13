@@ -2223,7 +2223,8 @@ def irx_quot_rsqure(rho):
 
 def ixn_extract(infile,varnames,callback=None,stashcode=None,option=2,dims=None,coords=None,outfile=None,):
 	datset=irx_load_cubray(infile,varnames,callback=callback,stashcode=stashcode,option=option,dims=dims,coords=coords)
-	if outfile is None: outfile=infile.split(".")[0]+".nc"
+	var_lst_str=obslib.underscore(varnames)
+	if outfile is None: outfile=infile.split(".")[0]+"_"+var_lst_str+".nc"
 	if dims is None: dims=datset.dims
 	if coords is None: coords=datset.coords
 	datset=nio_write(datset,outfile,dims,varnames)
