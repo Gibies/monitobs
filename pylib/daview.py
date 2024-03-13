@@ -29,7 +29,7 @@ def errprint(*args, **kwargs):
 
 import datadic
 import subprocess
-import essio
+
 import obslib
 import pplib
 import vardic
@@ -2057,8 +2057,6 @@ def xar_plot_ose_scalar(plotdic):
 	axins = inset_axes(axes[2], width = "5%", height = "100%", loc = 'lower left', bbox_to_anchor = (1.09, 0., 1, 1), bbox_transform = axes[2].transAxes, borderpad = 0)
 	fig.colorbar(plot[2], cax = axins)	
 
-	#im = axes[0].imshow(data_ctl)	
-
 	pyplot.tight_layout()
 	pyplot.savefig(plotfile)
 	return(plotfile)
@@ -2080,8 +2078,6 @@ def xar_plot_ose_vector(plotdic):
 
 	mag_ctl = numpy.sqrt(u_ctl.isel(time=0).values**2 + v_ctl.isel(time=0).values**2)
 	mag_exp = numpy.sqrt(u_exp.isel(time=0).values**2 + v_exp.isel(time=0).values**2)
-	#mag_ctl = numpy.sqrt(u_ctl.values**2 + v_ctl.values**2)
-	#mag_exp = numpy.sqrt(u_exp.values**2 + v_exp.values**2)
 
 	fig, axes = pyplot.subplots(nrows=3, ncols=1,figsize=[20,15], subplot_kw={'projection': ccrs.PlateCarree(central_longitude=0)})
 
@@ -2187,5 +2183,10 @@ def irx_quot_rsqure(rho):
 #############################################################################################################################
 
 def ixn_extract(infile,varnames,callback=None,stashcode=None,option=2,dims=None,coords=None,outfile=None,):
-	datset=essio.ixn_extract(infile=infile,varnames=varnames,callback=callback,stashcode=stashcode,option=option,dims=dims,coords=coords,outfile=outfile)
+	datset=irx_load_cubray(infile,varnames,callback=callback,stashcode=stashcode,option=option,dims=dims,coords=coords)
+	var_lst_str=obslib.underscore(varnames)
+	if outfile is None: outfile=infile.split(".")[0]+"_"+var_lst_str+".nc"
+	if dims is None: dims=datset.dims
+	if coords is None: coords=datset.coords
+	datset=nio_write(datset,outfile,dims,varnames)
 	return(datset)
