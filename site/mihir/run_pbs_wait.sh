@@ -44,6 +44,10 @@ echo ${jobid}
 	cnt=${wait_flag}
 	while [[ ${cnt} -ne 0 ]]; do
 		cnt=$(qstat -w -u ${USER}|grep ${jobid}|wc -l)
+		tail -10 ${LOGDIR}/${TASKNAM}_${RUNTIME}.err
+		sleep 10
 	done
 
-ls -lrt ${LOGDIR}
+qstat -w -u ${USER}
+echo ${LOGDIR}
+ls -lrt ${LOGDIR}/${TASKNAM}_${RUNTIME}.*

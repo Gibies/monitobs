@@ -46,4 +46,6 @@ echo ${jobid}
 		cnt=$(qstat -w -u ${USER}|grep ${jobid}|wc -l)
 	done
 
+qstat -w -u ${USER}
+echo ${LOGDIR}
 ls -lrt ${LOGDIR}

@@ -2182,14 +2182,14 @@ def iri_load_cubes(infile,cnst=None,callback=None,stashcode=None,option=0,dims=N
     if dims is not None:
 	for dimnam in dims:
 	   if dimnam not in cubedims:
-		file_cube=new_axis(file_cubes,dimnam)
-    return(file_cube)
+		file_cubes=new_axis(file_cubes,dimnam)
+    return(file_cubes)
 
 #############################################################################################################################
 ### IRIS and XARRAY combination based functions
 #############################################################################################################################
 
-def irx_cube_array(cube,varname,dims=None,coords=None):
+def irx_cube_array(cube,varnames,dims=None,coords=None):
 	cubedims=[coord.name() for coord in cube.dim_coords]
 	print(cubedims)
 	if dims is None: dims=cubedims	#["level_height","latitude","longitude"]
@@ -2203,15 +2203,17 @@ def irx_cube_array(cube,varname,dims=None,coords=None):
 			#coords.update({dimnam:cube.coord(dimnam)})
 	print(dims)
 	print(coords)
-	data1=cube.data
-	data=xarray.DataArray(data=data1,dims=dims,coords=coords,name=varname)
-	return(data)
+	#datset=data.to_dataset()
+	datset=xarray.Dataset()
+	for var in varnames:
+		data1=cube.data
+		datset[var]=xarray.DataArray(data=data1,dims=dims,coords=coords,name=var)
+	return(datset)
 
-def irx_load_cubray(infile,varname,callback=None,stashcode=None,option=2,dims=None,coords=None):
-	cube=iri_load_cubes(infile,cnst=varname,callback=callback,stashcode=stashcode,option=option,dims=dims)
-	data=irx_cube_array(cube,varname,dims=dims,coords=coords)
-	daset=data.to_dataset()
-	return(daset)
+def irx_load_cubray(infile,varnames,callback=None,stashcode=None,option=2,dims=None,coords=None):
+	cube=iri_load_cubes(infile,cnst=varnames,callback=callback,stashcode=stashcode,option=option,dims=dims)
+	datset=irx_cube_array(cube,varnames,dims=dims,coords=coords)
+	return(datset)
 
 def irx_layer_thickness(q_ctl):
 	level_height = q_ctl.coord('level_height').points
@@ -2231,9 +2233,10 @@ def irx_quot_rsqure(rho_ctl):
 ### IRIS, XARRAY and NIO combination based functions
 #############################################################################################################################
 
-def ixn_extract(infile,varname,callback=None,stashcode=None,option=2,dims=None,coords=None,outfile=None,):
-	daset=irx_load_cubray(infile,varname,callback=None,stashcode=None,option=2,dims=None,coords=None)
+def ixn_extract(infile,varnames,callback=None,stashcode=None,option=2,dims=None,coords=None,outfile=None,):
+	daset=irx_load_cubray(infile,varnames,callback=None,stashcode=None,option=2,dims=None,coords=None)
 	if outfile is None: outfile=infile.split(".")[0]+".nc"
 	if dims is None: dims=daset.dims
-	nio_write(daset,outfile,dims,varname)
+	print(outfile)
+	nio_write(daset,outfile,dims,varnames)
 	return(outfile)
