@@ -431,3 +431,12 @@ def obstore_create_file(obstore_info,diagflg=0,callsignflag=False,filedata=None)
 def create_obstore(obstore_info,diagflg=0,callsignflag=False,filedata=None):
 	obstore_info=obstore_create_file(obstore_info,diagflg=diagflg,callsignflag=callsignflag,filedata=filedata)
 	return(obstore_info)
+
+def field_extract(infile,varnames=None,dims=None,outfile=None):
+	datset=daview.ixn_extract(infile,varnames=varnames,dims=dims,outfile=outfile)
+	return(datset)
+
+def mkdir(path):
+	path=obslib.mkdir(path)
+	return(path)
+
