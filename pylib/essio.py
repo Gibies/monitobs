@@ -63,7 +63,7 @@ def nio_write(datset,filenam,dimlist,varlist):
 		varptr = fileptr.create_variable(varnam,"d", datset[varnam].dims)
 		fileptr.variables[varnam].assign_value(datset[varnam])
 	fileptr.close()
-	return(filenam)
+	return(datset)
 
 
 #############################################################################################################################
@@ -126,4 +126,8 @@ def ixn_extract(infile,varnames,callback=None,stashcode=None,option=2,dims=None,
 	if dims is None: dims=datset.dims
 	if coords is None: coords=datset.coords
 	datset=nio_write(datset,outfile,dims,varnames)
+	return(datset)
+
+def datset_extract(infile,varnames,callback=None,stashcode=None,option=2,dims=None,coords=None,outfile=None,):
+	datset=extract(infile,varnames,callback=callback,stashcode=stashcode,option=option,dims=dims,coords=coords,outfile=outfile)
 	return(datset)
