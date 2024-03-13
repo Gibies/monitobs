@@ -1,7 +1,17 @@
 #!/bin/bash
+SELF=$(realpath $0)
+PKGHOME=${SELF%/site*}
+JOBSDIR="${PKGHOME}/jobs"
 
-export PYLAUNCH=$1
-shift
+TYPE=${1##*.}
+if [[ ${TYPE} == "sh" ]]; then
+	export PYLAUNCH=$1
+	shift
+else
+	export PYLAUNCH="${JOBSDIR}/py2launch.sh"
+fi
+echo ${PYLAUNCH}
+
 export PYSCRIPT=$1
 shift
 export ARGS=$@
