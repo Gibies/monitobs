@@ -2231,18 +2231,14 @@ def irx_quot_rsqure(rho_ctl):
 	level_height = rho_ctl.coord('level_height').points
 	#R_ctl = iris.coords.AuxCoord(level_height + 6371*(10**3))
 	#R_square_ctl = R_ctl.points[:]**2
-	R_ctl = level_height + 6371*(10**3)
-	R_square_ctl = R_ctl**2
-	data1=rho_ctl.data
-	data = data1 / R_square_ctl
-	return(data)
 
-	#model_level_number = q_ctl.coord('model_level_number').points
-	#altitude = q_ctl.coord('altitude').points
-	#sigma = q_ctl.coord('sigma').points
+#############################################################################################################################
+### IRIS, XARRAY and NIO combination based functions
+#############################################################################################################################
 
-	#thickness = numpy.zeros(len(level_height)-1)
-
-	#for i in range(1, len(level_height) - 1):
-	#    thickness[i] = ((level_height[i] - level_height[i - 1]) / 2) + ((level_height[i + 1] - level_height[i]) / 2)
-	#thickness[0] = (level_height[1] - level_height[0]) / 2
+def ixn_extract(infile,varname,callback=None,stashcode=None,option=2,dims=None,coords=None,outfile=None,):
+	daset=irx_load_cubray(infile,varname,callback=None,stashcode=None,option=2,dims=None,coords=None)
+	if outfile is None: outfile=infile.split(".")[0]+".nc"
+	if dims is None: dims=daset.dims
+	nio_write(daset,outfile,dims,varname)
+	return(outfile)
