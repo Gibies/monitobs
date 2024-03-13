@@ -7,7 +7,7 @@ shift
 export ARGS=$@
 
 wait_flag=0
-QUEUE_MAMU="NCMRWF1"
+QUEUE_MAMU="serial1"
 LOGDIR="/scratch/${USER}/logs"
 PBSDIR="/scratch/${USER}/jobs"
 PYFILE=${PYSCRIPT##*/}
@@ -23,7 +23,7 @@ cat >> ${PBSFILE} << EOF
 #!/bin/bash
 #PBS -q ${QUEUE_MAMU}
 #PBS -N ${TASKNAM}
-#PBS -l select=1:ncpus=1:vntype=cray_compute
+#PBS -l select=1:ncpus=1:vntype=cray_mamu
 #PBS -o ${LOGDIR}/${TASKNAM}_${RUNTIME}.out
 #PBS -e ${LOGDIR}/${TASKNAM}_${RUNTIME}.err
 export LOGDIR=${LOGDIR}
@@ -46,4 +46,6 @@ echo ${jobid}
 		cnt=$(qstat -w -u ${USER}|grep ${jobid}|wc -l)
 	done
 
+qstat -w -u ${USER}
+echo ${LOGDIR}
 ls -lrt ${LOGDIR}

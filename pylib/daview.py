@@ -2182,16 +2182,21 @@ def iri_load_cubes(infile,cnst=None,callback=None,stashcode=None,option=0,dims=N
     if dims is not None:
 	for dimnam in dims:
 	   if dimnam not in cubedims:
+<<<<<<< HEAD
 		#n_coord = file_cubes.coord(dimnam)
 		#dim_coord = iris.coords.DimCoord(n_coord.points, long_name=dimnam, units=n_coord.units)
 		file_cube=new_axis(file_cubes,dimnam)
     return(file_cube)
+=======
+		file_cubes=new_axis(file_cubes,dimnam)
+    return(file_cubes)
+>>>>>>> f58a9d818339766acd4c6f66eab327102e759544
 
 #############################################################################################################################
 ### IRIS and XARRAY combination based functions
 #############################################################################################################################
 
-def irx_cube_array(cube,varname,dims=None,coords=None):
+def irx_cube_array(cube,varnames,dims=None,coords=None):
 	cubedims=[coord.name() for coord in cube.dim_coords]
 	print(cubedims)
 	if dims is None: dims=cubedims	#["level_height","latitude","longitude"]
@@ -2205,15 +2210,17 @@ def irx_cube_array(cube,varname,dims=None,coords=None):
 			#coords.update({dimnam:cube.coord(dimnam)})
 	print(dims)
 	print(coords)
-	data1=cube.data
-	data=xarray.DataArray(data=data1,dims=dims,coords=coords,name=varname)
-	return(data)
+	#datset=data.to_dataset()
+	datset=xarray.Dataset()
+	for var in varnames:
+		data1=cube.data
+		datset[var]=xarray.DataArray(data=data1,dims=dims,coords=coords,name=var)
+	return(datset)
 
-def irx_load_cubray(infile,varname,callback=None,stashcode=None,option=2,dims=None,coords=None):
-	cube=iri_load_cubes(infile,cnst=varname,callback=callback,stashcode=stashcode,option=option,dims=dims)
-	data=irx_cube_array(cube,varname,dims=dims,coords=coords)
-	daset=data.to_dataset()
-	return(daset)
+def irx_load_cubray(infile,varnames,callback=None,stashcode=None,option=2,dims=None,coords=None):
+	cube=iri_load_cubes(infile,cnst=varnames,callback=callback,stashcode=stashcode,option=option,dims=dims)
+	datset=irx_cube_array(cube,varnames,dims=dims,coords=coords)
+	return(datset)
 
 def irx_layer_thickness(q_ctl):
 	level_height = q_ctl.coord('level_height').points
@@ -2228,18 +2235,15 @@ def irx_quot_rsqure(rho_ctl):
 	level_height = rho_ctl.coord('level_height').points
 	#R_ctl = iris.coords.AuxCoord(level_height + 6371*(10**3))
 	#R_square_ctl = R_ctl.points[:]**2
-	R_ctl = level_height + 6371*(10**3)
-	R_square_ctl = R_ctl**2
-	data1=rho_ctl.data
-	data = data1 / R_square_ctl
-	return(data)
 
-	#model_level_number = q_ctl.coord('model_level_number').points
-	#altitude = q_ctl.coord('altitude').points
-	#sigma = q_ctl.coord('sigma').points
+#############################################################################################################################
+### IRIS, XARRAY and NIO combination based functions
+#############################################################################################################################
 
-	#thickness = numpy.zeros(len(level_height)-1)
-
-	#for i in range(1, len(level_height) - 1):
-	#    thickness[i] = ((level_height[i] - level_height[i - 1]) / 2) + ((level_height[i + 1] - level_height[i]) / 2)
-	#thickness[0] = (level_height[1] - level_height[0]) / 2
+def ixn_extract(infile,varnames,callback=None,stashcode=None,option=2,dims=None,coords=None,outfile=None,):
+	daset=irx_load_cubray(infile,varnames,callback=None,stashcode=None,option=2,dims=None,coords=None)
+	if outfile is None: outfile=infile.split(".")[0]+".nc"
+	if dims is None: dims=daset.dims
+	print(outfile)
+	nio_write(daset,outfile,dims,varnames)
+	return(outfile)

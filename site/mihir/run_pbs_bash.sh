@@ -1,17 +1,15 @@
 #!/bin/bash
 
-export PYLAUNCH=$1
-shift
-export PYSCRIPT=$1
+export BASHJOB=$1
 shift
 export ARGS=$@
 
 wait_flag=0
-QUEUE_MAMU="serial1"
+QUEUE_MAMU="NCMRWF1"
 LOGDIR="/scratch/${USER}/logs"
 PBSDIR="/scratch/${USER}/jobs"
-PYFILE=${PYSCRIPT##*/}
-TASKNAM=${PYFILE%.py}
+JOBFILE=${BASHJOB##*/}
+TASKNAM=${JOBFILE%.*}
 PBSFILE="${PBSDIR}/run_task_${TASKNAM}.pbs"
 RUNTIME=$(date +%Y%m%d_%H%M)
 
@@ -23,7 +21,7 @@ cat >> ${PBSFILE} << EOF
 #!/bin/bash
 #PBS -q ${QUEUE_MAMU}
 #PBS -N ${TASKNAM}
-#PBS -l select=1:ncpus=1:vntype=cray_mamu
+#PBS -l select=1:ncpus=1:vntype=cray_compute
 #PBS -o ${LOGDIR}/${TASKNAM}_${RUNTIME}.out
 #PBS -e ${LOGDIR}/${TASKNAM}_${RUNTIME}.err
 export LOGDIR=${LOGDIR}
@@ -31,11 +29,10 @@ export PBSDIR=${PBSDIR}
 export TASKNAM=${TASKNAM}
 
 
-PYSCRIPT=${PYSCRIPT}
-PYLAUNCH=${PYLAUNCH}
+BASHJOB=${BASHJOB}
 ARGS=${ARGS}
 
-\${PYLAUNCH} \${PYSCRIPT} \${ARGS}
+\${BASHJOB} \${ARGS}
 EOF
 
 jobid=$(qsub ${PBSFILE})
@@ -46,4 +43,6 @@ echo ${jobid}
 		cnt=$(qstat -w -u ${USER}|grep ${jobid}|wc -l)
 	done
 
+qstat -w -u ${USER}
+echo ${LOGDIR}
 ls -lrt ${LOGDIR}
