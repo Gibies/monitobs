@@ -2170,36 +2170,15 @@ def iri_load_cubes(infile,cnst=None,callback=None,stashcode=None,option=0,dims=N
        "3" :lambda: iris.load_raw(infile,constraints=cnst, callback=callback),
     }
     func = switcher.get(opt, lambda: 'Invalid option')
-<<<<<<< HEAD
-    file_cubes = func()
-    cubedims=[coord.name() for coord in file_cubes.dim_coords]
-    cubeauxc=[coord.name() for coord in file_cubes.aux_coords]
-=======
     cubes = func()
     cubedims=[coord.name() for coord in cubes.dim_coords]
     cubeauxc=[coord.name() for coord in cubes.aux_coords]
->>>>>>> b82df0cdd4e5218fa52301863ecb1069e9cc1afb
     if dims is not None:
 	for dimnam in dims:
 	   if dimnam in cubeauxc:
 		if len(cubes.coord(dimnam).points) is 1:
 		   cubes=new_axis(cubes,dimnam)
     return(cubes)
-<<<<<<< HEAD
-=======
-=======
-	   if dimnam not in cubedims:
-		if dimnam not in cubeauxc:
-			n_coord = file_cubes.coord(dimnam)
-			#dim_coord = iris.coords.DimCoord(n_coord.points, long_name=dimnam, units=n_coord.units)
-			file_cubes=new_axis(file_cubes,n_coord)
-    return(file_cubes)
-<<<<<<< HEAD
-=======
->>>>>>> f58a9d818339766acd4c6f66eab327102e759544
->>>>>>> 5684f8599bd4af7ce1fcf13ef44892a62e56d46d
->>>>>>> b82df0cdd4e5218fa52301863ecb1069e9cc1afb
->>>>>>> 72ca0ef0d73e1bf0edf891e625c40b9231321cc6
 
 #############################################################################################################################
 ### IRIS and XARRAY combination based functions
@@ -2208,34 +2187,12 @@ def iri_load_cubes(infile,cnst=None,callback=None,stashcode=None,option=0,dims=N
 def irx_cube_array(cube,varnames,dims=None,coords=None):
 	cubedims=[coord.name() for coord in cube.dim_coords]
 	cubeauxc=[coord.name() for coord in cube.aux_coords]
-<<<<<<< HEAD
-	print(cubedims)
-=======
-	#cubescal=[coord.name() for coord in cube.sca_coords]
->>>>>>> b82df0cdd4e5218fa52301863ecb1069e9cc1afb
 	if dims is None: dims=cubedims	#["level_height","latitude","longitude"]
 	datset=xarray.Dataset()
 	if coords is None: 
 		coords=datset.coords
 		for dimnam in dims:
-		    if dimnam in cubedims:
 			coords.update({dimnam:cube.coord(dimnam).points,})
-		    else:
-			if dimnam in cubeauxc:
-<<<<<<< HEAD
-                        	coords.update({dimnam:cube.coord(dimnam).points,})
-			print("Dimension Missmatch")
-			#coords.update({dimnam:cube.coord(dimnam)})
-	print(dims)
-	print(coords)
-=======
-			    coords.update({dimnam:cube.coord(dimnam).points,})
-			else:
-			    coords.update({dimnam:cube.coord(dimnam).points,})
-			    #print("Dimension Missmatch")
-			    #coords.update({dimnam:cube.coord(dimnam)})
->>>>>>> b82df0cdd4e5218fa52301863ecb1069e9cc1afb
-	#datset=data.to_dataset()
 	for var in varnames:
 		data1=cube.data
 		datset[var]=xarray.DataArray(data=data1,dims=dims,coords=coords,name=var)
