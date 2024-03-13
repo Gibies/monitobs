@@ -2011,7 +2011,7 @@ def xar_vimt(datset,levdim,rhonam,humnam):
         		lon=datset[humnam].longitude.values,
         		lat=datset[humnam].latitude.values,
         		time=datset[humnam].time.values,
-        		reference_time=datset[humnam].reference_time,
+        		#reference_time=datset[humnam].reference_time,
     				),
     		#attrs=dict(description="Vertical Integrated Moisture Transport."),
 				)
