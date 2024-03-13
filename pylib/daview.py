@@ -1122,20 +1122,15 @@ def mpl_plot_indian(dataset,plot):
 	pyplot.show()
 	return(plot)
 
-def mpl_plot_integrated_gl(dataset,plot):
-	q_ctl=dataset["q_ctl"]
-        rho_ctl=dataset["rho_ctl"]
-	q_ctl = xarray.open_dataset(q_ctl)
-	rho_ctl = xarray.open_dataset(rho_ctl)
-	#thickness = xarray.DataArray(data=numpy.zeros(len(q_ctl.hybrid_ht)),dims=["hybrid_ht"],coords={"hybrid_ht": q_ctl.hybrid_ht},name="thickness")
-	#thickness = thickness.isel(hybrid_ht=slice(None, -1))
-	#for i in range(1, len(q_ctl.hybrid_ht) - 1):
-    	#	thickness[i] = ((q_ctl.hybrid_ht[i] - q_ctl.hybrid_ht[i - 1]) / 2) + ((q_ctl.hybrid_ht[i + 1] - q_ctl.hybrid_ht[i]) / 2)
-	#thickness[0] = (q_ctl.hybrid_ht[1] - q_ctl.hybrid_ht[0]) / 2
- 	thickness=xar_layer_thickness(q_ctl)
-	weighted_q = (q_ctl.q * thickness* rho_ctl['unspecified'].values)/82369
+def mpl_plot_integrated_gl(filedic,plot):
+	q=filedic["q"]
+        rho=filedic["rho"]
+	q = xarray.open_dataset(q)
+	rho= xarray.open_dataset(rho)
+ 	thickness=xar_layer_thickness(q)
+	weighted_q = (q.q * thickness* rho['unspecified'].values)/82369
 	integrated_weighted_q = weighted_q.sum('hybrid_ht')
-	integrated_weighted_q.to_netcdf('integrated_weighted_q_ctl.nc')
+	integrated_weighted_q.to_netcdf('integrated_weighted_q.nc')
 	m = Basemap(projection='cyl',llcrnrlat=-90,urcrnrlat=90,llcrnrlon=-180,urcrnrlon=180,resolution='c')
 	fig = pyplot.figure(figsize=[12,5])
 	ax = pyplot.axes(projection=ccrs.PlateCarree(central_longitude=0))
@@ -1892,15 +1887,15 @@ def ngl_plot_raster_fill(dataset={},data_hoff=None,cnlev=None,clrindx=None,title
 #############################################################################################################################
 
 
-def nio_write(daset,filenam,dimlist,varlist):
+def nio_write(datset,filenam,dimlist,varlist):
 	fileptr=Nio.open_file(filenam, "rw")
 	for dimnam in dimlist:
-		dimptr=fileptr.create_dimension(dimnam,len(daset[dimnam]))
-		dimvarptr = fileptr.create_variable(dimnam,"d", daset[dimnam].dims)
-		fileptr.variables[dimnam].assign_value(daset[dimnam])
+		dimptr=fileptr.create_dimension(dimnam,len(datset[dimnam]))
+		dimvarptr = fileptr.create_variable(dimnam,"d", datset[dimnam].dims)
+		fileptr.variables[dimnam].assign_value(datset[dimnam])
 	for varnam in varlist:
-		varptr = fileptr.create_variable(varnam,"d", daset[varnam].dims)
-		fileptr.variables[varnam].assign_value(daset[varnam])
+		varptr = fileptr.create_variable(varnam,"d", datset[varnam].dims)
+		fileptr.variables[varnam].assign_value(datset[varnam])
 	fileptr.close()
 	return(filenam)
 
@@ -1919,8 +1914,8 @@ def xar_slice_indian(data):
 	ind_data=xarray.open_dataset(data).sel(hybrid_ht=0,longitude=slice(60,100),latitude=slice(0,40))
 	return(ind_data)
 
-def xar_layer_thickness(q_ctl,levdim):
-	level_height = q_ctl.coords[levdim]	#hybrid_ht
+def xar_layer_thickness(q,levdim):
+	level_height = q.coords[levdim]	#hybrid_ht
 	thickness = xarray.DataArray(data=numpy.zeros(len(level_height)),dims=[levdim],coords={levdim: level_height},name="thickness")
 	thickness = xar_slice(thickness,levdim,None, -1)
 	for i in range(1, len(level_height) - 1):
@@ -1928,8 +1923,8 @@ def xar_layer_thickness(q_ctl,levdim):
 	thickness[0] = (level_height[1] - level_height[0]) / 2
 	return(thickness)
 
-def xar_quot_rsqure(daset,varname,levdim):
-	data1=daset[varname]
+def xar_quot_rsqure(datset,varname,levdim):
+	data1=datset[varname]
 	level_height = data1.coords[levdim]
 	R = level_height + 6371*(10**3)
 	R_square = R**2
@@ -1942,70 +1937,70 @@ def xar_slice(data,dimnam,dim_min=None,dim_max=None,dim_skip=None):
 	if "dim1" in data.dims: data=data.rename({"dim1":dimnam})
 	return(data)
 
-def xar_qrhodh(daset,levdim,rhonam,humnam):
-	if humnam in daset: qdata=daset[humnam]
-	if "density" in daset:
-		rhodata=daset["density"]
+def xar_qrhodh(datset,levdim,rhonam,humnam):
+	if humnam in datset: qdata=datset[humnam]
+	if "density" in datset:
+		rhodata=datset["density"]
 	else:
-		rhodata=xar_quot_rsqure(daset[rhonam],rhonam,levdim)
+		rhodata=xar_quot_rsqure(datset[rhonam],rhonam,levdim)
 	thickness=xar_layer_thickness(qdata,levdim)
 	qdata = xar_slice(qdata,levdim,None, -1)
-	weighted_q_ctl = qdata * thickness * rhodata.values
-	return(weighted_q_ctl)
+	weighted_q = qdata * thickness * rhodata.values
+	return(weighted_q)
 
-def xar_ipw(daset,levdim,rhonam,humnam):
-	weighted_q_ctl = xar_qrhodh(daset,levdim,rhonam,humnam)
-	data_ctl = weighted_q_ctl.sum(levdim)
+def xar_ipw(datset,levdim,rhonam,humnam):
+	weighted_q = xar_qrhodh(datset,levdim,rhonam,humnam)
+	data = weighted_q.sum(levdim)
         dataset=xarray.Dataset(
                 data_vars=dict(
-                        ipw=(["lat", "lon"], data_ctl),
+                        ipw=(["lat", "lon"], data),
                                 ),
                 coords=dict(
-                        lon=daset[humnam].longitude.values,
-                        lat=daset[humnam].latitude.values,
+                        lon=datset[humnam].longitude.values,
+                        lat=datset[humnam].latitude.values,
 				),
 				)	
 	return(dataset)
 
-def xar_regrid(daset,varname,refer,q_ctl=None,lon=None,lat=None):
-	if daset[refer] is not None:
-		lon = daset[refer].longitude
-		lat = daset[refer].latitude
-	data= daset[varname]
+def xar_regrid(datset,varname,refer,q=None,lon=None,lat=None):
+	if datset[refer] is not None:
+		lon = datset[refer].longitude
+		lat = datset[refer].latitude
+	data= datset[varname]
 	datanew=data.interp(latitude=lat, longitude=lon)
-	daset[varname]=datanew
+	datset[varname]=datanew
 	#if varname=="x_wind_int":
-		#daset[varname] = daset['x_wind'].interp(latitude=lat, longitude=lon)
+		#datset[varname] = datset['x_wind'].interp(latitude=lat, longitude=lon)
 	#else:
-		#daset[varname] = daset['y_wind'].interp(latitude=lat, longitude=lon)
-	return(daset)
+		#datset[varname] = datset['y_wind'].interp(latitude=lat, longitude=lon)
+	return(datset)
 
-def xar_qtransdh(daset,levdim,rhonam,humnam,vectvar=None):
-	if humnam in daset: qdata=daset[humnam]
-	if "density" in daset:
-		rhodata=daset["density"]
+def xar_qtransdh(datset,levdim,rhonam,humnam,vectvar=None):
+	if humnam in datset: qdata=datset[humnam]
+	if "density" in datset:
+		rhodata=datset["density"]
 	else:	
-		rhodata=xar_quot_rsqure(daset,rhonam,levdim)
+		rhodata=xar_quot_rsqure(datset,rhonam,levdim)
 	thickness=xar_layer_thickness(qdata,levdim)
 	qdata = xar_slice(qdata,levdim,None, -1)
 	if vectvar is None:
 		weighted_data = qdata * thickness*rhodata.values
         else:
-                weighted_data = qdata * thickness*rhodata.values*daset[vectvar].values
+                weighted_data = qdata * thickness*rhodata.values*datset[vectvar].values
 	return(weighted_data)
 
-def xar_height_integral(weighted_q_u_ctl,levdim):
-	u_ctl = weighted_q_u_ctl.sum(levdim)
-	return(u_ctl)
+def xar_height_integral(weighted_q_u,levdim):
+	data = weighted_q_u.sum(levdim)
+	return(data)
 
-def xar_vimt(daset,levdim,rhonam,humnam):
-	daset=xar_regrid(daset,"x_wind",humnam)
-	#print(daset)
-	weighted_q_u = xar_qtransdh(daset,levdim,rhonam,humnam,vectvar="x_wind")
+def xar_vimt(datset,levdim,rhonam,humnam):
+	datset=xar_regrid(datset,"x_wind",humnam)
+	#print(datset)
+	weighted_q_u = xar_qtransdh(datset,levdim,rhonam,humnam,vectvar="x_wind")
 	u = xar_height_integral(weighted_q_u,levdim)
-	daset=xar_regrid(daset,"y_wind",humnam)
-	#print(daset)
-	weighted_q_v = xar_qtransdh(daset,levdim,rhonam,humnam,vectvar="y_wind")
+	datset=xar_regrid(datset,"y_wind",humnam)
+	#print(datset)
+	weighted_q_v = xar_qtransdh(datset,levdim,rhonam,humnam,vectvar="y_wind")
 	v = xar_height_integral(weighted_q_v,levdim)
 	dataset=xarray.Dataset(
 		data_vars=dict(
@@ -2013,24 +2008,24 @@ def xar_vimt(daset,levdim,rhonam,humnam):
         		v=(["time","lat", "lon"], v),
     				),
     		coords=dict(
-        		lon=daset[humnam].longitude.values,
-        		lat=daset[humnam].latitude.values,
-        		time=daset[humnam].time.values,
-        		reference_time=daset[humnam].reference_time,
+        		lon=datset[humnam].longitude.values,
+        		lat=datset[humnam].latitude.values,
+        		time=datset[humnam].time.values,
+        		reference_time=datset[humnam].reference_time,
     				),
     		#attrs=dict(description="Vertical Integrated Moisture Transport."),
 				)
 	return(dataset)
 	
-def xar_daset(q_ctl,rho_ctl,u_wind_ctl=None,v_wind_ctl=None):
-	daset={}
-	daset["sphum"]=q_ctl["specific_humidity"]
-	daset["rhorsq"]=rho_ctl["rhorsq"]
-	if u_wind_ctl is not None:
-		daset["x_wind"]=u_wind_ctl["x_wind"]
-	if v_wind_ctl is not None:
-		daset["y_wind"]=v_wind_ctl["y_wind"]
-	return(daset)
+def xar_datset(q,rho,u_wind=None,v_wind=None):
+	datset={}
+	datset["sphum"]=q["specific_humidity"]
+	datset["rhorsq"]=rho["rhorsq"]
+	if u_wind is not None:
+		datset["x_wind"]=u_wind["x_wind"]
+	if v_wind is not None:
+		datset["y_wind"]=v_wind["y_wind"]
+	return(datset)
 
 def xar_plot_ose_scalar(plotdic):
 	data_ctl=plotdic["data_ctl"]
@@ -2192,15 +2187,18 @@ def iri_load_cubes(infile,cnst=None,callback=None,stashcode=None,option=0,dims=N
 def irx_cube_array(cube,varnames,dims=None,coords=None):
 	cubedims=[coord.name() for coord in cube.dim_coords]
 	cubeauxc=[coord.name() for coord in cube.aux_coords]
+<<<<<<< HEAD
 	#print(cubedims)
 	#cubescal=[coord.name() for coord in cube.sca_coords]
+=======
+>>>>>>> dff8162f5dc4cf1049283841e400c735449c1b83
 	if dims is None: dims=cubedims	#["level_height","latitude","longitude"]
 	datset=xarray.Dataset()
 	if coords is None: 
 		coords=datset.coords
 		for dimnam in dims:
-		    if dimnam in cubedims:
 			coords.update({dimnam:cube.coord(dimnam).points,})
+<<<<<<< HEAD
 		    else:
 			if dimnam in cubeauxc:
                             coords.update({dimnam:cube.coord(dimnam).points,})
@@ -2209,6 +2207,8 @@ def irx_cube_array(cube,varnames,dims=None,coords=None):
 			    #print("Dimension Missmatch")
 			    #coords.update({dimnam:cube.coord(dimnam)})
 	#datset=data.to_dataset()
+=======
+>>>>>>> dff8162f5dc4cf1049283841e400c735449c1b83
 	for var in varnames:
 		data1=cube.data
 		datset[var]=xarray.DataArray(data=data1,dims=dims,coords=coords,name=var)
@@ -2219,8 +2219,8 @@ def irx_load_cubray(infile,varnames,callback=None,stashcode=None,option=2,dims=N
 	datset=irx_cube_array(cube,varnames,dims=dims,coords=coords)
 	return(datset)
 
-def irx_layer_thickness(q_ctl):
-	level_height = q_ctl.coord('level_height').points
+def irx_layer_thickness(q):
+	level_height = q.coord('level_height').points
 	thickness = xarray.DataArray(data=numpy.zeros(len(level_height)),dims=["hybrid_ht"],coords={"hybrid_ht": level_height},name="thickness")
 	thickness = thickness.isel(hybrid_ht=slice(None, -1))
 	for i in range(1, len(level_height) - 1):
@@ -2228,22 +2228,19 @@ def irx_layer_thickness(q_ctl):
 	thickness[0] = (level_height[1] - level_height[0]) / 2
 	return(thickness)
 
-def irx_quot_rsqure(rho_ctl):
-	level_height = rho_ctl.coord('level_height').points
-	#R_ctl = iris.coords.AuxCoord(level_height + 6371*(10**3))
-	#R_square_ctl = R_ctl.points[:]**2
+def irx_quot_rsqure(rho):
+	level_height = rho.coord('level_height').points
+	R = iris.coords.AuxCoord(level_height + 6371*(10**3))
+	R_square = R.points[:]**2
 
 #############################################################################################################################
 ### IRIS, XARRAY and NIO combination based functions
 #############################################################################################################################
 
 def ixn_extract(infile,varnames,callback=None,stashcode=None,option=2,dims=None,coords=None,outfile=None,):
-	daset=irx_load_cubray(infile,varnames,callback=callback,stashcode=stashcode,option=option,dims=dims,coords=coords)
+	datset=irx_load_cubray(infile,varnames,callback=callback,stashcode=stashcode,option=option,dims=dims,coords=coords)
 	if outfile is None: outfile=infile.split(".")[0]+".nc"
-	if dims is None: dims=daset.dims
-	if coords is None: coords=daset.coords
-	print(dims)
-	print(coords)
-	print(outfile)
-	nio_write(daset,outfile,dims,varnames)
-	return(outfile)
+	if dims is None: dims=datset.dims
+	if coords is None: coords=datset.coords
+	datset=nio_write(datset,outfile,dims,varnames)
+	return(datset)
