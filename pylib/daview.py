@@ -2187,12 +2187,28 @@ def iri_load_cubes(infile,cnst=None,callback=None,stashcode=None,option=0,dims=N
 def irx_cube_array(cube,varnames,dims=None,coords=None):
 	cubedims=[coord.name() for coord in cube.dim_coords]
 	cubeauxc=[coord.name() for coord in cube.aux_coords]
+<<<<<<< HEAD
+	#print(cubedims)
+	#cubescal=[coord.name() for coord in cube.sca_coords]
+=======
+>>>>>>> dff8162f5dc4cf1049283841e400c735449c1b83
 	if dims is None: dims=cubedims	#["level_height","latitude","longitude"]
 	datset=xarray.Dataset()
 	if coords is None: 
 		coords=datset.coords
 		for dimnam in dims:
 			coords.update({dimnam:cube.coord(dimnam).points,})
+<<<<<<< HEAD
+		    else:
+			if dimnam in cubeauxc:
+                            coords.update({dimnam:cube.coord(dimnam).points,})
+			else:
+			    coords.update({dimnam:cube.coord(dimnam).points,})
+			    #print("Dimension Missmatch")
+			    #coords.update({dimnam:cube.coord(dimnam)})
+	#datset=data.to_dataset()
+=======
+>>>>>>> dff8162f5dc4cf1049283841e400c735449c1b83
 	for var in varnames:
 		data1=cube.data
 		datset[var]=xarray.DataArray(data=data1,dims=dims,coords=coords,name=var)
