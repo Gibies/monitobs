@@ -2180,10 +2180,23 @@ def iri_load_cubes(infile,cnst=None,callback=None,stashcode=None,option=0,dims=N
     cubeauxc=[coord.name() for coord in cubes.aux_coords]
     if dims is not None:
 	for dimnam in dims:
+<<<<<<< HEAD
 	   if dimnam in cubeauxc:
 		if len(cubes.coord(dimnam).points) is 1:
 		   cubes=new_axis(cubes,dimnam)
     return(cubes)
+=======
+	   if dimnam not in cubedims:
+<<<<<<< HEAD
+		#n_coord = file_cubes.coord(dimnam)
+		#dim_coord = iris.coords.DimCoord(n_coord.points, long_name=dimnam, units=n_coord.units)
+		file_cube=new_axis(file_cubes,dimnam)
+    return(file_cube)
+=======
+		file_cubes=new_axis(file_cubes,dimnam)
+    return(file_cubes)
+>>>>>>> f58a9d818339766acd4c6f66eab327102e759544
+>>>>>>> 5684f8599bd4af7ce1fcf13ef44892a62e56d46d
 
 #############################################################################################################################
 ### IRIS and XARRAY combination based functions
