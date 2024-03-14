@@ -104,8 +104,10 @@ def irx_cube_array(cube,varnames,dims=None,coords=None):
 		coords=datset.coords
 		for dimnam in dims:
 			coords.update({dimnam:cube.coord(dimnam).points,})
+			unit=cube.coord(dimnam).units
 	for var in varnames:
 		data1=cube.data
+		units=cube.units
 		datset[var]=xarray.DataArray(data=data1,dims=dims,coords=coords,name=var)
 	return(datset)
 
