@@ -39,15 +39,17 @@ cat >> ${PBSFILE} << EOF
 export LOGDIR=${LOGDIR}
 export PBSDIR=${PBSDIR}
 export TASKNAM=${TASKNAM}
+export PKGHOME=${PKGHOME}
 
 
 PYSCRIPT=${PYSCRIPT}
 PYLAUNCH=${PYLAUNCH}
 ARGS=${ARGS}
 
-\${PYLAUNCH} \${PYSCRIPT} \${ARGS}
+aprun -n 1 -N 1 \${PYLAUNCH} \${PYSCRIPT} \${ARGS}
 EOF
 
+cat $PBSFILE
 jobid=$(qsub ${PBSFILE})
 
 echo ${jobid}

@@ -1,8 +1,8 @@
 #!/bin/bash
 
 SELF=$(realpath $0)
-JOBSDIR=${SELF%/*}
-PKGHOME=${SELF%/jobs/*}
+PKGHOME=${PKGHOME:-${SELF%/jobs/*}}
+JOBDIR="${PKGHOME}/jobs"
 
 PYSCRYPT=$(realpath $1)
 shift
@@ -46,6 +46,7 @@ which python
 cd /scratch/${USER}
 
 export PKGHOME=${PKGHOME}
+echo ${PKGHOME}
 
 python ${PYSCRYPT} ${ARGS}
 

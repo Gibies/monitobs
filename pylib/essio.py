@@ -59,6 +59,7 @@ def nio_write(datset,filenam,dimlist,varlist):
 		dimptr=fileptr.create_dimension(dimnam,len(datset[dimnam]))
 		dimvarptr = fileptr.create_variable(dimnam,"d", datset[dimnam].dims)
 		fileptr.variables[dimnam].assign_value(datset[dimnam])
+		fileptr.variables[dimnam].units=datset[dimnam].units
 	for varnam in varlist:
 		varptr = fileptr.create_variable(varnam,"d", datset[varnam].dims)
 		fileptr.variables[varnam].assign_value(datset[varnam])
@@ -81,11 +82,6 @@ def iri_load_cubes(infile,cnst=None,callback=None,stashcode=None,option=0,dims=N
     }
     func = switcher.get(opt, lambda: 'Invalid option')
     cubes = func()
-    print(cubes.units)
-    for coord in cubes.coords():
-        units = coord.units
-    	print("{}: {}".format(coord.name(), units))
-    #print(units)
     cubedims=[coord.name() for coord in cubes.dim_coords]
     cubeauxc=[coord.name() for coord in cubes.aux_coords]
     if dims is not None:
