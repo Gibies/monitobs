@@ -81,6 +81,11 @@ def iri_load_cubes(infile,cnst=None,callback=None,stashcode=None,option=0,dims=N
     }
     func = switcher.get(opt, lambda: 'Invalid option')
     cubes = func()
+    print(cubes.units)
+    for coord in cubes.coords():
+        units = coord.units
+    	print("{}: {}".format(coord.name(), units))
+    #print(units)
     cubedims=[coord.name() for coord in cubes.dim_coords]
     cubeauxc=[coord.name() for coord in cubes.aux_coords]
     if dims is not None:
@@ -90,6 +95,10 @@ def iri_load_cubes(infile,cnst=None,callback=None,stashcode=None,option=0,dims=N
 		   cubes=new_axis(cubes,dimnam)
     return(cubes)
 
+def iri_to_nc(infile,varnames,outfile,callback=None,stashcode=None,option=2,dims=None,coords=None):
+	cube=iri_load_cubes(infile,cnst=varnames,callback=callback,stashcode=stashcode,option=option,dims=dims)
+	nc_file=iris.save(cube,outfile)
+	return(nc_file)	
 
 #############################################################################################################################
 ### IRIS and XARRAY combination based functions
@@ -105,10 +114,15 @@ def irx_cube_array(cube,varnames,dims=None,coords=None):
 		for dimnam in dims:
 			coords.update({dimnam:cube.coord(dimnam).points,})
 			unit=cube.coord(dimnam).units
+<<<<<<< HEAD
+=======
+			datset[dimnam].attrs['units'] = unit
+>>>>>>> 5ea6c16259a541326e15da4b8f59dc9c67414541
 	for var in varnames:
 		data1=cube.data
 		units=cube.units
 		datset[var]=xarray.DataArray(data=data1,dims=dims,coords=coords,name=var)
+		datset[var].attrs['units'] = units
 	return(datset)
 
 def irx_load_cubray(infile,varnames,callback=None,stashcode=None,option=2,dims=None,coords=None):

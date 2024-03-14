@@ -57,6 +57,7 @@ import cartopy.crs as ccrs
 import xarray
 import iris
 from iris.util import new_axis
+import essio
 
 cmapfile=os.environ.get('CMAP',PALETTE+"/gibies_colourmap_20150117.rgb")
 
