@@ -110,10 +110,7 @@ def irx_cube_array(cube,varnames,dims=None,coords=None):
 		for dimnam in dims:
 			coords.update({dimnam:cube.coord(dimnam).points,})
 			unit=cube.coord(dimnam).units
-<<<<<<< HEAD
-=======
 			datset[dimnam].attrs['units'] = unit
->>>>>>> 5ea6c16259a541326e15da4b8f59dc9c67414541
 	for var in varnames:
 		data1=cube.data
 		units=cube.units
