@@ -35,7 +35,7 @@ PYSCRIPT=${PYSCRIPT}
 PYLAUNCH=${PYLAUNCH}
 ARGS=${ARGS}
 
-\${PYLAUNCH} \${PYSCRIPT} \${ARGS}
+aprun \${PYLAUNCH} \${PYSCRIPT} \${ARGS}
 EOF
 
 jobid=$(qsub ${PBSFILE})
@@ -44,8 +44,8 @@ echo ${jobid}
 	cnt=${wait_flag}
 	while [[ ${cnt} -ne 0 ]]; do
 		cnt=$(qstat -w -u ${USER}|grep ${jobid}|wc -l)
+		qstat -w -u ${USER}
 	done
 
-qstat -w -u ${USER}
 echo ${LOGDIR}
 ls -lrt ${LOGDIR}

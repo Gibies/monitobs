@@ -12,7 +12,7 @@ export CUSLIB="${PYSCRYPT%/jobs/*}/customlib"
 if [ ! -d ${CUSLIB} ]; then export CUSLIB="${PKGHOME}/customlib"; fi
 echo ${CUSLIB}
 
-export MODULEPATH=$MODULEPATH:/home/gibies/MyModules
+#export MODULEPATH=$MODULEPATH:/home/gibies/MyModules
 
 #gnu/python/3.9.1
 module load pbs
@@ -37,7 +37,7 @@ module load gnu/pyngl/1.6.1
 module load gnu/pyke/1.1.1
 module load gnu/xarray/0.11.3
 module load gnu/pytz/2016.4
-module load cbook_matplotlib_2.2.2
+#module load cbook_matplotlib_2.2.2
 module load gnu/pyparsing/2.2.2
 
 #module load gnu/netcdf4/1.5.3-netcdf4.6.0hdf51.10.0
