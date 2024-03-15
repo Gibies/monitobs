@@ -55,8 +55,8 @@ jobid=$(qsub ${PBSFILE})
 echo ${jobid}
 	cnt=${wait_flag}
 	while [[ ${cnt} -ne 0 ]]; do
-		cnt=$(qstat -w -u ${USER}|grep ${jobid}|wc -l)
-		qstat -w -u ${USER}
+		cnt=$(qstat -w ${jobid}|wc -l)
+		qstat -w ${jobid}
 		sleep 10
 	done
 tail -10 ${LOGDIR}/${TASKNAM}_${RUNTIME}.err
