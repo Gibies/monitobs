@@ -48,6 +48,29 @@ import iris
 from iris.util import new_axis
 
 
+#############################################################################################################################
+### 
+#############################################################################################################################
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 #############################################################################################################################
 ### NCAR Input Output Library (NIO) based functions
@@ -59,7 +82,10 @@ def nio_write(datset,filenam,dimlist,varlist):
 		dimptr=fileptr.create_dimension(dimnam,len(datset[dimnam]))
 		dimvarptr = fileptr.create_variable(dimnam,"d", datset[dimnam].dims)
 		fileptr.variables[dimnam].assign_value(datset[dimnam])
-		fileptr.variables[dimnam].units=datset[dimnam].units
+		unit=datset[dimnam].attrs["units"]
+		print(unit)
+		fileptr.variables[dimnam].attributes['units'] = unit
+		print(fileptr.variables[dimnam].attributes)
 	for varnam in varlist:
 		varptr = fileptr.create_variable(varnam,"d", datset[varnam].dims)
 		fileptr.variables[varnam].assign_value(datset[varnam])
@@ -134,6 +160,7 @@ def ixn_extract(infile,varnames,callback=None,stashcode=None,option=2,dims=None,
 	if outfile is None: outfile=infile.split(".")[0]+"_"+var_lst_str+".nc"
 	if dims is None: dims=datset.dims
 	if coords is None: coords=datset.coords
+	
 	datset=nio_write(datset,outfile,dims,varnames)
 	return(datset)
 
