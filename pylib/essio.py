@@ -139,73 +139,98 @@ def ixn_extract(infile,varnames,callback=None,stashcode=None,option=2,dims=None,
 	if outfile is None: outfile=infile.split(".")[0]+"_"+var_lst_str+".nc"
 	if dims is None: dims=datset.dims
 	if coords is None: coords=datset.coords
-	void=nio_write(datset,outfile,dims,varnames)
-	#datset_new=nix_read(outfile,dims,varnames)
-	datset_new=xar_extract(outfile,dims,varnames)
+	void=nix_write(datset,outfile,dims,varnames)
+	datset_new=nix_read(outfile,dims,varnames)
+	#datset_new=xar_extract(outfile,dims,varnames)
 	return(None)
 
 #############################################################################################################################
-### NCAR Input Output Library (NIO) based functions
+### NCAR Input Output Library (NIO) and XARRAY combination based functions
 #############################################################################################################################
 
-def nix_copy_varattr(datset,fileptr,varnam,attrnam,attrtyp="str"):
+
+def nix_write_varattr(datset,fileptr,varnam,attrnam,attrtyp="str"):
 	attrval=datset[varnam].attrs[attrnam]
 	if attrtyp is "str": attrval=str(attrval)
 	attrptr=setattr(fileptr.variables[varnam],attrnam,attrval)
 	return(fileptr)
 
+def nix_write_var(datset,fileptr,varnam,vartyp="d",varattlst=None):
+	if varattlst is None: varattlst=["units"]
+	data=datset[varnam]
+	varptr = fileptr.create_variable(varnam,vartyp,data.dims)
+	fileptr.variables[varnam].assign_value(data)
+	for attrnam in varattlst:
+		fileptr=nix_write_varattr(datset,fileptr,varnam,attrnam)
+	return(fileptr)
 
-def nio_write(datset,filenam,dimlist,varlist):
+def nix_write(datset,filenam,dimlist,varlist):
 	fileptr=Nio.open_file(filenam, "rw")
 	for dimnam in dimlist:
 		dimptr=fileptr.create_dimension(dimnam,len(datset[dimnam]))
-		dimvarptr = fileptr.create_variable(dimnam,"d", datset[dimnam].dims)
-		attrnam="units"
-		fileptr=nix_copy_varattr(datset,fileptr,dimnam,attrnam)
+		fileptr=nix_write_var(datset,fileptr,dimnam,vartyp="d",varattlst=["units"])
 	for varnam in varlist:
-		varptr = fileptr.create_variable(varnam,"d", datset[varnam].dims)
-		fileptr.variables[varnam].assign_value(datset[varnam])
-		attrnam="units"
-		fileptr=nix_copy_varattr(datset,fileptr,varnam,attrnam)
+		fileptr=nix_write_var(datset,fileptr,varnam,vartyp="d",varattlst=["units"])
 	fileptr.close()
 	return(None)
-
-#############################################################################################################################
-### NIO and XARRAY combination based functions
-#############################################################################################################################
 
 def nix_read(filenam,dimlist,varlist):
 	fileptr=Nio.open_file(filenam, "r")
 	datset=xarray.Dataset()
 	for dimnam in dimlist:
-		datset[dimnam]=fileptr.variables[dimnam].get_value()
-		units=fileptr.variables[dimnam].attributes["units"].get_value()
-		datset[dimnam].attrs["units"]=units
+		datset=nix_read_var(fileptr,dimnam,varattlst=["units"],datset=datset)
+		#datset[dimnam]=fileptr.variables[dimnam].get_value()
+		#units=fileptr.variables[dimnam].attributes["units"].get_value()
+		#datset[dimnam].attrs["units"]=units
 	for varnam in varlist:
-		datset[varnam]=fileptr.variables[varnam].get_value()
-		units=fileptr.variables[varnam].attributes["units"].get_value()
-		datset[varnam].attrs["units"]=units
-	
-	print("Dataset is loaded")
-	for dimnam in dimlist:
-		print(datset.variables[dimnam].attrs)
-	for varnam in varlist:
-		print(datset.variables[varnam].attrs)
+		datset=nix_read_var(fileptr,varnam,varattlst=["units"],datset=datset)
+		#datset[varnam]=fileptr.variables[varnam].get_value()
+		#units=fileptr.variables[varnam].attributes["units"].get_value()
+		#datset[varnam].attrs["units"]=units
+	xar_print(datset,dimlist,varlist)
+	return(datset)
+
+def nix_read_var(fileptr,varnam,varattlst=None,datset=None):
+	if varattlst is None: varattlst=["units"]
+	if datset is None: datset=xarray.Dataset()
+	var=fileptr.variables[varnam]
+	type = var.typecode()
+	numDims = var.rank
+	dimSizes = var.shape
+	dims = var.dimensions
+	data=var.get_value()
+	print(len(data),type,numDims,dimSizes,dims,varattlst)
+	datset[varnam]=xarray.DataArray(data,name=varnam,dims=dims)
+	for attrnam in varattlst:
+		datset=nix_read_varattr(fileptr,varnam,attrnam,datset=datset)
+		#attrval=fileptr.variables[varnam].attributes[attrnam].get_value()
+		#datset[varnam].attrs[attrnam]=attrval
+	return(datset)
+
+def nix_read_varattr(fileptr,varnam,attrnam,datset=None):
+	if datset is None: datset=xarray.Dataset()
+	attrval=fileptr.variables[varnam].attributes[attrnam]
+	datset[varnam].attrs[attrnam]=attrval
 	return(datset)
 
 #############################################################################################################################
-### XARRAY combination based functions
+### XARRAY based functions
 #############################################################################################################################
 
-def xar_extract(filenam,dimlist,varlist):
-	datset=xarray.open_dataset(filenam)
-	print("Dataset is loaded")
+def xar_print(datset,dimlist,varlist):
 	for dimnam in dimlist:
+		print(datset.variables[dimnam])
 		print(datset.variables[dimnam].attrs)
 	for varnam in varlist:
 		print(datset.variables[varnam].attrs)
 	datset.close()
 	return(None)
+
+def xar_extract(filenam,dimlist,varlist):
+	datset=xarray.open_dataset(filenam)
+	print("Dataset is loaded")
+	xar_print(datset,dimlist,varlist)
+	return(datset)
 
 #############################################################################################################################
 ### Local functions
