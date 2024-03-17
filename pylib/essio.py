@@ -139,7 +139,7 @@ def ixn_extract(infile,varnames,callback=None,stashcode=None,option=2,dims=None,
 	if outfile is None: outfile=infile.split(".")[0]+"_"+var_lst_str+".nc"
 	if dims is None: dims=datset.dims
 	if coords is None: coords=datset.coords
-	void=nix_write(datset,outfile,dims,varnames)
+	#void=nix_write(datset,outfile,dims,varnames)
 	datset_new=nix_read(outfile,dims,varnames)
 	#datset_new=xar_extract(outfile,dims,varnames)
 	return(None)
@@ -177,16 +177,10 @@ def nix_write(datset,filenam,dimlist,varlist):
 def nix_read(filenam,dimlist,varlist):
 	fileptr=Nio.open_file(filenam, "r")
 	datset=xarray.Dataset()
-	for dimnam in dimlist:
-		datset=nix_read_var(fileptr,dimnam,varattlst=["units"],datset=datset)
-		#datset[dimnam]=fileptr.variables[dimnam].get_value()
-		#units=fileptr.variables[dimnam].attributes["units"].get_value()
-		#datset[dimnam].attrs["units"]=units
 	for varnam in varlist:
 		datset=nix_read_var(fileptr,varnam,varattlst=["units"],datset=datset)
-		#datset[varnam]=fileptr.variables[varnam].get_value()
-		#units=fileptr.variables[varnam].attributes["units"].get_value()
-		#datset[varnam].attrs["units"]=units
+	for dimnam in dimlist:
+		datset=nix_read_var(fileptr,dimnam,varattlst=["units"],datset=datset)
 	xar_print(datset,dimlist,varlist)
 	return(datset)
 
@@ -199,18 +193,15 @@ def nix_read_var(fileptr,varnam,varattlst=None,datset=None):
 	dimSizes = var.shape
 	dims = var.dimensions
 	data=var.get_value()
-	print(len(data),type,numDims,dimSizes,dims,varattlst)
 	datset[varnam]=xarray.DataArray(data,name=varnam,dims=dims)
 	for attrnam in varattlst:
 		datset=nix_read_varattr(fileptr,varnam,attrnam,datset=datset)
-		#attrval=fileptr.variables[varnam].attributes[attrnam].get_value()
-		#datset[varnam].attrs[attrnam]=attrval
 	return(datset)
 
 def nix_read_varattr(fileptr,varnam,attrnam,datset=None):
 	if datset is None: datset=xarray.Dataset()
 	attrval=fileptr.variables[varnam].attributes[attrnam]
-	datset[varnam].attrs[attrnam]=attrval
+	datset.variables[varnam].attrs[attrnam]=attrval
 	return(datset)
 
 #############################################################################################################################
