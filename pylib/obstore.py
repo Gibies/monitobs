@@ -1729,7 +1729,7 @@ def obstore_create_file(obstore_info,diagflg=0,callsignflag=False,filedata=None,
     obstype = obstore_info["obstype"]
     obsgroup = int(obstore_info["obsgroup"])
     subtypegroup = obstore_info["subtypegroup"]
-    print("obstore_create_file : "+subtypegroup)
+    print("obstore_create_file : "+str(subtypegroup))
     elistgroup = obstore_info["elistgroup"]
     datagroup = obstore_info["datagroup"]
     DT = obstore_info["timeinfo"]

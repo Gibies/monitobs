@@ -1,8 +1,8 @@
 #!/bin/bash
 
 SELF=$(realpath $0)
-JOBSDIR=${SELF%/*}
-PKGHOME=${SELF%/jobs/*}
+PKGHOME=${PKGHOME:-${SELF%/jobs/*}}
+JOBDIR="${PKGHOME}/jobs"
 
 PYSCRYPT=$(realpath $1)
 shift
@@ -11,6 +11,8 @@ ARGS=$@
 export CUSLIB="${PYSCRYPT%/jobs/*}/customlib"
 if [ ! -d ${CUSLIB} ]; then export CUSLIB="${PKGHOME}/customlib"; fi
 echo ${CUSLIB}
+
+#export MODULEPATH=$MODULEPATH:/home/gibies/MyModules
 
 #gnu/python/3.9.1
 module load pbs
@@ -34,6 +36,9 @@ module load gnu/utility/pynio/1.5.5
 module load gnu/pyngl/1.6.1
 module load gnu/pyke/1.1.1
 module load gnu/xarray/0.11.3
+module load gnu/pytz/2016.4
+#module load cbook_matplotlib_2.2.2
+module load gnu/pyparsing/2.2.2
 
 #module load gnu/netcdf4/1.5.3-netcdf4.6.0hdf51.10.0
 #module load gnu/lib/netcdf_c_f_cxx/4.6.1_4.4.4_4.3.0
@@ -46,6 +51,7 @@ which python
 cd /scratch/${USER}
 
 export PKGHOME=${PKGHOME}
+echo ${PKGHOME}
 
 python ${PYSCRYPT} ${ARGS}
 

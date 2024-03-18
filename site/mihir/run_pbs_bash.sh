@@ -1,10 +1,19 @@
 #!/bin/bash
+SELF=$(realpath $0)
+PKGHOME=${SELF%/site*}
+JOBSDIR="${PKGHOME}/jobs"
 
-export BASHJOB=$1
-shift
+TYPE=${1##*.}
+if [[ ${TYPE} == "sh" ]]; then
+	export BASHJOB=$1
+	shift
+	export HOSTPKG=${BASHJOB%/jobs/*}
+else
+	export BASHJOB="${JOBSDIR}/py2launch.sh"
+fi
 export ARGS=$@
 
-wait_flag=0
+wait_flag=1
 QUEUE_MAMU="NCMRWF1"
 LOGDIR="/scratch/${USER}/logs"
 PBSDIR="/scratch/${USER}/jobs"
@@ -27,22 +36,26 @@ cat >> ${PBSFILE} << EOF
 export LOGDIR=${LOGDIR}
 export PBSDIR=${PBSDIR}
 export TASKNAM=${TASKNAM}
+export PKGHOME=${PKGHOME}
+export HOSTPKG=${HOSTPKG}
 
 
 BASHJOB=${BASHJOB}
 ARGS=${ARGS}
 
-\${BASHJOB} \${ARGS}
+aprun \${BASHJOB} \${ARGS}
 EOF
 
+cat ${PBSFILE}
 jobid=$(qsub ${PBSFILE})
 
 echo ${jobid}
 	cnt=${wait_flag}
 	while [[ ${cnt} -ne 0 ]]; do
-		cnt=$(qstat -w -u ${USER}|grep ${jobid}|wc -l)
+		cnt=$(qstat -w ${jobid}|wc -l)
+		qstat -w ${jobid}
+		sleep 10
 	done
-
-qstat -w -u ${USER}
 echo ${LOGDIR}
-ls -lrt ${LOGDIR}
+ls -lrt ${LOGDIR}/${TASKNAM}_${RUNTIME}.*
+tail -f ${LOGDIR}/${TASKNAM}_${RUNTIME}.err

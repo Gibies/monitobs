@@ -39,25 +39,27 @@ cat >> ${PBSFILE} << EOF
 export LOGDIR=${LOGDIR}
 export PBSDIR=${PBSDIR}
 export TASKNAM=${TASKNAM}
+export PKGHOME=${PKGHOME}
 
 
 PYSCRIPT=${PYSCRIPT}
 PYLAUNCH=${PYLAUNCH}
 ARGS=${ARGS}
 
-\${PYLAUNCH} \${PYSCRIPT} \${ARGS}
+aprun -n 1 -N 1 \${PYLAUNCH} \${PYSCRIPT} \${ARGS}
 EOF
 
+cat $PBSFILE
 jobid=$(qsub ${PBSFILE})
 
 echo ${jobid}
 	cnt=${wait_flag}
 	while [[ ${cnt} -ne 0 ]]; do
-		cnt=$(qstat -w -u ${USER}|grep ${jobid}|wc -l)
-		tail -10 ${LOGDIR}/${TASKNAM}_${RUNTIME}.err
+		cnt=$(qstat -w ${jobid}|wc -l)
+		qstat -w ${jobid}
 		sleep 10
 	done
-
-qstat -w -u ${USER}
+cat ${LOGDIR}/${TASKNAM}_${RUNTIME}.out
+tail -10 ${LOGDIR}/${TASKNAM}_${RUNTIME}.err
 echo ${LOGDIR}
 ls -lrt ${LOGDIR}/${TASKNAM}_${RUNTIME}.*
