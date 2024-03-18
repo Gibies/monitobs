@@ -1955,10 +1955,12 @@ def xar_ipw(datset,levdim,rhonam,humnam):
 				)	
 	return(dataset)
 
-def xar_regrid(datset,varname,refer,q=None,lon=None,lat=None):
-	if datset[refer] is not None:
+def xar_regrid(datset,varname,refer=None,q=None,lon=None,lat=None):
+	if refer is not None:
+	   if datset[refer] is not None:
 		lon = datset[refer].longitude
 		lat = datset[refer].latitude
+		#lev = datset[refer].level_height
 	data= datset[varname]
 	datanew=data.interp(latitude=lat, longitude=lon)
 	datset[varname]=datanew
@@ -1994,7 +1996,7 @@ def xar_vimt(datset,levdim,rhonam,humnam):
 	datset=xar_regrid(datset,"y_wind",humnam)
 	#print(datset)
 	weighted_q_v = xar_qtransdh(datset,levdim,rhonam,humnam,vectvar="y_wind")
-	v = xar_height_integral(weighted_q_v,levdim)
+	v = xar_height_integral(weighted_q_v,levdim) 
 	dataset=xarray.Dataset(
 		data_vars=dict(
         		u=(["time","lat", "lon"], u),
@@ -2006,18 +2008,28 @@ def xar_vimt(datset,levdim,rhonam,humnam):
         		time=datset[humnam].time.values,
         		#reference_time=datset[humnam].reference_time,
     				),
-    		#attrs=dict(description="Vertical Integrated Moisture Transport."),
+    		#attrs=dict(
+			#units=datset['time'].attrs['units']),
 				)
 	return(dataset)
 	
 def xar_datset(q,rho,u_wind=None,v_wind=None):
-	datset={}
-	datset["sphum"]=q["specific_humidity"]
-	datset["rhorsq"]=rho["rhorsq"]
+	q_x=q.isel(level_height=slice(None, -1))
+	lon=q_x["specific_humidity"].longitude
+	lat=q_x["specific_humidity"].latitude
+	#lev=q["specific_humidity"].level_height
+	#lev=rho["rhorsq"].level_height
+	#q_x=xar_regrid(q,"specific_humidity",lon=lon,lat=lat,lev=lev)
+	rho_x=xar_regrid(rho,"rhorsq",lon=lon,lat=lat)
+	u_wind_x=xar_regrid(u_wind,"x_wind",lon=lon,lat=lat)
+	v_wind_x=xar_regrid(v_wind,"y_wind",lon=lon,lat=lat)
+	datset=xarray.Dataset()
+	datset["sphum"]=q_x["specific_humidity"]
+	datset["rhorsq"]=rho_x["rhorsq"]
 	if u_wind is not None:
-		datset["x_wind"]=u_wind["x_wind"]
+		datset["x_wind"]=u_wind_x["x_wind"]
 	if v_wind is not None:
-		datset["y_wind"]=v_wind["y_wind"]
+		datset["y_wind"]=v_wind_x["y_wind"]
 	return(datset)
 
 def xar_plot_ose_scalar(plotdic):

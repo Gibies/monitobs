@@ -48,6 +48,7 @@ import iris
 from iris.util import new_axis
 
 
+<<<<<<< HEAD
 #############################################################################################################################
 ### 
 #############################################################################################################################
@@ -70,6 +71,50 @@ from iris.util import new_axis
 
 
 
+
+
+=======
+>>>>>>> 11b74129f3bc51514480f666f51cf944b32ef67b
+#############################################################################################################################
+### 
+#############################################################################################################################
+
+<<<<<<< HEAD
+def nio_write(datset,filenam,dimlist,varlist):
+	fileptr=Nio.open_file(filenam, "rw")
+	for dimnam in dimlist:
+		dimptr=fileptr.create_dimension(dimnam,len(datset[dimnam]))
+		dimvarptr = fileptr.create_variable(dimnam,"d", datset[dimnam].dims)
+		fileptr.variables[dimnam].assign_value(datset[dimnam])
+		unit=datset[dimnam].attrs["units"]
+		print(unit)
+		fileptr.variables[dimnam].attributes['units'] = unit
+		print(fileptr.variables[dimnam].attributes)
+	for varnam in varlist:
+		varptr = fileptr.create_variable(varnam,"d", datset[varnam].dims)
+		fileptr.variables[varnam].assign_value(datset[varnam])
+	fileptr.close()
+	return(datset)
+=======
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+>>>>>>> 11b74129f3bc51514480f666f51cf944b32ef67b
 
 
 #############################################################################################################################
@@ -140,6 +185,16 @@ def ixn_extract(infile,varlst,callback=None,stashcode=None,option=2,dimlst=None,
 	if outfile is None: outfile=infile.split(".")[0]+"_"+var_lst_str+".nc"
 	if dimlst is None: dimlst=datset.dimlst
 	if coords is None: coords=datset.coords
+<<<<<<< HEAD
+=======
+<<<<<<< HEAD
+	
+	datset=nio_write(datset,outfile,dims,varnames)
+=======
+	void=nio_write(datset,outfile,dims,varnames)
+	#datset_new=nix_read(outfile,dims,varnames)
+	datset_new=xar_extract(outfile,dims,varnames)
+>>>>>>> bbcfbd50dce54741d01aaf38636238201d26b7ce
 	return(None)
 
 #############################################################################################################################
@@ -177,6 +232,7 @@ def nix_write(datset,filenam,dimlst=None,varlst=None):
 def nix_read(filenam,dimlst,varlst):
 	fileptr=Nio.open_file(filenam, "r")
 	datset=xarray.Dataset()
+<<<<<<< HEAD
 	for varnam in varlst:
 		datset=nix_read_var(fileptr,varnam,varattlst=["units"],datset=datset)
 	for dimnam in dimlst:
@@ -201,6 +257,23 @@ def nix_read_varattr(fileptr,varnam,attrnam,datset=None):
 	if datset is None: datset=xarray.Dataset()
 	attrval=fileptr.variables[varnam].attributes[attrnam]
 	datset.variables[varnam].attrs[attrnam]=attrval
+=======
+	for dimnam in dimlist:
+		datset[dimnam]=fileptr.variables[dimnam].get_value()
+		units=fileptr.variables[dimnam].attributes["units"].get_value()
+		datset[dimnam].attrs["units"]=units
+	for varnam in varlist:
+		datset[varnam]=fileptr.variables[varnam].get_value()
+		units=fileptr.variables[varnam].attributes["units"].get_value()
+		datset[varnam].attrs["units"]=units
+	
+	print("Dataset is loaded")
+	for dimnam in dimlist:
+		print(datset.variables[dimnam].attrs)
+	for varnam in varlist:
+		print(datset.variables[varnam].attrs)
+>>>>>>> 11b74129f3bc51514480f666f51cf944b32ef67b
+>>>>>>> bbcfbd50dce54741d01aaf38636238201d26b7ce
 	return(datset)
 
 #############################################################################################################################
