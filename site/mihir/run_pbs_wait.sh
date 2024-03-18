@@ -59,6 +59,7 @@ echo ${jobid}
 		qstat -w ${jobid}
 		sleep 10
 	done
+cat ${LOGDIR}/${TASKNAM}_${RUNTIME}.out
 tail -10 ${LOGDIR}/${TASKNAM}_${RUNTIME}.err
 echo ${LOGDIR}
 ls -lrt ${LOGDIR}/${TASKNAM}_${RUNTIME}.*
