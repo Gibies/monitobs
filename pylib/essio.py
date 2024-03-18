@@ -48,7 +48,6 @@ import iris
 from iris.util import new_axis
 
 
-<<<<<<< HEAD
 #############################################################################################################################
 ### 
 #############################################################################################################################
@@ -71,50 +70,6 @@ from iris.util import new_axis
 
 
 
-
-
-=======
->>>>>>> 11b74129f3bc51514480f666f51cf944b32ef67b
-#############################################################################################################################
-### 
-#############################################################################################################################
-
-<<<<<<< HEAD
-def nio_write(datset,filenam,dimlist,varlist):
-	fileptr=Nio.open_file(filenam, "rw")
-	for dimnam in dimlist:
-		dimptr=fileptr.create_dimension(dimnam,len(datset[dimnam]))
-		dimvarptr = fileptr.create_variable(dimnam,"d", datset[dimnam].dims)
-		fileptr.variables[dimnam].assign_value(datset[dimnam])
-		unit=datset[dimnam].attrs["units"]
-		print(unit)
-		fileptr.variables[dimnam].attributes['units'] = unit
-		print(fileptr.variables[dimnam].attributes)
-	for varnam in varlist:
-		varptr = fileptr.create_variable(varnam,"d", datset[varnam].dims)
-		fileptr.variables[varnam].assign_value(datset[varnam])
-	fileptr.close()
-	return(datset)
-=======
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
->>>>>>> 11b74129f3bc51514480f666f51cf944b32ef67b
 
 
 #############################################################################################################################
@@ -184,18 +139,15 @@ def ixn_extract(infile,varnames,callback=None,stashcode=None,option=2,dims=None,
 	if outfile is None: outfile=infile.split(".")[0]+"_"+var_lst_str+".nc"
 	if dims is None: dims=datset.dims
 	if coords is None: coords=datset.coords
-<<<<<<< HEAD
-	
-	datset=nio_write(datset,outfile,dims,varnames)
-=======
 	void=nio_write(datset,outfile,dims,varnames)
 	#datset_new=nix_read(outfile,dims,varnames)
 	datset_new=xar_extract(outfile,dims,varnames)
 	return(None)
 
 #############################################################################################################################
-### NCAR Input Output Library (NIO) based functions
+### NCAR Input Output Library (NIO) and XARRAY combination based functions
 #############################################################################################################################
+
 
 def nix_copy_varattr(datset,fileptr,varnam,attrnam,attrtyp="str"):
 	attrval=datset[varnam].attrs[attrnam]
@@ -203,25 +155,31 @@ def nix_copy_varattr(datset,fileptr,varnam,attrnam,attrtyp="str"):
 	attrptr=setattr(fileptr.variables[varnam],attrnam,attrval)
 	return(fileptr)
 
+def nix_copy_var(datset,fileptr,varnam,vartyp="d",varattlst=None):
+	if varattlst is None: varattlst=["units"]
+	data=datset[varnam]
+	varptr = fileptr.create_variable(varnam,vartyp,data.dims)
+	fileptr.variables[varnam].assign_value(data)
+	for attrnam in varattlst:
+		fileptr=nix_copy_varattr(datset,fileptr,varnam,attrnam)
+	return(fileptr)
 
 def nio_write(datset,filenam,dimlist,varlist):
 	fileptr=Nio.open_file(filenam, "rw")
 	for dimnam in dimlist:
 		dimptr=fileptr.create_dimension(dimnam,len(datset[dimnam]))
-		dimvarptr = fileptr.create_variable(dimnam,"d", datset[dimnam].dims)
-		attrnam="units"
-		fileptr=nix_copy_varattr(datset,fileptr,dimnam,attrnam)
+		fileptr=nix_copy_var(datset,fileptr,dimnam,vartyp="d",varattlst=["units"])
+		#dimvarptr = fileptr.create_variable(dimnam,"d", datset[dimnam].dims)
+		#attrnam="units"
+		#fileptr=nix_copy_varattr(datset,fileptr,dimnam,attrnam)
 	for varnam in varlist:
-		varptr = fileptr.create_variable(varnam,"d", datset[varnam].dims)
-		fileptr.variables[varnam].assign_value(datset[varnam])
-		attrnam="units"
-		fileptr=nix_copy_varattr(datset,fileptr,varnam,attrnam)
+		fileptr=nix_copy_var(datset,fileptr,varnam,vartyp="d",varattlst=["units"])
+		#varptr = fileptr.create_variable(varnam,"d", datset[varnam].dims)
+		#fileptr.variables[varnam].assign_value(datset[varnam])
+		#attrnam="units"
+		#fileptr=nix_copy_varattr(datset,fileptr,varnam,attrnam)
 	fileptr.close()
 	return(None)
-
-#############################################################################################################################
-### NIO and XARRAY combination based functions
-#############################################################################################################################
 
 def nix_read(filenam,dimlist,varlist):
 	fileptr=Nio.open_file(filenam, "r")
@@ -240,7 +198,6 @@ def nix_read(filenam,dimlist,varlist):
 		print(datset.variables[dimnam].attrs)
 	for varnam in varlist:
 		print(datset.variables[varnam].attrs)
->>>>>>> 11b74129f3bc51514480f666f51cf944b32ef67b
 	return(datset)
 
 #############################################################################################################################
