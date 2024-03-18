@@ -2038,9 +2038,10 @@ def xar_plot_ose_scalar(plotdic):
 	plotfile=plotdic["plotfile"]
 	axlbl_y_ctl=plotdic["ctlname"]
 	axlbl_y_exp=plotdic["expname"]
-
-	ipw_ctl = data_ctl.ipw
-	ipw_exp = data_exp.ipw
+	#plotvar=plotdic["varname"]
+	
+	ipw_ctl = data_ctl.precipitation_flux * 86400
+	ipw_exp = data_exp.precipitation_flux * 86400
 
 	#data_diff = data_exp - data_ctl
 	ipw_diff = ipw_exp - ipw_ctl
