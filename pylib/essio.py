@@ -186,14 +186,17 @@ def xar_varlst(datset):
 	varlst=[var for var in datset.data_vars]
 	return(varlst)
 
-def xar_print(datset,dimlst=None,varlst=None):
+def xar_print(datset,varlst=None,dimlst=None):
 	if dimlst is None: dimlst=xar_dimlst(datset)
 	if varlst is None: varlst=xar_varlst(datset)
-	for dimnam in dimlst:
-		print(datset.variables[dimnam])
-		print(datset.variables[dimnam].attrs)
 	for varnam in varlst:
+		print(varnam)
+		#print(datset.variables[varnam])
 		print(datset.variables[varnam].attrs)
+	for dimnam in dimlst:
+		print(dimnam)
+		#print(datset.variables[dimnam])
+		print(datset.variables[dimnam].attrs)
 	datset.close()
 	return(None)
 
@@ -201,16 +204,17 @@ def xar_extract(filenam,varlst=None,dimlst=None):
 	datset=xarray.open_dataset(filenam)
 	if dimlst is None: dimlst=xar_dimlst(datset)
 	if varlst is None: varlst=xar_varlst(datset)
-	print("Dataset is loaded")
-	xar_print(datset,dimlst,varlst)
 	return(datset)
 
 #############################################################################################################################
 ### Local functions
 #############################################################################################################################
 
-def datset_save(datset,outpath=None,outfile=None,infile=None):
-	print(datset)
+def datset_print():
+	xar_print(datset)
+
+def datset_save(datset,outpath=None,outfile=None,infile=None,varlst=None,dimlst=None,coords=None):
+	#print(datset)
 	varlst=xar_varlst(datset)
 	dimlst=xar_dimlst(datset)
 	coords=datset.coords
@@ -225,10 +229,8 @@ def datset_save(datset,outpath=None,outfile=None,infile=None):
 	if outpath is not None:
 		obslib.mkdir(outpath)
 		outfile=outpath+"/"+outfile
-	print(outfile)
 	void=nix_write(datset,outfile,dimlst,varlst)
-	xar_print(datset,dimlst,varlst)
-	return(None)
+	return(outfile)
 	
 
 def datset_extract(infile,varlst,dimlst=None,coords=None,outpath=None,outfile=None,callback=None,stashcode=None,option=2):
@@ -242,5 +244,7 @@ def datset_extract(infile,varlst,dimlst=None,coords=None,outpath=None,outfile=No
     	}
 	func = switcher.get(str(option), lambda: 'Invalid option : '+str(option) )
 	datset = func()
-	if outpath is not None: datset_save(datset,outpath,outfile,infile)
+	if outpath is not None: outfile=datset_save(datset,outpath,outfile,infile)
+	print(outfile)
+	xar_print(datset)
 	return(datset)
