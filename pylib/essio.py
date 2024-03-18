@@ -186,35 +186,39 @@ def xar_varlst(datset):
 	varlst=[var for var in datset.data_vars]
 	return(varlst)
 
-def xar_print(datset,varlst=None,dimlst=None):
-	if dimlst is None: dimlst=xar_dimlst(datset)
-	if varlst is None: varlst=xar_varlst(datset)
-	for varnam in varlst:
-		print(varnam)
-		#print(datset.variables[varnam])
-		print(datset.variables[varnam].attrs)
-	for dimnam in dimlst:
-		print(dimnam)
-		#print(datset.variables[dimnam])
-		print(datset.variables[dimnam].attrs)
-	datset.close()
-	return(None)
-
 def xar_extract(filenam,varlst=None,dimlst=None):
 	datset=xarray.open_dataset(filenam)
 	if dimlst is None: dimlst=xar_dimlst(datset)
 	if varlst is None: varlst=xar_varlst(datset)
 	return(datset)
 
+def xar_print(datset,diagflg=1,varlst=None,dimlst=None):
+	print("diagflg = "+str(diagflg))
+	if dimlst is None: dimlst=list(xar_dimlst(datset))
+	if varlst is None: varlst=xar_varlst(datset)
+	if diagflg > 0:
+		print(varlst)
+		print(dimlst)
+	if diagflg > 1:
+		for varnam in varlst:
+			print(varnam)
+			print(datset.variables[varnam].attrs)
+			if diagflg > 2: print(datset.variables[varnam])
+		for dimnam in dimlst:
+			print(dimnam)
+			print(datset.variables[dimnam].attrs)
+			if diagflg > 2: print(datset.variables[dimnam])
+	datset.close()
+	return(None)
+
 #############################################################################################################################
 ### Local functions
 #############################################################################################################################
 
-def datset_print():
-	xar_print(datset)
+def datset_print(datset,diagflg=1,varlst=None,dimlst=None):
+	xar_print(datset,diagflg=diagflg,varlst=varlst,dimlst=dimlst)
 
 def datset_save(datset,outpath=None,outfile=None,infile=None,varlst=None,dimlst=None,coords=None):
-	#print(datset)
 	varlst=xar_varlst(datset)
 	dimlst=xar_dimlst(datset)
 	coords=datset.coords
@@ -230,10 +234,11 @@ def datset_save(datset,outpath=None,outfile=None,infile=None,varlst=None,dimlst=
 		obslib.mkdir(outpath)
 		outfile=outpath+"/"+outfile
 	void=nix_write(datset,outfile,dimlst,varlst)
+	print(outfile)
 	return(outfile)
 	
 
-def datset_extract(infile,varlst,dimlst=None,coords=None,outpath=None,outfile=None,callback=None,stashcode=None,option=2):
+def datset_extract(infile,varlst,dimlst=None,coords=None,outpath=None,outfile=None,callback=None,stashcode=None,option=2,diagflg=0):
 	switcher = {
 		"0" :lambda: irx_extract(infile,varlst,dimlst=dimlst,coords=coords,callback=callback,stashcode=stashcode,option=option),
 		"1" :lambda: irx_extract(infile,varlst,dimlst=dimlst,coords=coords,callback=callback,stashcode=stashcode,option=option),
@@ -245,6 +250,5 @@ def datset_extract(infile,varlst,dimlst=None,coords=None,outpath=None,outfile=No
 	func = switcher.get(str(option), lambda: 'Invalid option : '+str(option) )
 	datset = func()
 	if outpath is not None: outfile=datset_save(datset,outpath,outfile,infile)
-	print(outfile)
-	xar_print(datset)
+	xar_print(datset,diagflg)
 	return(datset)
