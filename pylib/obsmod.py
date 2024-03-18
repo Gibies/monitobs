@@ -433,8 +433,8 @@ def create_obstore(obstore_info,diagflg=0,callsignflag=False,filedata=None):
 	obstore_info=obstore_create_file(obstore_info,diagflg=diagflg,callsignflag=callsignflag,filedata=filedata)
 	return(obstore_info)
 
-def datset_extract(infile,varlst=None,dimlst=None,outfile=None):
-	datset=essio.datset_extract(infile,varlst=varlst,dimlst=dimlst,outfile=outfile)
+def datset_extract(infile,varlst=None,dimlst=None,outpath=None,outfile=None,callback=None,stashcode=None,option=2):
+	datset=essio.datset_extract(infile,varlst=varlst,dimlst=dimlst,outpath=outpath,outfile=outfile,callback=callback,stashcode=stashcode,option=option)
 	return(datset)
 
 def datset_save(datset,outpath=None,outfile=None,infile=None):
