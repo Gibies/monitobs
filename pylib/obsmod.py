@@ -437,7 +437,10 @@ def datset_extract(infile,varlst=None,dimlst=None,outfile=None):
 	datset=essio.datset_extract(infile,varlst=varlst,dimlst=dimlst,outfile=outfile)
 	return(datset)
 
+def datset_save(datset,outpath=None,outfile=None,infile=None):
+	outfile=essio.datset_save(datset=datset,outpath=outpath,outfile=outfile,infile=infile)
+	return(outfile)
+
 def mkdir(path):
-	path=obslib.mkdir(path)
-	return(path)
+	obslib.mkdir(path)
 

@@ -209,19 +209,29 @@ def xar_extract(filenam,varlst=None,dimlst=None):
 ### Local functions
 #############################################################################################################################
 
-def datset_save(datset,outfile=None,infile=None):
+def datset_save(datset,outpath=None,outfile=None,infile=None):
 	print(datset)
 	varlst=xar_varlst(datset)
 	dimlst=xar_dimlst(datset)
 	coords=datset.coords
 	var_lst_str=obslib.underscore(varlst)
-	if outfile is None: outfile=infile.split(".")[0]+"_"+var_lst_str+".nc"
+	if outfile is None: 
+		if infile is None:
+			outfile=var_lst_str+".nc"
+		else:
+			iname=infile.split("/")[-1]
+			fileprefix=iname.split(".")[0]
+			outfile=fileprefix+"_"+var_lst_str+".nc"
+	if outpath is not None:
+		obslib.mkdir(outpath)
+		outfile=outpath+"/"+outfile
+	print(outfile)
 	void=nix_write(datset,outfile,dimlst,varlst)
 	xar_print(datset,dimlst,varlst)
 	return(None)
 	
 
-def datset_extract(infile,varlst,dimlst=None,coords=None,outfile=None,callback=None,stashcode=None,option=2):
+def datset_extract(infile,varlst,dimlst=None,coords=None,outpath=None,outfile=None,callback=None,stashcode=None,option=2):
 	switcher = {
 		"0" :lambda: irx_extract(infile,varlst,dimlst=dimlst,coords=coords,callback=callback,stashcode=stashcode,option=option),
 		"1" :lambda: irx_extract(infile,varlst,dimlst=dimlst,coords=coords,callback=callback,stashcode=stashcode,option=option),
@@ -232,5 +242,5 @@ def datset_extract(infile,varlst,dimlst=None,coords=None,outfile=None,callback=N
     	}
 	func = switcher.get(str(option), lambda: 'Invalid option : '+str(option) )
 	datset = func()
-	if outfile is not None: datset_save(datset,outfile)
+	if outpath is not None: datset_save(datset,outpath,outfile,infile)
 	return(datset)
