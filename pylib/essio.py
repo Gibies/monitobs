@@ -48,75 +48,6 @@ import iris
 from iris.util import new_axis
 
 
-<<<<<<< HEAD
-#############################################################################################################################
-### 
-#############################################################################################################################
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-=======
->>>>>>> 11b74129f3bc51514480f666f51cf944b32ef67b
-#############################################################################################################################
-### 
-#############################################################################################################################
-
-<<<<<<< HEAD
-def nio_write(datset,filenam,dimlist,varlist):
-	fileptr=Nio.open_file(filenam, "rw")
-	for dimnam in dimlist:
-		dimptr=fileptr.create_dimension(dimnam,len(datset[dimnam]))
-		dimvarptr = fileptr.create_variable(dimnam,"d", datset[dimnam].dims)
-		fileptr.variables[dimnam].assign_value(datset[dimnam])
-		unit=datset[dimnam].attrs["units"]
-		print(unit)
-		fileptr.variables[dimnam].attributes['units'] = unit
-		print(fileptr.variables[dimnam].attributes)
-	for varnam in varlist:
-		varptr = fileptr.create_variable(varnam,"d", datset[varnam].dims)
-		fileptr.variables[varnam].assign_value(datset[varnam])
-	fileptr.close()
-	return(datset)
-=======
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
->>>>>>> 11b74129f3bc51514480f666f51cf944b32ef67b
-
-
 #############################################################################################################################
 ### IRIS based functions
 #############################################################################################################################
@@ -168,33 +99,14 @@ def irx_cube_array(cube,varlst,dimlst=None,coords=None):
 		datset[var].attrs['units'] = units
 	return(datset)
 
-def irx_load_cubray(infile,varlst,callback=None,stashcode=None,option=2,dimlst=None,coords=None):
+def irx_load_cubray(infile,varlst,dimlst=None,coords=None,callback=None,stashcode=None,option=2):
 	cube=iri_load_cubes(infile,cnst=varlst,callback=callback,stashcode=stashcode,option=option,dimlst=dimlst)
 	datset=irx_cube_array(cube,varlst,dimlst=dimlst,coords=coords)
 	return(datset)
 
 
-#############################################################################################################################
-### IRIS, XARRAY and NIO combination based functions
-#############################################################################################################################
-
-def ixn_extract(infile,varlst,callback=None,stashcode=None,option=2,dimlst=None,coords=None,outfile=None,):
+def irx_extract(infile,varlst,dimlst=None,coords=None,callback=None,stashcode=None,option=2):
 	datset=irx_load_cubray(infile,varlst,callback=callback,stashcode=stashcode,option=option,dimlst=dimlst,coords=coords)
-	if varlst is None: varlst=[var.name for var in dataset.data_vars]
-	var_lst_str=obslib.underscore(varlst)
-	if outfile is None: outfile=infile.split(".")[0]+"_"+var_lst_str+".nc"
-	if dimlst is None: dimlst=datset.dimlst
-	if coords is None: coords=datset.coords
-<<<<<<< HEAD
-=======
-<<<<<<< HEAD
-	
-	datset=nio_write(datset,outfile,dims,varnames)
-=======
-	void=nio_write(datset,outfile,dims,varnames)
-	#datset_new=nix_read(outfile,dims,varnames)
-	datset_new=xar_extract(outfile,dims,varnames)
->>>>>>> bbcfbd50dce54741d01aaf38636238201d26b7ce
 	return(None)
 
 #############################################################################################################################
@@ -232,7 +144,6 @@ def nix_write(datset,filenam,dimlst=None,varlst=None):
 def nix_read(filenam,dimlst,varlst):
 	fileptr=Nio.open_file(filenam, "r")
 	datset=xarray.Dataset()
-<<<<<<< HEAD
 	for varnam in varlst:
 		datset=nix_read_var(fileptr,varnam,varattlst=["units"],datset=datset)
 	for dimnam in dimlst:
@@ -257,23 +168,10 @@ def nix_read_varattr(fileptr,varnam,attrnam,datset=None):
 	if datset is None: datset=xarray.Dataset()
 	attrval=fileptr.variables[varnam].attributes[attrnam]
 	datset.variables[varnam].attrs[attrnam]=attrval
-=======
-	for dimnam in dimlist:
-		datset[dimnam]=fileptr.variables[dimnam].get_value()
-		units=fileptr.variables[dimnam].attributes["units"].get_value()
-		datset[dimnam].attrs["units"]=units
-	for varnam in varlist:
-		datset[varnam]=fileptr.variables[varnam].get_value()
-		units=fileptr.variables[varnam].attributes["units"].get_value()
-		datset[varnam].attrs["units"]=units
-	
-	print("Dataset is loaded")
-	for dimnam in dimlist:
-		print(datset.variables[dimnam].attrs)
-	for varnam in varlist:
-		print(datset.variables[varnam].attrs)
->>>>>>> 11b74129f3bc51514480f666f51cf944b32ef67b
->>>>>>> bbcfbd50dce54741d01aaf38636238201d26b7ce
+	return(datset)
+
+def nix_extract(filenam,varlst,dimlst):
+	datset=nix_read(filenam=filenam,dimlst=dimlst,varlst=varlst)
 	return(datset)
 
 #############################################################################################################################
@@ -299,7 +197,7 @@ def xar_print(datset,dimlst=None,varlst=None):
 	datset.close()
 	return(None)
 
-def xar_extract(filenam,dimlst=None,varlst=None):
+def xar_extract(filenam,varlst=None,dimlst=None):
 	datset=xarray.open_dataset(filenam)
 	if dimlst is None: dimlst=xar_dimlst(datset)
 	if varlst is None: varlst=xar_varlst(datset)
@@ -311,24 +209,27 @@ def xar_extract(filenam,dimlst=None,varlst=None):
 ### Local functions
 #############################################################################################################################
 
-def datset_extract(infile,varlst,callback=None,stashcode=None,option=2,dimlst=None,coords=None,outfile=None,):
+def datset_save(datset,outfile=None,infile=None):
+	varlst=xar_varlst(datset)
+	dimlst=xar_dimlst(datset)
+	coords=datset.coords
+	var_lst_str=obslib.underscore(varlst)
+	if outfile is None: outfile=infile.split(".")[0]+"_"+var_lst_str+".nc"
+	void=nix_write(datset,outfile,dimlst,varlst)
+	xar_print(datset,dimlst,varlst)
+	return(None)
+	
+
+def datset_extract(infile,varlst,dimlst=None,coords=None,outfile=None,callback=None,stashcode=None,option=2):
 	switcher = {
-		"0" :lambda: ixn_extract(infile,varlst,callback=callback,stashcode=stashcode,option=option,dimlst=dimlst,coords=coords),
-		"1" :lambda: ixn_extract(infile,varlst,callback=callback,stashcode=stashcode,option=option,dimlst=dimlst,coords=coords),
-		"2" :lambda: ixn_extract(infile,varlst,callback=callback,stashcode=stashcode,option=option,dimlst=dimlst,coords=coords),
-		"3" :lambda: ixn_extract(infile,varlst,callback=callback,stashcode=stashcode,option=option,dimlst=dimlst,coords=coords),
-		"4" :lambda: nix_read(infile,dimlst,varlst),
+		"0" :lambda: irx_extract(infile,varlst,dimlst=dimlst,coords=coords,callback=callback,stashcode=stashcode,option=option),
+		"1" :lambda: irx_extract(infile,varlst,dimlst=dimlst,coords=coords,callback=callback,stashcode=stashcode,option=option),
+		"2" :lambda: irx_extract(infile,varlst,dimlst=dimlst,coords=coords,callback=callback,stashcode=stashcode,option=option),
+		"3" :lambda: irx_extract(infile,varlst,dimlst=dimlst,coords=coords,callback=callback,stashcode=stashcode,option=option),
+		"4" :lambda: nix_extract(infile,varlst,dimlst),
+		"5" :lambda: xar_extract(infile,varlst,dimlst),
     	}
 	func = switcher.get(opt, lambda: 'Invalid option')
 	datset = func()
-	dimlst=xar_dimlst(datset)
-	varlst=xar_varlst(datset)
-	#datset=xar_extract(outfile,dimlst,varlst)
-	#xar_print(datset,dimlst,varlst)
-	print(varlst)
-	#print(varlst[0].name)
-	void=nix_write(datset,outfile,dimlst,varlst)
-	datset=nix_read(outfile,dimlst,varlst)
-	#datset=xar_extract(outfile,dimlst,varlst)
-	xar_print(datset,dimlst,varlst)
+	if outfile is not None: datset_save(datset,outfile)
 	return(datset)
