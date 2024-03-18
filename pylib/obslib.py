@@ -686,6 +686,7 @@ def mkdir(path):
        mkdir(paretdir)
     if not os.path.isdir(path) :
        os.mkdir(path)
+    return(path)
 
 def obs_frame_ascii(data,outfile=None,option=0):
     if outfile is None:
