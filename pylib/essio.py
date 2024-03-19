@@ -178,6 +178,16 @@ def nix_extract(filenam,varlst,dimlst):
 ### XARRAY based functions
 #############################################################################################################################
 
+def xar_dimsize(datset,dimlst):
+	dimsize={}
+	for dimnam in dimlst:
+		dimsize.update({dimnam:len(datset.variables[dimnam])})
+	return(dimsize)
+	
+def xar_dims_update(dimsize,recdim,recsize):
+	dimsize.update({recdim:recsize})
+	return(dimsize)
+
 def xar_dimlst(datset):
 	dimlst=datset.dims
 	return(dimlst)
@@ -190,6 +200,63 @@ def xar_extract(filenam,varlst=None,dimlst=None):
 	datset=xarray.open_dataset(filenam)
 	if dimlst is None: dimlst=xar_dimlst(datset)
 	if varlst is None: varlst=xar_varlst(datset)
+	return(datset)
+
+def xar_data_dummy(dimsize,dimlst):
+	size_tuple=()
+	for dimnam in dimlst:
+		size_tuple=size_tuple+(dimsize[dimnam],)
+	data=numpy.zeros(size_tuple)
+	return(data)
+
+def xar_datset_dummy(dimsize,dimlst,varlst,recdim,recrds=None):
+	data1=xar_data_dummy(dimsize,dimlst)
+	data_vars={}
+	for varnam in varlst:
+		data_vars.update({varnam:(dimlst,data1)})
+	datset=xarray.Dataset(data_vars=data_vars)
+	if recrds is not None: 
+		coords=datset.coords
+		coords.update({recdim:recrds,})
+	return(datset)
+
+def xar_rec_coords_update(recdim,recrds=None,reclen=None,recgap=None,recmeta=None,datset=None,varlst=None,dimlst=None):
+	if datset is None: 
+		if dimlst is None: dimlst=xar_dimlst(recmeta)
+		if varlst is None: varlst=xar_varlst(recmeta)
+		dimsize=xar_dimsize(recmeta,dimlst)
+		dimsize=xar_dims_update(dimsize,recdim,reclen)
+		datset=xar_datset_dummy(dimsize,dimlst,varlst,recdim=recdim,recrds=recrds)
+	if recrds is None: 
+		rec1=recmeta.coords[recdim].values
+		recz=rec1+(reclen*recgap)
+		recrds=numpy.arange(rec1,recz,recgap)
+	coords=datset.coords
+	coords.update({recdim:recrds,})
+	return(datset)
+
+def xar_append(infiles,recdim="time",recrds=None,varlst=None,dimlst=None,reclen=None,recgap=None):
+	filelst=obslib.globlist(infiles)
+	if reclen is None: reclen=len(filelst)
+	dat1=datset_extract(filelst[0],varlst,dimlst=dimlst)
+	dimsize=xar_dimsize(dat1,dimlst)
+	dimsize=xar_dims_update(dimsize,recdim,reclen)
+	print(dimsize)
+	print(recrds)
+	datset=xar_datset_dummy(dimsize,dimlst,varlst,recdim=recdim,recrds=recrds)
+	#datset=xar_rec_coords_update(recdim,recrds=recrds,reclen=reclen,recgap=recgap,recmeta=dat1,varlst=varlst,dimlst=dimlst)
+	print(datset)
+	if varlst is None: varlst=xar_varlst(datset)
+	for file1 in filelst:
+		print(file1)
+		dat1=datset_extract(file1,varlst=varlst,dimlst=dimlst)
+		recpoint=dat1.time.values[0]
+		slicedic=eval('str({ recdim : recpoint })')
+		print(slicedic)
+		for varnam in varlst:
+			print(datset.loc[eval(slicedic)])
+			print(dat1.loc[eval(slicedic)])
+			datset[varnam].loc[eval(slicedic)] = dat1[varnam].loc[eval(slicedic)]
 	return(datset)
 
 def xar_print(datset,diagflg=1,varlst=None,dimlst=None):
