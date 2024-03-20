@@ -274,7 +274,7 @@ def xar_print(datset,diagflg=1,varlst=None,dimlst=None):
 def datset_print(datset,diagflg=1,varlst=None,dimlst=None):
 	xar_print(datset,diagflg=diagflg,varlst=varlst,dimlst=dimlst)
 
-def datset_save(datset,outpath=None,outfile=None,infile=None,varlst=None,dimlst=None,coords=None):
+def datset_save(datset,outpath=None,outfile=None,infile=None,varlst=None,dimlst=None,coords=None,diagflg=0):
 	varlst=xar_varlst(datset)
 	dimlst=xar_dimlst(datset)
 	coords=datset.coords
@@ -291,6 +291,7 @@ def datset_save(datset,outpath=None,outfile=None,infile=None,varlst=None,dimlst=
 		outfile=outpath+"/"+outfile
 	void=nix_write(datset,outfile,dimlst,varlst)
 	print(outfile)
+	if diagflg > 0: xar_print(datset,diagflg)
 	return(outfile)
 	
 
@@ -305,15 +306,15 @@ def datset_extract(infile,varlst,dimlst=None,coords=None,outpath=None,outfile=No
     	}
 	func = switcher.get(str(option), lambda: 'Invalid option : '+str(option) )
 	datset = func()
-	if outpath is not None: outfile=datset_save(datset,outpath,outfile,infile)
-	xar_print(datset,diagflg)
+	if outpath is not None: outfile=datset_save(datset,outpath,outfile,infile,diagflg=diagflg)
 	return(datset)
 
-def datset_append(infiles,recdim="time",varlst=None,dimlst=None,dimsize=None,reclen=None,recgap=None,recrds=None,datset=None):
+def datset_append(infiles,recdim="time",varlst=None,dimlst=None,dimsize=None,reclen=None,recgap=None,recrds=None,datset=None,outpath=None,outfile=None,diagflg=0):
 	filelst=obslib.globlist(infiles)
 	if reclen is None: reclen=len(filelst)
 	for file1 in filelst:
 		dat1=datset_extract(file1,varlst=varlst,dimlst=dimlst)
 		datset=xar_append(dat1,reclen,recdim,varlst=varlst,dimlst=dimlst,dimsize=dimsize,recrds=recrds,recgap=recgap,datset=datset)
+	if outpath is not None: outfile=datset_save(datset,outpath,outfile,diagflg=diagflg)
 	return(datset)
 
