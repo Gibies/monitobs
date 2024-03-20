@@ -242,13 +242,9 @@ def xar_datset_dummy(recmeta,recdim,reclen,recrds=None,recgap=None,dimsize=None,
 def xar_append(recmeta,reclen,recdim="time",varlst=None,dimlst=None,dimsize=None,recrds=None,recgap=None,datset=None):
 	if varlst is None: varlst=xar_varlst(recmeta)
 	if datset is None: datset=xar_datset_dummy(recmeta,recdim,reclen,recrds=recrds,recgap=recgap,dimsize=dimsize,dimlst=dimlst,varlst=varlst)
-	print(datset)
 	recpoint=recmeta.time.values[0]
 	slicedic=eval(eval('str({ recdim : recpoint })'))
-	print(slicedic)
 	for varnam in varlst:
-		print(datset.loc[slicedic])
-		print(recmeta.loc[slicedic])
 		datset[varnam].loc[slicedic] = recmeta[varnam].loc[slicedic]
 	return(datset)
 
