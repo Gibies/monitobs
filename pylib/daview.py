@@ -1955,20 +1955,24 @@ def xar_ipw(datset,levdim,rhonam,humnam):
 				)	
 	return(dataset)
 
-def xar_regrid(datset,varname,refer=None,q=None,lon=None,lat=None):
+def xar_regrid(datset,varname,refer=None,q=None,lon=None,lat=None,lev=None):
 	if refer is not None:
 	   if datset[refer] is not None:
 		lon = datset[refer].longitude
 		lat = datset[refer].latitude
-		#lev = datset[refer].level_height
+		lev = datset[refer].level_height
+	datset=datset.copy()
 	data= datset[varname]
 	datanew=data.interp(latitude=lat, longitude=lon)
-	datset[varname]=datanew
+	datanew = datanew.interp(level_height=lev)
+        new_datset = datset.copy()
+        new_datset[varname] = datanew	
+	#datset[varname]=datanew
 	#if varname=="x_wind_int":
 		#datset[varname] = datset['x_wind'].interp(latitude=lat, longitude=lon)
 	#else:
 		#datset[varname] = datset['y_wind'].interp(latitude=lat, longitude=lon)
-	return(datset)
+	return(new_datset)
 
 def xar_qtransdh(datset,levdim,rhonam,humnam,vectvar=None):
 	if humnam in datset: qdata=datset[humnam]
@@ -2014,17 +2018,17 @@ def xar_vimt(datset,levdim,rhonam,humnam):
 	return(dataset)
 	
 def xar_datset(q,rho,u_wind=None,v_wind=None):
-	q_x=q.isel(level_height=slice(None, -1))
-	lon=q_x["specific_humidity"].longitude
-	lat=q_x["specific_humidity"].latitude
-	#lev=q["specific_humidity"].level_height
+	lon=q["specific_humidity"].longitude
+	lat=q["specific_humidity"].latitude
+	lev=q["specific_humidity"].level_height
 	#lev=rho["rhorsq"].level_height
 	#q_x=xar_regrid(q,"specific_humidity",lon=lon,lat=lat,lev=lev)
-	rho_x=xar_regrid(rho,"rhorsq",lon=lon,lat=lat)
-	u_wind_x=xar_regrid(u_wind,"x_wind",lon=lon,lat=lat)
-	v_wind_x=xar_regrid(v_wind,"y_wind",lon=lon,lat=lat)
+	rho_x=xar_regrid(rho,"rhorsq",lon=lon,lat=lat,lev=lev)
+	u_wind_x=xar_regrid(u_wind,"x_wind",lon=lon,lat=lat,lev=lev)
+	v_wind_x=xar_regrid(v_wind,"y_wind",lon=lon,lat=lat,lev=lev)
+	
 	datset=xarray.Dataset()
-	datset["sphum"]=q_x["specific_humidity"]
+	datset["sphum"]=q["specific_humidity"]
 	datset["rhorsq"]=rho_x["rhorsq"]
 	if u_wind is not None:
 		datset["x_wind"]=u_wind_x["x_wind"]
@@ -2040,31 +2044,33 @@ def xar_plot_ose_scalar(plotdic):
 	axlbl_y_exp=plotdic["expname"]
 	#plotvar=plotdic["varname"]
 	
-	ipw_ctl = data_ctl.precipitation_flux * 86400
-	ipw_exp = data_exp.precipitation_flux * 86400
-
+	result_ctl = data_ctl
+	result_exp = data_exp
+	result_diff = result_exp - result_ctl
+	#ipw_ctl = data_ctl.ipw
+	#ipw_exp = data_exp.ipw
 	#data_diff = data_exp - data_ctl
-	ipw_diff = ipw_exp - ipw_ctl
+	#ipw_diff = ipw_exp - ipw_ctl
 
 	fig, axes = pyplot.subplots(nrows=3, ncols=1,figsize=[20,15], subplot_kw={'projection': ccrs.PlateCarree(central_longitude=0)})
 	plot=[None]*3
 	axlbly=[None]*3
 
-	plot[0]=ipw_ctl.plot(ax=axes[0], cmap='Blues', transform=ccrs.PlateCarree(),add_colorbar=False)
+	plot[0]=result_ctl.plot(ax=axes[0],vmin=0,vmax=30, cmap='Blues', transform=ccrs.PlateCarree(),add_colorbar=False)
 	m = Basemap(projection='cyl',llcrnrlat=-90,urcrnrlat=90,llcrnrlon=-180,urcrnrlon=180,resolution='c',ax=axes[0])
 	m.drawcoastlines()
 	axlbly[0]=axes[0].text(-0.1, 0.5, axlbl_y_ctl, va='center', ha='center', rotation='vertical', transform=axes[0].transAxes)
 	axins = inset_axes(axes[0], width = "5%", height = "100%", loc = 'lower left', bbox_to_anchor = (1.09, 0., 1, 1), bbox_transform = axes[0].transAxes, borderpad = 0)
 	fig.colorbar(plot[0], cax = axins)	
 
-	plot[1]=ipw_exp.plot(ax=axes[1], cmap='Blues', transform=ccrs.PlateCarree(),add_colorbar=False)
+	plot[1]=result_exp.plot(ax=axes[1],vmin=0,vmax=30, cmap='Blues', transform=ccrs.PlateCarree(),add_colorbar=False)
 	m = Basemap(projection='cyl',llcrnrlat=-90,urcrnrlat=90,llcrnrlon=-180,urcrnrlon=180,resolution='c',ax=axes[1])
 	m.drawcoastlines()
 	axlbly[1]=axes[1].text(-0.1, 0.5, axlbl_y_ctl, va='center', ha='center', rotation='vertical', transform=axes[1].transAxes)
 	axins = inset_axes(axes[1], width = "5%", height = "100%", loc = 'lower left', bbox_to_anchor = (1.09, 0., 1, 1), bbox_transform = axes[1].transAxes, borderpad = 0)
 	fig.colorbar(plot[1], cax = axins)	
 
-	plot[2]=ipw_diff.plot(ax=axes[2],vmin=-6,vmax=6, cmap='RdBu_r', transform=ccrs.PlateCarree(),add_colorbar=False)
+	plot[2]=result_diff.plot(ax=axes[2],vmin=-10,vmax=10, cmap='RdBu_r', transform=ccrs.PlateCarree(),add_colorbar=False)
 	m = Basemap(projection='cyl',llcrnrlat=-90,urcrnrlat=90,llcrnrlon=-180,urcrnrlon=180,resolution='c',ax=axes[2])
 	m.drawcoastlines()
 	axlbly[2]=axes[2].text(-0.1, 0.5, 'EXP-CTL', va='center', ha='center', rotation='vertical', transform=axes[2].transAxes)
