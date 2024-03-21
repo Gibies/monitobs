@@ -310,7 +310,10 @@ def datset_extract(infile,varlst,dimlst=None,coords=None,outpath=None,outfile=No
 	return(datset)
 
 def datset_append(infiles,recdim="time",varlst=None,dimlst=None,dimsize=None,reclen=None,recgap=None,recrds=None,datset=None,outpath=None,outfile=None,diagflg=0):
-	filelst=obslib.globlist(infiles)
+	if type(infiles) is list:
+		filelst=infiles
+	else:
+		filelst=obslib.globlist(infiles)
 	if reclen is None: reclen=len(filelst)
 	for file1 in filelst:
 		dat1=datset_extract(file1,varlst=varlst,dimlst=dimlst)

@@ -18,6 +18,7 @@ export ARGS=$@
 
 wait_flag=1
 QUEUE_MAMU="NCMRWF1"
+NODE_CNT=1
 LOGDIR="/scratch/${USER}/logs"
 PBSDIR="/scratch/${USER}/jobs"
 PYFILE=${PYSCRIPT##*/}
@@ -33,7 +34,7 @@ cat >> ${PBSFILE} << EOF
 #!/bin/bash
 #PBS -q ${QUEUE_MAMU}
 #PBS -N ${TASKNAM}
-#PBS -l select=1:ncpus=1:vntype=cray_compute
+#PBS -l select=${NODE_CNT}:ncpus=1:vntype=cray_compute
 #PBS -o ${LOGDIR}/${TASKNAM}_${RUNTIME}.out
 #PBS -e ${LOGDIR}/${TASKNAM}_${RUNTIME}.err
 export LOGDIR=${LOGDIR}
@@ -41,7 +42,7 @@ export PBSDIR=${PBSDIR}
 export TASKNAM=${TASKNAM}
 export PKGHOME=${PKGHOME}
 
-
+NODE_CNT=${NODE_CNT}
 PYSCRIPT=${PYSCRIPT}
 PYLAUNCH=${PYLAUNCH}
 ARGS=${ARGS}
@@ -61,5 +62,7 @@ echo ${jobid}
 	done
 cat ${LOGDIR}/${TASKNAM}_${RUNTIME}.out
 tail -10 ${LOGDIR}/${TASKNAM}_${RUNTIME}.err
+
+qstat -fx ${jobid}
 echo ${LOGDIR}
 ls -lrt ${LOGDIR}/${TASKNAM}_${RUNTIME}.*

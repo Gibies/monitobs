@@ -18,8 +18,13 @@ OBSNML=os.environ.get('OBSNML',PKGHOME+"/nml")
 sys.path.append(OBSNML)
 
 import obslib
+import essio
 
 
+def nextday(cylcdate):
+	currdate=obslib.pydate(cylcdate=cylcdate)
+	nextdate=currdate+obslib.timeperiod(hh=24)
+	return(obslib.cylcdate(nextdate))
 
 def get_cylc_file_list(filepath,filenam,cylcstrt,cylcfinl,cylcinvl):
 	dtstrt=obslib.pydate(cylcdate=cylcstrt)
@@ -41,3 +46,15 @@ def get_cylc_file_list(filepath,filenam,cylcstrt,cylcfinl,cylcinvl):
 	data_info.update({"dtrecrd":dtrecrd})
 	data_info.update({"dtarray":dtarray})
 	return(data_info)
+
+
+def datset_read_daily(filepath,filenam,date,cylcinvl,recdim,varlst,dimlst):
+	cylcstrt=str(date)+"T0000Z"
+	cylcfinl=nextday(cylcdate=cylcstrt)
+	data_info=get_cylc_file_list(filepath,filenam,cylcstrt,cylcfinl,cylcinvl)
+	infile=data_info["filelst"]
+	recrds=data_info["dtrecrd"]
+	reclen=len(recrds)
+	datset=essio.datset_append(infile,recdim=recdim,recrds=recrds,reclen=reclen,varlst=varlst,dimlst=dimlst)
+	return(datset)
+
