@@ -52,7 +52,7 @@ from iris.util import new_axis
 ### IRIS based functions
 #############################################################################################################################
 
-def iri_load_cubes(infile,cnst=None,callback=None,stashcode=None,option=0,dimlst=None):
+def iri_load_cubes(infile,cnst=None,callback=None,stashcode=None,option=0,dimlst=None,ref_dim=None):
     opt=str(option)
     if stashcode is not None: cnst=iris.AttributeConstraint(STASH=stashcode)
     switcher = {
@@ -61,22 +61,52 @@ def iri_load_cubes(infile,cnst=None,callback=None,stashcode=None,option=0,dimlst
        "2" :lambda: iris.load_cube(infile,constraint=cnst, callback=callback),
        "3" :lambda: iris.load_raw(infile,constraints=cnst, callback=callback),
     }
+
     func = switcher.get(opt, lambda: 'Invalid option')
     cubes = func()
-    cubedimlst=[coord.name() for coord in cubes.dim_coords]
-    cubeauxc=[coord.name() for coord in cubes.aux_coords]
-    if dimlst is not None:
-	for dimnam in dimlst:
-	   if dimnam in cubeauxc:
-		if len(cubes.coord(dimnam).points) is 1:
-		   cubes=new_axis(cubes,dimnam)
+    if ref_dim is not  None:
+         interp_cube=iri_regrid(cubes,ref_dim=ref_dim)
+	 cubedimlst=[coord.name() for coord in interp_cube.dim_coords]
+         cubeauxc=[coord.name() for coord in interp_cube.aux_coords]
+	 if dimlst is not None:
+	    for dimnam in dimlst:
+		if dimnam in cubeauxc:
+		   if len(interp_cube.coord(dimnam).points) is 1:
+		      cubes=new_axis(interp_cube,dimnam)
+    else:
+    	cubedimlst=[coord.name() for coord in cubes.dim_coords]
+    	cubeauxc=[coord.name() for coord in cubes.aux_coords]
+    	if dimlst is not None:
+	   for dimnam in dimlst:
+	       if dimnam in cubeauxc:
+		  if len(cubes.coord(dimnam).points) is 1:
+		     cubes=new_axis(cubes,dimnam)
     return(cubes)
 
 def iri_to_nc(infile,varlst,outfile,callback=None,stashcode=None,option=2,dimlst=None,coords=None):
 	cube=iri_load_cubes(infile,cnst=varlst,callback=callback,stashcode=stashcode,option=option,dimlst=dimlst)
 	nc_file=iris.save(cube,outfile)
-	return(nc_file)	
+	return(nc_file)
 
+def iri_regrid(cube,ref_dim=None,ref_cube=None,lat=None,lon=None,lev=None):
+	if ref_dim is not None:
+		lat = ref_dim['lat']
+		lon = ref_dim['lon']
+		lev = ref_dim['lev']
+	if ref_cube is not None:
+		lat = ref_cube.coord('latitude').points
+		lon = ref_cube.coord('longitude').points
+		lev = ref_cube.coord('level_height').points
+	interp_cube = cube.interpolate([('latitude', lat), ('longitude', lon),('level_height', lev)],iris.analysis.Linear())
+	return(interp_cube)	
+
+def xar_ref_dim(daset,varname,lat=None,lon=None,lev=None):
+	ref_dim={}
+	ref_dim['lat']=daset[varname].latitude
+	ref_dim['lon']=daset[varname].longitude
+	ref_dim['lev']=daset[varname].level_height
+	return(ref_dim)
+	
 #############################################################################################################################
 ### IRIS and XARRAY combination based functions
 #############################################################################################################################
@@ -99,14 +129,18 @@ def irx_cube_array(cube,varlst,dimlst=None,coords=None):
 		datset[var].attrs['units'] = units
 	return(datset)
 
-def irx_load_cubray(infile,varlst,dimlst=None,coords=None,callback=None,stashcode=None,option=2):
-	cube=iri_load_cubes(infile,cnst=varlst,callback=callback,stashcode=stashcode,option=option,dimlst=dimlst)
+def irx_load_cubray(infile,varlst,dimlst=None,coords=None,callback=None,stashcode=None,ref_dim=None,option=2):
+	cube=iri_load_cubes(infile,cnst=varlst,callback=callback,stashcode=stashcode,option=option,dimlst=dimlst,ref_dim=ref_dim)
+	#if lat is not None and lon is not None and lev is not  None:
+		#interp_cube=iri_regrid(cube,lat=lat,lon=lon,lev=lev)
+		#datset=irx_cube_array(interp_cube,varlst,dimlst=dimlst,coords=coords)
+	#else:
 	datset=irx_cube_array(cube,varlst,dimlst=dimlst,coords=coords)
 	return(datset)
 
 
-def irx_extract(infile,varlst,dimlst=None,coords=None,callback=None,stashcode=None,option=2):
-	datset=irx_load_cubray(infile,varlst,callback=callback,stashcode=stashcode,option=option,dimlst=dimlst,coords=coords)
+def irx_extract(infile,varlst,dimlst=None,coords=None,callback=None,stashcode=None,ref_dim=None,option=2):
+	datset=irx_load_cubray(infile,varlst,callback=callback,stashcode=stashcode,option=option,dimlst=dimlst,coords=coords,ref_dim=ref_dim)
 	return(datset)
 
 #############################################################################################################################
@@ -294,12 +328,12 @@ def datset_save(datset,outpath=None,outfile=None,infile=None,varlst=None,dimlst=
 	return(outfile)
 	
 
-def datset_extract(infile,varlst,dimlst=None,coords=None,outpath=None,outfile=None,callback=None,stashcode=None,option=2,diagflg=0):
+def datset_extract(infile,varlst,dimlst=None,coords=None,outpath=None,outfile=None,callback=None,stashcode=None,ref_dim=None,option=2,diagflg=0):
 	switcher = {
-		"0" :lambda: irx_extract(infile,varlst,dimlst=dimlst,coords=coords,callback=callback,stashcode=stashcode,option=option),
-		"1" :lambda: irx_extract(infile,varlst,dimlst=dimlst,coords=coords,callback=callback,stashcode=stashcode,option=option),
-		"2" :lambda: irx_extract(infile,varlst,dimlst=dimlst,coords=coords,callback=callback,stashcode=stashcode,option=option),
-		"3" :lambda: irx_extract(infile,varlst,dimlst=dimlst,coords=coords,callback=callback,stashcode=stashcode,option=option),
+		"0" :lambda: irx_extract(infile,varlst,dimlst=dimlst,coords=coords,callback=callback,stashcode=stashcode,ref_dim=ref_dim,option=option),
+		"1" :lambda: irx_extract(infile,varlst,dimlst=dimlst,coords=coords,callback=callback,stashcode=stashcode,ref_dim=ref_dim,option=option),
+		"2" :lambda: irx_extract(infile,varlst,dimlst=dimlst,coords=coords,callback=callback,stashcode=stashcode,ref_dim=ref_dim,option=option),
+		"3" :lambda: irx_extract(infile,varlst,dimlst=dimlst,coords=coords,callback=callback,stashcode=stashcode,ref_dim=ref_dim,option=option),
 		"4" :lambda: nix_extract(infile,varlst,dimlst),
 		"5" :lambda: xar_extract(infile,varlst,dimlst),
     	}

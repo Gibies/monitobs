@@ -1910,10 +1910,11 @@ def xar_slice_indian(data):
 def xar_layer_thickness(q,levdim):
 	level_height = q.coords[levdim]	#hybrid_ht
 	thickness = xarray.DataArray(data=numpy.zeros(len(level_height)),dims=[levdim],coords={levdim: level_height},name="thickness")
-	thickness = xar_slice(thickness,levdim,None, -1)
+	#thickness = xar_slice(thickness,levdim,None, -1)
 	for i in range(1, len(level_height) - 1):
 	    thickness[i] = ((level_height[i] - level_height[i - 1]) / 2) + ((level_height[i + 1] - level_height[i]) / 2)
 	thickness[0] = (level_height[1] - level_height[0]) / 2
+	thickness[-1] = (level_height[-1] - level_height[-2]) / 2
 	return(thickness)
 
 def xar_quot_rsqure(datset,varname,levdim):
@@ -1960,19 +1961,19 @@ def xar_regrid(datset,varname,refer=None,q=None,lon=None,lat=None,lev=None):
 	   if datset[refer] is not None:
 		lon = datset[refer].longitude
 		lat = datset[refer].latitude
-		lev = datset[refer].level_height
-	datset=datset.copy()
+		#lev = datset[refer].level_height
 	data= datset[varname]
 	datanew=data.interp(latitude=lat, longitude=lon)
-	datanew = datanew.interp(level_height=lev)
-        new_datset = datset.copy()
-        new_datset[varname] = datanew	
+	#datanew = datanew.interp(level_height=lev)
+        #new_datset = datset.copy()
+        datset[varname] = datanew	
 	#datset[varname]=datanew
 	#if varname=="x_wind_int":
 		#datset[varname] = datset['x_wind'].interp(latitude=lat, longitude=lon)
 	#else:
 		#datset[varname] = datset['y_wind'].interp(latitude=lat, longitude=lon)
-	return(new_datset)
+	return(datset)
+
 
 def xar_qtransdh(datset,levdim,rhonam,humnam,vectvar=None):
 	if humnam in datset: qdata=datset[humnam]
@@ -1993,11 +1994,11 @@ def xar_height_integral(weighted_q_u,levdim):
 	return(data)
 
 def xar_vimt(datset,levdim,rhonam,humnam):
-	datset=xar_regrid(datset,"x_wind",humnam)
+	#datset=xar_regrid(datset,"x_wind",humnam)
 	#print(datset)
 	weighted_q_u = xar_qtransdh(datset,levdim,rhonam,humnam,vectvar="x_wind")
 	u = xar_height_integral(weighted_q_u,levdim)
-	datset=xar_regrid(datset,"y_wind",humnam)
+	#datset=xar_regrid(datset,"y_wind",humnam)
 	#print(datset)
 	weighted_q_v = xar_qtransdh(datset,levdim,rhonam,humnam,vectvar="y_wind")
 	v = xar_height_integral(weighted_q_v,levdim) 
@@ -2018,22 +2019,22 @@ def xar_vimt(datset,levdim,rhonam,humnam):
 	return(dataset)
 	
 def xar_datset(q,rho,u_wind=None,v_wind=None):
-	lon=q["specific_humidity"].longitude
-	lat=q["specific_humidity"].latitude
-	lev=q["specific_humidity"].level_height
+	#lon=q["specific_humidity"].longitude
+	#lat=q["specific_humidity"].latitude
+	#lev=q["specific_humidity"].level_height
 	#lev=rho["rhorsq"].level_height
 	#q_x=xar_regrid(q,"specific_humidity",lon=lon,lat=lat,lev=lev)
-	rho_x=xar_regrid(rho,"rhorsq",lon=lon,lat=lat,lev=lev)
-	u_wind_x=xar_regrid(u_wind,"x_wind",lon=lon,lat=lat,lev=lev)
-	v_wind_x=xar_regrid(v_wind,"y_wind",lon=lon,lat=lat,lev=lev)
+	#rho_x=xar_regrid(rho,"rhorsq",lon=lon,lat=lat,lev=lev)
+	#u_wind_x=xar_regrid(u_wind,"x_wind",lon=lon,lat=lat,lev=lev)
+	#v_wind_x=xar_regrid(v_wind,"y_wind",lon=lon,lat=lat,lev=lev)
 	
 	datset=xarray.Dataset()
 	datset["sphum"]=q["specific_humidity"]
-	datset["rhorsq"]=rho_x["rhorsq"]
+	datset["rhorsq"]=rho["rhorsq"]
 	if u_wind is not None:
-		datset["x_wind"]=u_wind_x["x_wind"]
+		datset["x_wind"]=u_wind["x_wind"]
 	if v_wind is not None:
-		datset["y_wind"]=v_wind_x["y_wind"]
+		datset["y_wind"]=v_wind["y_wind"]
 	return(datset)
 
 def xar_plot_ose_scalar(plotdic):
