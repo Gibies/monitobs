@@ -1938,7 +1938,7 @@ def xar_qrhodh(datset,levdim,rhonam,humnam):
 	else:
 		rhodata=xar_quot_rsqure(datset[rhonam],rhonam,levdim)
 	thickness=xar_layer_thickness(qdata,levdim)
-	qdata = xar_slice(qdata,levdim,None, -1)
+	#qdata = xar_slice(qdata,levdim,None, -1)
 	weighted_q = qdata * thickness * rhodata.values
 	return(weighted_q)
 
@@ -1982,7 +1982,7 @@ def xar_qtransdh(datset,levdim,rhonam,humnam,vectvar=None):
 	else:	
 		rhodata=xar_quot_rsqure(datset,rhonam,levdim)
 	thickness=xar_layer_thickness(qdata,levdim)
-	qdata = xar_slice(qdata,levdim,None, -1)
+	#qdata = xar_slice(qdata,levdim,None, -1)
 	if vectvar is None:
 		weighted_data = qdata * thickness*rhodata.values
         else:
@@ -2188,10 +2188,11 @@ def irx_load_cubray(infile,varnames,callback=None,stashcode=None,option=2,dims=N
 def irx_layer_thickness(q):
 	level_height = q.coord('level_height').points
 	thickness = xarray.DataArray(data=numpy.zeros(len(level_height)),dims=["hybrid_ht"],coords={"hybrid_ht": level_height},name="thickness")
-	thickness = thickness.isel(hybrid_ht=slice(None, -1))
+	#thickness = thickness.isel(hybrid_ht=slice(None, -1))
 	for i in range(1, len(level_height) - 1):
 	    thickness[i] = ((level_height[i] - level_height[i - 1]) / 2) + ((level_height[i + 1] - level_height[i]) / 2)
 	thickness[0] = (level_height[1] - level_height[0]) / 2
+	thickness[-1] = (level_height[-1] - level_height[-2]) / 2
 	return(thickness)
 
 def irx_quot_rsqure(rho):
