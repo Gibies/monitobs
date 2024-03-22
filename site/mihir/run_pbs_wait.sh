@@ -62,7 +62,8 @@ echo ${jobid}
 	done
 cat ${LOGDIR}/${TASKNAM}_${RUNTIME}.out
 tail -10 ${LOGDIR}/${TASKNAM}_${RUNTIME}.err
-
+ln -sf ${LOGDIR}/${TASKNAM}_${RUNTIME}.out ${LOGDIR}/${TASKNAM}.out
+ln -sf ${LOGDIR}/${TASKNAM}_${RUNTIME}.err ${LOGDIR}/${TASKNAM}.err
 qstat -fx ${jobid}
 echo ${LOGDIR}
-ls -lrt ${LOGDIR}/${TASKNAM}_${RUNTIME}.*
+ls -lrt ${LOGDIR}/${TASKNAM}.*

@@ -354,14 +354,14 @@ def datset_extend(infile,varlst,datset=None,dimlst=None,coords=None,outpath=None
 			datset.variables[varnam]=datnew.variables[varnam]
 	return(datset)
 
-def datset_build(filepath,filefldr,varfile,varlst,varstash,varopt,dimlst):
-	if varlst is None: varlst=[*varfile]
+def datset_build(filepath,filefldr,varfile,varlst,varstash,varopt,dimlst,datset=None):
+	print(varfile,varlst,varstash,varopt)
+	if varlst is None: varlst=list(varfile.keys())
 	for varnam in varlst:
 		if varnam in varfile:
 			filenam=varfile[varnam]
 		else:
-			print("Filename information is not available for "+str(varnam)
-			exit()
+			print("Filename information is not available for "+str(varnam))
 		if varnam in varstash:
 			stashcode=varstash[varnam]
 		else:
@@ -371,7 +371,7 @@ def datset_build(filepath,filefldr,varfile,varlst,varstash,varopt,dimlst):
 		else:
 			option=2
 		infiles=filepath+"/"+filefldr+"/"+filenam
-		datset=essio.datset_extend(infiles,[varnam],datset=datset,stashcode=stashcode,dimlst=dimlst,option=option)
+		datset=datset_extend(infiles,[varnam],datset=datset,stashcode=stashcode,dimlst=dimlst,option=option)
 	return(datset)
 
 def datset_append(infiles,recdim="time",varlst=None,dimlst=None,dimsize=None,reclen=None,recgap=None,recrds=None,datset=None,outpath=None,outfile=None,diagflg=0):
