@@ -343,12 +343,13 @@ def datset_extract(infile,varlst,dimlst=None,coords=None,outpath=None,outfile=No
 	if outpath is not None: outfile=datset_save(datset,outpath,outfile,infile,diagflg=diagflg)
 	return(datset)
 
-def datset_extend(infile,varlst,datset=None,dimlst=None,coords=None,outpath=None,outfile=None,callback=None,stashcode=None,ref_dim=None,option=2,diagflg=0):
+def datset_extend(infile,varlst,datset=None,dimlst=None,coords=None,outpath=None,outfile=None,callback=None,stashcode=None,refvar=None,ref_dim=None,option=2,diagflg=0):
 	if datset is None:
 		datset=datset_extract(infile,varlst,dimlst=dimlst,coords=coords,outpath=outpath,outfile=outfile,callback=callback,stashcode=stashcode,option=option,diagflg=diagflg)
 	else:
 		if ref_dim is None:
-			ref_dim=essio.xar_ref_dim(datset,refvar)
+			if refvar is None: refvar=xar_varlst(datset)[0]
+			ref_dim=xar_ref_dim(datset,refvar)
 		datnew=datset_extract(infile,varlst,dimlst=dimlst,coords=coords,outpath=outpath,outfile=outfile,callback=callback,stashcode=stashcode,ref_dim=ref_dim,option=option,diagflg=diagflg)
 		for varnam in varlst:
 			datset.variables[varnam]=datnew.variables[varnam]
