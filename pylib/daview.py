@@ -1932,11 +1932,11 @@ def xar_slice(data,dimnam,dim_min=None,dim_max=None,dim_skip=None):
 	return(data)
 
 def xar_qrhodh(datset,levdim,rhonam,humnam):
-	if humnam in datset: qdata=datset[humnam]
 	if "density" in datset:
 		rhodata=datset["density"]
 	else:
 		rhodata=xar_quot_rsqure(datset[rhonam],rhonam,levdim)
+	if humnam in datset: qdata=datset[humnam]
 	thickness=xar_layer_thickness(qdata,levdim)
 	#qdata = xar_slice(qdata,levdim,None, -1)
 	weighted_q = qdata * thickness * rhodata.values

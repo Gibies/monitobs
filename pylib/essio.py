@@ -94,9 +94,9 @@ def iri_to_nc(infile,varlst,outfile,callback=None,stashcode=None,option=2,dimlst
 
 def iri_regrid(cube,ref_dim=None,ref_cube=None,lat=None,lon=None,lev=None):
 	if ref_dim is not None:
-		lat = ref_dim['latitude']
-		lon = ref_dim['longitude']
-		lev = ref_dim['level_height']
+		lat = ref_dim['lat']
+		lon = ref_dim['lon']
+		lev = ref_dim['lev']
 	if ref_cube is not None:
 		lat = ref_cube.coord('latitude').points
 		lon = ref_cube.coord('longitude').points
@@ -104,14 +104,14 @@ def iri_regrid(cube,ref_dim=None,ref_cube=None,lat=None,lon=None,lev=None):
 	interp_cube = cube.interpolate([('latitude', lat), ('longitude', lon),('level_height', lev)],iris.analysis.Linear())
 	return(interp_cube)	
 
-def xar_ref_dim(daset,dimlst,lat=None,lon=None,lev=None):
+def xar_ref_dim(daset,varname,lat=None,lon=None,lev=None):
 	ref_dim={}
-	for dim in dimlst:
-		ref_dim[dim]=daset[dim]
-	#ref_dim['lat']=daset[varname].latitude
-	#ref_dim['lon']=daset[varname].longitude
-	#ref_dim['lev']=daset[varname].level_height
-	print(ref_dim)
+	#for dim in dimlst:
+		#ref_dim[dim]=daset[dim]
+	ref_dim['lat']=daset[varname].latitude
+	ref_dim['lon']=daset[varname].longitude
+	ref_dim['lev']=daset[varname].level_height
+	#print(ref_dim)
 	#exit()
 	return(ref_dim)
 	
