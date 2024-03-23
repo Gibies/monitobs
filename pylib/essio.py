@@ -351,6 +351,7 @@ def datset_extract(infile,varlst,dimlst=None,coords=None,outpath=None,outfile=No
 	if outpath is not None: outfile=datset_save(datset,outpath,outfile,infile,diagflg=diagflg)
 	return(datset)
 
+<<<<<<< HEAD
 def datset_extend(datset,infile,varlst,dimlst=None,coords=None,outpath=None,outfile=None,callback=None,stashcode=None,ref_dim=None,option=2,diagflg=0):
 	if ref_dim is None:
 		ref_dim=xar_ref_dim(datset,dimlst)
@@ -358,6 +359,38 @@ def datset_extend(datset,infile,varlst,dimlst=None,coords=None,outpath=None,outf
 	for varnam in varlst:
 		datset.update({varnam:(dimlst,datnew[varnam])})
 		#datset[varlst]=datnew[varlst]
+=======
+def datset_extend(infile,varlst,datset=None,dimlst=None,coords=None,outpath=None,outfile=None,callback=None,stashcode=None,refvar=None,ref_dim=None,option=2,diagflg=0):
+	if datset is None:
+		datset=datset_extract(infile,varlst,dimlst=dimlst,coords=coords,outpath=outpath,outfile=outfile,callback=callback,stashcode=stashcode,option=option,diagflg=diagflg)
+	else:
+		if ref_dim is None:
+			if refvar is None: refvar=xar_varlst(datset)[0]
+			ref_dim=xar_ref_dim(datset,refvar)
+		datnew=datset_extract(infile,varlst,dimlst=dimlst,coords=coords,outpath=outpath,outfile=outfile,callback=callback,stashcode=stashcode,ref_dim=ref_dim,option=option,diagflg=diagflg)
+		for varnam in varlst:
+			datset.variables[varnam]=datnew.variables[varnam]
+	return(datset)
+
+def datset_build(filepath,filefldr,varfile,varlst,varstash,varopt,dimlst,datset=None):
+	print(varfile,varlst,varstash,varopt)
+	if varlst is None: varlst=list(varfile.keys())
+	for varnam in varlst:
+		if varnam in varfile:
+			filenam=varfile[varnam]
+		else:
+			print("Filename information is not available for "+str(varnam))
+		if varnam in varstash:
+			stashcode=varstash[varnam]
+		else:
+			stashcode=None
+		if varnam in varopt:
+			option=varopt[varnam]
+		else:
+			option=2
+		infiles=filepath+"/"+filefldr+"/"+filenam
+		datset=datset_extend(infiles,[varnam],datset=datset,stashcode=stashcode,dimlst=dimlst,option=option)
+>>>>>>> 69223dadde38cb7897109e143dad0b3f9c7ca83c
 	return(datset)
 
 def datset_append(infiles,recdim="time",varlst=None,dimlst=None,dimsize=None,reclen=None,recgap=None,recrds=None,datset=None,outpath=None,outfile=None,diagflg=0):
