@@ -64,8 +64,10 @@ def iri_load_cubes(infile,cnst=None,callback=None,stashcode=None,option=0,dimlst
 
     func = switcher.get(opt, lambda: 'Invalid option')
     cubes = func()
+    print("ref_dim before", ref_dim)
     if ref_dim is not  None:
          interp_cube=iri_regrid(cubes,ref_dim=ref_dim)
+	 print("ref_dim after:interp_cube", interp_cube)
 	 cubedimlst=[coord.name() for coord in interp_cube.dim_coords]
          cubeauxc=[coord.name() for coord in interp_cube.aux_coords]
 	 if dimlst is not None:
@@ -81,6 +83,8 @@ def iri_load_cubes(infile,cnst=None,callback=None,stashcode=None,option=0,dimlst
 	       if dimnam in cubeauxc:
 		  if len(cubes.coord(dimnam).points) is 1:
 		     cubes=new_axis(cubes,dimnam)
+    print(cubes)
+    
     return(cubes)
 
 def iri_to_nc(infile,varlst,outfile,callback=None,stashcode=None,option=2,dimlst=None,coords=None):
@@ -90,9 +94,9 @@ def iri_to_nc(infile,varlst,outfile,callback=None,stashcode=None,option=2,dimlst
 
 def iri_regrid(cube,ref_dim=None,ref_cube=None,lat=None,lon=None,lev=None):
 	if ref_dim is not None:
-		lat = ref_dim['lat']
-		lon = ref_dim['lon']
-		lev = ref_dim['lev']
+		lat = ref_dim['latitude']
+		lon = ref_dim['longitude']
+		lev = ref_dim['level_height']
 	if ref_cube is not None:
 		lat = ref_cube.coord('latitude').points
 		lon = ref_cube.coord('longitude').points
@@ -100,11 +104,15 @@ def iri_regrid(cube,ref_dim=None,ref_cube=None,lat=None,lon=None,lev=None):
 	interp_cube = cube.interpolate([('latitude', lat), ('longitude', lon),('level_height', lev)],iris.analysis.Linear())
 	return(interp_cube)	
 
-def xar_ref_dim(daset,varname,lat=None,lon=None,lev=None):
+def xar_ref_dim(daset,dimlst,lat=None,lon=None,lev=None):
 	ref_dim={}
-	ref_dim['lat']=daset[varname].latitude
-	ref_dim['lon']=daset[varname].longitude
-	ref_dim['lev']=daset[varname].level_height
+	for dim in dimlst:
+		ref_dim[dim]=daset[dim]
+	#ref_dim['lat']=daset[varname].latitude
+	#ref_dim['lon']=daset[varname].longitude
+	#ref_dim['lev']=daset[varname].level_height
+	print(ref_dim)
+	#exit()
 	return(ref_dim)
 	
 #############################################################################################################################
@@ -345,8 +353,11 @@ def datset_extract(infile,varlst,dimlst=None,coords=None,outpath=None,outfile=No
 
 def datset_extend(datset,infile,varlst,dimlst=None,coords=None,outpath=None,outfile=None,callback=None,stashcode=None,ref_dim=None,option=2,diagflg=0):
 	if ref_dim is None:
-		ref_dim=essio.xar_ref_dim(datset,refvar)
+		ref_dim=xar_ref_dim(datset,dimlst)
 	datnew=datset_extract(infile,varlst,dimlst=dimlst,coords=coords,outpath=outpath,outfile=outfile,callback=callback,stashcode=stashcode,ref_dim=ref_dim,option=option,diagflg=diagflg)
+	for varnam in varlst:
+		datset.update({varnam:(dimlst,datnew[varnam])})
+		#datset[varlst]=datnew[varlst]
 	return(datset)
 
 def datset_append(infiles,recdim="time",varlst=None,dimlst=None,dimsize=None,reclen=None,recgap=None,recrds=None,datset=None,outpath=None,outfile=None,diagflg=0):
