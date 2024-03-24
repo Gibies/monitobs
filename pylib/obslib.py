@@ -470,38 +470,49 @@ def pydatetime(year,month,day,hour=0,minute=0,second=0):
     return(datetime.datetime(int(year),int(month),int(day),int(hour),int(minute),int(second)))
 
 def pydate(datestring=None,cylcdate=None,date=None,time=None,year=None,month=01,day=01,hour=00,minute=00,second=00):
-	if datestring is not None:
+	if datestring is not None and len(datestring) > 15 :
+		datestring=str(datestring)
+		print(datestring)
 		year=int(datestring[0:4])
 		month=int(datestring[5:7])
 		day=int(datestring[8:10])
 		hour=int(datestring[11:13])
 		minute=int(datestring[14:16])
 		second=int(datestring[17:19])
-	if cylcdate is not None:
+	else:	
+		if datestring is not None: cylcdate=str(datestring)
+	if cylcdate is not None and len(cylcdate) > 8 :
 		cylcdate=str(cylcdate)
+		print(cylcdate)
 		year=int(cylcdate[0:4])
 		month=int(cylcdate[4:6])
 		day=int(cylcdate[6:8])
 		hour=int(cylcdate[9:11])
 		minute=int(cylcdate[11:13])
 		second=int(00)
+	else:
+		if cylcdate is not None: date=str(cylcdate)
 	if date is not None :
     		datestr=str(date)
+		print(date)
     		year=int(datestr[0:4])
     		month=int(datestr[4:6])
     		day=int(datestr[6:8])
 	if time is not None:
 		time=str(time)
+		print(time)
 		hour=int(time[0:2])
 		minute=int(time[2:4])
 		second=int(time[4:6])
-	if year is not None:
-    		year=int(year)
+	if year is not None: 
+		year=int(year)
     		month=int(month)
     		day=int(day)
 		hour=int(hour)
 		minute=int(minute)
 		second=int(second)
+	else:
+		print("Essential date information is missing:")
 	return(pydatetime(year,month,day,hour,minute,second))
   
 def fmtdatetime(fmtstr,date=None, year=None, month=None, day=None, hour=00, minute=00, second=00):
