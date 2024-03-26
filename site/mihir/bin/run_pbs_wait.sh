@@ -1,5 +1,6 @@
 #!/bin/bash
 SELF=$(realpath $0)
+SITEBIN="${SELF%/*}"
 PKGHOME=${SELF%/site*}
 JOBSDIR="${PKGHOME}/jobs"
 
@@ -8,7 +9,7 @@ if [[ ${TYPE} == "sh" ]]; then
 	export PYLAUNCH=$1
 	shift
 else
-	export PYLAUNCH="${JOBSDIR}/py2launch.sh"
+	export PYLAUNCH="${SITEBIN}/py2launch.sh"
 fi
 echo ${PYLAUNCH}
 

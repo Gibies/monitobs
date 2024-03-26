@@ -1,26 +1,19 @@
 #!/bin/bash
-
 SELF=$(realpath $0)
-PKGHOME=${PKGHOME:-${SELF%/jobs/*}}
+PKGHOME=${PKGHOME:-${SELF%/site/*}}
+PKGNAM=${PKGHOME##*/}
 JOBDIR="${PKGHOME}/jobs"
 
 PYSCRYPT=$(realpath $1)
 shift
 ARGS=$@
 
-export CUSLIB="${PYSCRYPT%/jobs/*}/customlib"
-if [ ! -d ${CUSLIB} ]; then export CUSLIB="${PKGHOME}/customlib"; fi
-echo ${CUSLIB}
-
-#export MODULEPATH=$MODULEPATH:/home/gibies/MyModules
-
-#gnu/python/3.9.1
+export MODULEPATH=${PKGHOME}/modules:${MODULEPATH}
 module load pbs
 module load craype-broadwell
 module load cray-snplauncher
 module load gnu/pythonpackages/2.7.9
 module load gnu/packagesuite/1
-#module load gnu/pandas/0.18.1
 module load gnu/pandas/0.24.2
 module load gnu/matplotlib/2.2.2
 module load gnu/basemap/1.1.0
@@ -37,22 +30,23 @@ module load gnu/pyngl/1.6.1
 module load gnu/pyke/1.1.1
 module load gnu/xarray/0.11.3
 module load gnu/pytz/2016.4
-#module load cbook_matplotlib_2.2.2
 module load gnu/pyparsing/2.2.2
 
 #module load gnu/netcdf4/1.5.3-netcdf4.6.0hdf51.10.0
 #module load gnu/lib/netcdf_c_f_cxx/4.6.1_4.4.4_4.3.0
 #module load gnu/user-specific/iris_grib/1.13.0_1.26.0
 #module load gnu/mule/MULE-2022.05.1
+module load ${PKGNAM}
 module list
 
 which python
 
 cd /scratch/${USER}
 
-export PKGHOME=${PKGHOME}
-echo ${PKGHOME}
+export CUSLIB="${PYSCRYPT%/jobs/*}/customlib"
+if [ ! -d ${CUSLIB} ]; then export CUSLIB="${PKGHOME}/customlib"; fi
+echo ${CUSLIB}
+export PYTHONPATH=${CUSLIB}:${PKGHOME}/pylib:${PKGHOME}/pydic:${PKGHOME}/nml:${PYTHONPATH}
 
 python ${PYSCRYPT} ${ARGS}
 
-#display /home/gibies/plots/research/osse_buoy/outfile/surface.png
