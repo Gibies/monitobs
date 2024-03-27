@@ -57,8 +57,9 @@ module load public/py2env
 module load ${USER}/${PKGNAM} 
 
 export CUSLIB="\${HOSTPKG}/customlib"
-if [ ! -d \${CUSLIB} ]; then export CUSLIB="\${PKGHOME}/customlib"; fi
+if [ -d \${CUSLIB} ]; then 
 export PYTHONPATH=\${CUSLIB}:\${PYTHONPATH}
+fi
 
 module list
 
