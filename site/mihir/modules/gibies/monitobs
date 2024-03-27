@@ -3,7 +3,7 @@
 ### modules modulefile
 ###
 proc ModulesHelp {  } {
-puts stderr "/home/gibies/packages/ose/site/mihir/modules/gibies/monitobs"
+puts stderr "/home/gibies/packages/monitobs/site/mihir/modules/gibies/monitobs"
 }
 module-whatis   "monitobs"
 set     TOP     /home/gibies/packages/monitobs

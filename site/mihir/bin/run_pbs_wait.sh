@@ -1,7 +1,10 @@
 #!/bin/bash
 SELF=$(realpath $0)
 SITEBIN="${SELF%/*}"
+SITEFLDR=${SITEBIN%/bin*}
+SITE=${SITEFLDR##*/}
 PKGHOME=${SELF%/site*}
+PKGNAM=${PKGHOME##*/}
 JOBSDIR="${PKGHOME}/jobs"
 
 TYPE=${1##*.}
@@ -48,7 +51,23 @@ PYSCRIPT=${PYSCRIPT}
 PYLAUNCH=${PYLAUNCH}
 ARGS=${ARGS}
 
-aprun -n 1 -N 1 \${PYLAUNCH} \${PYSCRIPT} \${ARGS}
+export MODULEPATH="${PKGHOME}/site/${SITE}/modules:\${MODULEPATH}"
+echo \${MODULEPATH}
+module load public/py2env
+module load ${USER}/${PKGNAM} 
+
+export CUSLIB="\${PYSCRIPT%/jobs/*}/customlib"
+if [ ! -d \${CUSLIB} ]; then export CUSLIB="\${PKGHOME}/customlib"; fi
+export PYTHONPATH=\${CUSLIB}:\${PYTHONPATH}
+
+module list
+
+which python
+
+cd /scratch/${USER}
+echo \${CUSLIB}
+
+aprun -n 1 -N 1 python \${PYSCRIPT} \${ARGS}
 EOF
 
 cat $PBSFILE
