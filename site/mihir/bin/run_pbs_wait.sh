@@ -45,16 +45,16 @@ export PBSDIR=${PBSDIR}
 export TASKNAM=${TASKNAM}
 export PKGHOME=${PKGHOME}
 export HOSTPKG=${HOSTPKG}
-
-NODE_CNT=${NODE_CNT}
-JOBSCRIPT=${JOBSCRIPT}
-JOBCMD=${JOBCMD}
-ARGS=${ARGS}
+export NODE_CNT=${NODE_CNT}
+export JOBSCRIPT=${JOBSCRIPT}
+export JOBCMD="${JOBCMD}"
+export ARGS=${ARGS}
 
 export MODULEPATH="${PKGHOME}/site/${SITE}/modules:\${MODULEPATH}"
 echo \${MODULEPATH}
 module load public/py2env
 module load ${USER}/${PKGNAM} 
+
 
 export CUSLIB="\${HOSTPKG}/customlib"
 if [ -d \${CUSLIB} ]; then 
@@ -68,6 +68,7 @@ which python
 cd /scratch/${USER}
 echo \${CUSLIB}
 
+set -x
 aprun -n 1 -N 1 \${JOBCMD} \${ARGS}
 EOF
 
