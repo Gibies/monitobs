@@ -71,7 +71,7 @@ def pyg_read_file(infile,varlst=None):
 		print(varnam)
 		grbmsg=grbptr.select(name=varnam)[0]
 		print(grbmsg)
-		data,lat,lon=grbmsg.data
+		data,lat,lon=grbmsg.data()
 		print(lat)
 		print(lon)
 		print(data)
