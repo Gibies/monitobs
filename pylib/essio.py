@@ -64,17 +64,18 @@ def iri_load_cubes(infile,cnst=None,callback=None,stashcode=None,option=0,dimlst
 
     func = switcher.get(opt, lambda: 'Invalid option')
     cubes = func()
-    print("ref_dim before", ref_dim)
-    if ref_dim is not  None:
+    #print("ref_dim before", ref_dim)
+    if ref_dim is not None:
          interp_cube=iri_regrid(cubes,ref_dim=ref_dim)
-	 print("ref_dim after:interp_cube", interp_cube)
+	 #print("ref_dim after:interp_cube", interp_cube)
 	 cubedimlst=[coord.name() for coord in interp_cube.dim_coords]
          cubeauxc=[coord.name() for coord in interp_cube.aux_coords]
 	 if dimlst is not None:
 	    for dimnam in dimlst:
 		if dimnam in cubeauxc:
 		   if len(interp_cube.coord(dimnam).points) is 1:
-		      cubes=new_axis(interp_cube,dimnam)
+		      cube=new_axis(interp_cube,dimnam)
+
     else:
     	cubedimlst=[coord.name() for coord in cubes.dim_coords]
     	cubeauxc=[coord.name() for coord in cubes.aux_coords]
@@ -82,10 +83,10 @@ def iri_load_cubes(infile,cnst=None,callback=None,stashcode=None,option=0,dimlst
 	   for dimnam in dimlst:
 	       if dimnam in cubeauxc:
 		  if len(cubes.coord(dimnam).points) is 1:
-		     cubes=new_axis(cubes,dimnam)
-    print(cubes)
+		     cube=new_axis(cubes,dimnam)
+    #print(cube)
     
-    return(cubes)
+    return(cube)
 
 def iri_to_nc(infile,varlst,outfile,callback=None,stashcode=None,option=2,dimlst=None,coords=None):
 	cube=iri_load_cubes(infile,cnst=varlst,callback=callback,stashcode=stashcode,option=option,dimlst=dimlst)
@@ -93,6 +94,7 @@ def iri_to_nc(infile,varlst,outfile,callback=None,stashcode=None,option=2,dimlst
 	return(nc_file)
 
 def iri_regrid(cube,ref_dim=None,ref_cube=None,lat=None,lon=None,lev=None):
+	print("cube attributes",cube.units)
 	if ref_dim is not None:
 		lat = ref_dim['lat']
 		lon = ref_dim['lon']
@@ -102,6 +104,8 @@ def iri_regrid(cube,ref_dim=None,ref_cube=None,lat=None,lon=None,lev=None):
 		lon = ref_cube.coord('longitude').points
 		lev = ref_cube.coord('level_height').points
 	interp_cube = cube.interpolate([('latitude', lat), ('longitude', lon),('level_height', lev)],iris.analysis.Linear())
+	#attrlst = list(interp_cube.units)
+	print("interp_cube attributes",interp_cube.units)
 	return(interp_cube)	
 
 def xar_ref_dim(daset,varname,lat=None,lon=None,lev=None):
@@ -163,12 +167,18 @@ def nix_write_varattr(datset,fileptr,varnam,attrnam,attrtyp="str"):
 	return(fileptr)
 
 def nix_write_var(datset,fileptr,varnam,vartyp="d",varattlst=None):
-	if varattlst is None: varattlst=["units"]
 	data=datset[varnam]
+	if varattlst is None: 
+	   if data.attrs is not None:
+	      varattlst=list(data.attrs.keys())
+	   else:
+	      varattlst=[]
+	print(varattlst)
 	varptr = fileptr.create_variable(varnam,vartyp,data.dims)
 	fileptr.variables[varnam].assign_value(data)
-	for attrnam in varattlst:
-		fileptr=nix_write_varattr(datset,fileptr,varnam,attrnam)
+	if len(varattlst) > 0: 
+		for attrnam in varattlst:
+			fileptr=nix_write_varattr(datset,fileptr,varnam,attrnam)
 	return(fileptr)
 
 def nix_write(datset,filenam,dimlst=None,varlst=None):
@@ -177,9 +187,9 @@ def nix_write(datset,filenam,dimlst=None,varlst=None):
 	fileptr=Nio.open_file(filenam, "rw")
 	for dimnam in dimlst:
 		dimptr=fileptr.create_dimension(dimnam,len(datset[dimnam]))
-		fileptr=nix_write_var(datset,fileptr,dimnam,vartyp="d",varattlst=["units"])
+		fileptr=nix_write_var(datset,fileptr,dimnam,vartyp="d")
 	for varnam in varlst:
-		fileptr=nix_write_var(datset,fileptr,varnam,vartyp="d",varattlst=["units"])
+		fileptr=nix_write_var(datset,fileptr,varnam,vartyp="d")
 	fileptr.close()
 	return(filenam)
 
@@ -409,9 +419,11 @@ def xar_datset(q,rho,u_wind=None,v_wind=None):
 def datset_vimt(filepath=None,filefldr=None,varfile=None,varlst=None,varstash=None,varopt=None,dimlst=None,datset=None,vardic=None):
 	if datset is None : datset=datset_build(filepath,filefldr,varfile,varlst,varstash,varopt,dimlst)
 	#vimt = xar_vimt(daset,"level_height","rhorsq","sphum")
-	vimt = xar_vimt(daset,vardic)	#"level_height","rhorsq","specific_humidity","x_wind"."y_wind")
-	datset.append(vimt)
-	print(datset)
+	#vimt = xar_vimt(datset,vardic)	#"level_height","rhorsq","specific_humidity","x_wind"."y_wind")
+	#datset_append(datset)
+	#print(datset)
+	#return(vimt)
+	return(datset)
 
 #############################################################################################################################
 ### General functions
@@ -458,13 +470,18 @@ def datset_extract(infile,varlst,dimlst=None,coords=None,outpath=None,outfile=No
 def datset_extend(infile,varlst,datset=None,dimlst=None,coords=None,outpath=None,outfile=None,callback=None,stashcode=None,refvar=None,ref_dim=None,option=2,diagflg=0):
 	if datset is None:
 		datset=datset_extract(infile,varlst,dimlst=dimlst,coords=coords,outpath=outpath,outfile=outfile,callback=callback,stashcode=stashcode,option=option,diagflg=diagflg)
+	#print(datset)
+	#exit()
 	else:
 		if ref_dim is None:
 			if refvar is None: refvar=xar_varlst(datset)[0]
+			#if refvar is None: datset[1]
 			ref_dim=xar_ref_dim(datset,refvar)
 		datnew=datset_extract(infile,varlst,dimlst=dimlst,coords=coords,outpath=outpath,outfile=outfile,callback=callback,stashcode=stashcode,ref_dim=ref_dim,option=option,diagflg=diagflg)
+		#print(datnew)
 		for varnam in varlst:
 			datset.update({varnam:(dimlst,datnew[varnam])})
+	#print(datset)
 	return(datset)
 
 def datset_build(filepath,filefldr,varfile,varlst,varstash,varopt,dimlst,datset=None):

@@ -3,10 +3,10 @@
 ### modules modulefile
 ###
 proc ModulesHelp {  } {
-puts stderr "/home/gibies/packages/monitobs/site/mihir/modules/gibies/monitobs"
+puts stderr "/home/meena/packages/monitobs/site/mihir/modules/meena/monitobs"
 }
 module-whatis   "monitobs"
-set     TOP     /home/gibies/packages/monitobs
+set     TOP     /home/meena/packages/monitobs
 setenv	monitobs $TOP
 setenv	monitobs_lib	$TOP/pylib
 setenv	monitobs_dic	$TOP/pydic
