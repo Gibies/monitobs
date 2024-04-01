@@ -44,8 +44,39 @@ import numpy
 import domaindic
 import math
 import xarray
+import pygrib
 import iris
 from iris.util import new_axis
+
+
+#############################################################################################################################
+### Pygrib based functions
+#############################################################################################################################
+
+def pyg_get_file_varlst(infile):
+	grbptr=pygrib.open(infile)
+	grbmsg=grbptr.select()
+	msgcnt=len(grbmsg)
+	varlst=[]
+	for msgindx in range(0,msgcnt):
+		varnam=grbmsg[msgindx].name
+		#varnam=map(str,grbmsg[msgindx].name)
+		varlst.append(varnam)
+	return(varlst)
+
+def pyg_read_file(infile,varlst=None):
+	if varlst is None: varlst=pyg_get_file_varlst(infile)
+	grbptr=pygrib.open(infile)
+	for varnam in varlst:
+		print(varnam)
+		grbmsg=grbptr.select(name=varnam)[0]
+		print(grbmsg)
+		data,lat,lon=grbmsg.data
+		print(lat)
+		print(lon)
+		print(data)
+		datray=xarray.DataArray(data)
+	return(datray)
 
 
 #############################################################################################################################

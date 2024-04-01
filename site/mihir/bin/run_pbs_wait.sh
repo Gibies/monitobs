@@ -38,6 +38,7 @@ cat >> ${PBSFILE} << EOF
 #PBS -q ${QUEUE_MAMU}
 #PBS -N ${TASKNAM}
 #PBS -l select=${NODE_CNT}:ncpus=1:vntype=cray_compute
+#PBS -l place=scatter
 #PBS -o ${LOGDIR}/${TASKNAM}_${RUNTIME}.out
 #PBS -e ${LOGDIR}/${TASKNAM}_${RUNTIME}.err
 export LOGDIR=${LOGDIR}
@@ -82,10 +83,10 @@ echo ${jobid}
 		qstat -w ${jobid}
 		sleep 10
 	done
-cat ${LOGDIR}/${TASKNAM}_${RUNTIME}.out
-tail -10 ${LOGDIR}/${TASKNAM}_${RUNTIME}.err
 ln -sf ${LOGDIR}/${TASKNAM}_${RUNTIME}.out ${LOGDIR}/${TASKNAM}.out
 ln -sf ${LOGDIR}/${TASKNAM}_${RUNTIME}.err ${LOGDIR}/${TASKNAM}.err
 qstat -fx ${jobid}
-echo ${LOGDIR}
+cat ${LOGDIR}/${TASKNAM}.out
+tail -10 ${LOGDIR}/${TASKNAM}.err
 ls -lrt ${LOGDIR}/${TASKNAM}.*
+echo ${LOGDIR}
