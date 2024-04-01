@@ -7,21 +7,26 @@ ROOTDIR=${SELF%/modules/*}
 
 PKG_NAME=${PKG_NAME:-${HOMEDIR##*/}}
 
-export PREFIX_PATH=${PREFIX_PATH:-$(pwd)}
 
 while test $# -gt 0; do
 echo $1 
         case "$1" in
                 -h|--help)      shift;helpdesk;;
+		-m|--modpath)	shift;PKGSYSMOD=$1;shift;;
 		-p|--prefix)	shift;PREFIX_PATH=$1;shift;;
                 -u|--user)      shift;USER=$1;shift;;
+		-v|--version)	shift;VRSN=$1;shift;;
                 *)              ARGS="${ARGS} $1"; shift;;
         esac
 done
 
-#############################################################################################
-#############################################################################################
+export VRSN=${VRSN:-$(date +%Y.%m.%d)}
+export VRNT=${VRNT:-$(date +%H%M)}
+export PREFIX_PATH=${PREFIX_PATH:-$(pwd)/${PKG_NAME}.${VRSN}}
 if [ ! -d ${PREFIX_PATH} ]; then mkdir -p ${PREFIX_PATH}; fi
+echo "${PKG_NAME} ${VRSN} ${VRNT}" > ${PREFIX_PATH}/version
+#############################################################################################
+#############################################################################################
 
 cd ${PREFIX_PATH}
 pwd
@@ -76,7 +81,6 @@ cat ${ROSE_APP_LIB}/${appname}/rose-app.conf
 done
 
 #############################################################################################
-#############################################################################################
 set +x
 export BACKUP="${PREFIX_PATH}/jobs/packup_${PKG_NAME}.sh"
 if [ -f ${BACKUP} ]; then 
@@ -86,3 +90,44 @@ else
 echo "${BACKUP} file not found"
 fi
 #############################################################################################
+export PKGSYSMOD=${PKGSYSMOD:-${PREFIX_PATH}/modules}
+if [ ! -d ${PKGSYSMOD} ]; then mkdir -p ${PKGSYSMOD}; fi
+export modulefile=${PKGSYSMOD}/${PKG_NAME}.${VRSN}
+rm -f ${modulefile}
+cat >> ${modulefile} << EOF
+#%Module1.0###
+###
+### modules modulefile
+###
+proc ModulesHelp {  } {
+puts stderr "${modulefile}"
+}
+module-whatis   "${PKG_NAME}.${VRSN}"
+set     TOP     ${PREFIX_PATH}
+setenv	${PKG_NAME} \$TOP
+setenv	${PKG_NAME}_lib	\$TOP/pylib
+setenv	${PKG_NAME}_dic	\$TOP/pydic
+setenv	${PKG_NAME}_nml	\$TOP/nml
+prepend-path    PATH    \$TOP/jobs
+prepend-path    PYTHONPATH    \$TOP/pylib:\$TOP/pydic:\$TOP/nml
+
+if { [ module-info mode load ] } {
+puts stdout ""
+}
+EOF
+
+set -x
+export MODULEPATH=$MODULEPATH:${PKGSYSMOD}
+module show ${modulefile}
+#############################################################################################
+export sample="${PREFIX_PATH}/jobs/sample.py"
+rm -f ${sample}
+cat >> ${sample} << EOF
+import os,sys
+sys.path.append(os.environ.get('monitobs_lib'))
+import modulib
+
+print("Test is done")
+EOF
+#############################################################################################
+${PREFIX_PATH}/jobs/py2launch.sh ${sample}

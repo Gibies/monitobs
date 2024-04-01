@@ -1907,39 +1907,11 @@ def xar_slice_indian(data):
 	ind_data=xarray.open_dataset(data).sel(hybrid_ht=0,longitude=slice(60,100),latitude=slice(0,40))
 	return(ind_data)
 
-def xar_layer_thickness(q,levdim):
-	level_height = q.coords[levdim]	#hybrid_ht
-	thickness = xarray.DataArray(data=numpy.zeros(len(level_height)),dims=[levdim],coords={levdim: level_height},name="thickness")
-	thickness = xar_slice(thickness,levdim,None, -1)
-	for i in range(1, len(level_height) - 1):
-	    thickness[i] = ((level_height[i] - level_height[i - 1]) / 2) + ((level_height[i + 1] - level_height[i]) / 2)
-	thickness[0] = (level_height[1] - level_height[0]) / 2
-	return(thickness)
-
-def xar_quot_rsqure(datset,varname,levdim):
-	data1=datset[varname]
-	level_height = data1.coords[levdim]
-	R = level_height + 6371*(10**3)
-	R_square = R**2
-	data = data1 / R_square
-	return(data)
-
 def xar_slice(data,dimnam,dim_min=None,dim_max=None,dim_skip=None):
 	if dimnam in data.dims: data=data.rename({dimnam:"dim1"})
 	data = data.isel(dim1=slice(dim_min,dim_max,dim_skip))
 	if "dim1" in data.dims: data=data.rename({"dim1":dimnam})
 	return(data)
-
-def xar_qrhodh(datset,levdim,rhonam,humnam):
-	if humnam in datset: qdata=datset[humnam]
-	if "density" in datset:
-		rhodata=datset["density"]
-	else:
-		rhodata=xar_quot_rsqure(datset[rhonam],rhonam,levdim)
-	thickness=xar_layer_thickness(qdata,levdim)
-	qdata = xar_slice(qdata,levdim,None, -1)
-	weighted_q = qdata * thickness * rhodata.values
-	return(weighted_q)
 
 def xar_ipw(datset,levdim,rhonam,humnam):
 	weighted_q = xar_qrhodh(datset,levdim,rhonam,humnam)
@@ -1955,7 +1927,7 @@ def xar_ipw(datset,levdim,rhonam,humnam):
 				)	
 	return(dataset)
 
-def xar_regrid(datset,varname,refer=None,q=None,lon=None,lat=None):
+def xar_regrid(datset,varname,refer=None,q=None,lon=None,lat=None,lev=None):
 	if refer is not None:
 	   if datset[refer] is not None:
 		lon = datset[refer].longitude
@@ -1963,74 +1935,17 @@ def xar_regrid(datset,varname,refer=None,q=None,lon=None,lat=None):
 		#lev = datset[refer].level_height
 	data= datset[varname]
 	datanew=data.interp(latitude=lat, longitude=lon)
-	datset[varname]=datanew
+	#datanew = datanew.interp(level_height=lev)
+        #new_datset = datset.copy()
+        datset[varname] = datanew	
+	#datset[varname]=datanew
 	#if varname=="x_wind_int":
 		#datset[varname] = datset['x_wind'].interp(latitude=lat, longitude=lon)
 	#else:
 		#datset[varname] = datset['y_wind'].interp(latitude=lat, longitude=lon)
 	return(datset)
 
-def xar_qtransdh(datset,levdim,rhonam,humnam,vectvar=None):
-	if humnam in datset: qdata=datset[humnam]
-	if "density" in datset:
-		rhodata=datset["density"]
-	else:	
-		rhodata=xar_quot_rsqure(datset,rhonam,levdim)
-	thickness=xar_layer_thickness(qdata,levdim)
-	qdata = xar_slice(qdata,levdim,None, -1)
-	if vectvar is None:
-		weighted_data = qdata * thickness*rhodata.values
-        else:
-                weighted_data = qdata * thickness*rhodata.values*datset[vectvar].values
-	return(weighted_data)
 
-def xar_height_integral(weighted_q_u,levdim):
-	data = weighted_q_u.sum(levdim)
-	return(data)
-
-def xar_vimt(datset,levdim,rhonam,humnam):
-	datset=xar_regrid(datset,"x_wind",humnam)
-	#print(datset)
-	weighted_q_u = xar_qtransdh(datset,levdim,rhonam,humnam,vectvar="x_wind")
-	u = xar_height_integral(weighted_q_u,levdim)
-	datset=xar_regrid(datset,"y_wind",humnam)
-	#print(datset)
-	weighted_q_v = xar_qtransdh(datset,levdim,rhonam,humnam,vectvar="y_wind")
-	v = xar_height_integral(weighted_q_v,levdim) 
-	dataset=xarray.Dataset(
-		data_vars=dict(
-        		u=(["time","lat", "lon"], u),
-        		v=(["time","lat", "lon"], v),
-    				),
-    		coords=dict(
-        		lon=datset[humnam].longitude.values,
-        		lat=datset[humnam].latitude.values,
-        		time=datset[humnam].time.values,
-        		#reference_time=datset[humnam].reference_time,
-    				),
-    		#attrs=dict(
-			#units=datset['time'].attrs['units']),
-				)
-	return(dataset)
-	
-def xar_datset(q,rho,u_wind=None,v_wind=None):
-	q_x=q.isel(level_height=slice(None, -1))
-	lon=q_x["specific_humidity"].longitude
-	lat=q_x["specific_humidity"].latitude
-	#lev=q["specific_humidity"].level_height
-	#lev=rho["rhorsq"].level_height
-	#q_x=xar_regrid(q,"specific_humidity",lon=lon,lat=lat,lev=lev)
-	rho_x=xar_regrid(rho,"rhorsq",lon=lon,lat=lat)
-	u_wind_x=xar_regrid(u_wind,"x_wind",lon=lon,lat=lat)
-	v_wind_x=xar_regrid(v_wind,"y_wind",lon=lon,lat=lat)
-	datset=xarray.Dataset()
-	datset["sphum"]=q_x["specific_humidity"]
-	datset["rhorsq"]=rho_x["rhorsq"]
-	if u_wind is not None:
-		datset["x_wind"]=u_wind_x["x_wind"]
-	if v_wind is not None:
-		datset["y_wind"]=v_wind_x["y_wind"]
-	return(datset)
 
 def xar_plot_ose_scalar(plotdic):
 	data_ctl=plotdic["data_ctl"]
@@ -2038,32 +1953,35 @@ def xar_plot_ose_scalar(plotdic):
 	plotfile=plotdic["plotfile"]
 	axlbl_y_ctl=plotdic["ctlname"]
 	axlbl_y_exp=plotdic["expname"]
-
-	ipw_ctl = data_ctl.ipw
-	ipw_exp = data_exp.ipw
-
+	#plotvar=plotdic["varname"]
+	
+	result_ctl = data_ctl
+	result_exp = data_exp
+	result_diff = result_exp - result_ctl
+	#ipw_ctl = data_ctl.ipw
+	#ipw_exp = data_exp.ipw
 	#data_diff = data_exp - data_ctl
-	ipw_diff = ipw_exp - ipw_ctl
+	#ipw_diff = ipw_exp - ipw_ctl
 
 	fig, axes = pyplot.subplots(nrows=3, ncols=1,figsize=[20,15], subplot_kw={'projection': ccrs.PlateCarree(central_longitude=0)})
 	plot=[None]*3
 	axlbly=[None]*3
 
-	plot[0]=ipw_ctl.plot(ax=axes[0], cmap='Blues', transform=ccrs.PlateCarree(),add_colorbar=False)
+	plot[0]=result_ctl.plot(ax=axes[0],vmin=0,vmax=30, cmap='Blues', transform=ccrs.PlateCarree(),add_colorbar=False)
 	m = Basemap(projection='cyl',llcrnrlat=-90,urcrnrlat=90,llcrnrlon=-180,urcrnrlon=180,resolution='c',ax=axes[0])
 	m.drawcoastlines()
 	axlbly[0]=axes[0].text(-0.1, 0.5, axlbl_y_ctl, va='center', ha='center', rotation='vertical', transform=axes[0].transAxes)
 	axins = inset_axes(axes[0], width = "5%", height = "100%", loc = 'lower left', bbox_to_anchor = (1.09, 0., 1, 1), bbox_transform = axes[0].transAxes, borderpad = 0)
 	fig.colorbar(plot[0], cax = axins)	
 
-	plot[1]=ipw_exp.plot(ax=axes[1], cmap='Blues', transform=ccrs.PlateCarree(),add_colorbar=False)
+	plot[1]=result_exp.plot(ax=axes[1],vmin=0,vmax=30, cmap='Blues', transform=ccrs.PlateCarree(),add_colorbar=False)
 	m = Basemap(projection='cyl',llcrnrlat=-90,urcrnrlat=90,llcrnrlon=-180,urcrnrlon=180,resolution='c',ax=axes[1])
 	m.drawcoastlines()
 	axlbly[1]=axes[1].text(-0.1, 0.5, axlbl_y_ctl, va='center', ha='center', rotation='vertical', transform=axes[1].transAxes)
 	axins = inset_axes(axes[1], width = "5%", height = "100%", loc = 'lower left', bbox_to_anchor = (1.09, 0., 1, 1), bbox_transform = axes[1].transAxes, borderpad = 0)
 	fig.colorbar(plot[1], cax = axins)	
 
-	plot[2]=ipw_diff.plot(ax=axes[2],vmin=-6,vmax=6, cmap='RdBu_r', transform=ccrs.PlateCarree(),add_colorbar=False)
+	plot[2]=result_diff.plot(ax=axes[2],vmin=-10,vmax=10, cmap='RdBu_r', transform=ccrs.PlateCarree(),add_colorbar=False)
 	m = Basemap(projection='cyl',llcrnrlat=-90,urcrnrlat=90,llcrnrlon=-180,urcrnrlon=180,resolution='c',ax=axes[2])
 	m.drawcoastlines()
 	axlbly[2]=axes[2].text(-0.1, 0.5, 'EXP-CTL', va='center', ha='center', rotation='vertical', transform=axes[2].transAxes)
@@ -2180,10 +2098,11 @@ def irx_load_cubray(infile,varnames,callback=None,stashcode=None,option=2,dims=N
 def irx_layer_thickness(q):
 	level_height = q.coord('level_height').points
 	thickness = xarray.DataArray(data=numpy.zeros(len(level_height)),dims=["hybrid_ht"],coords={"hybrid_ht": level_height},name="thickness")
-	thickness = thickness.isel(hybrid_ht=slice(None, -1))
+	#thickness = thickness.isel(hybrid_ht=slice(None, -1))
 	for i in range(1, len(level_height) - 1):
 	    thickness[i] = ((level_height[i] - level_height[i - 1]) / 2) + ((level_height[i + 1] - level_height[i]) / 2)
 	thickness[0] = (level_height[1] - level_height[0]) / 2
+	thickness[-1] = (level_height[-1] - level_height[-2]) / 2
 	return(thickness)
 
 def irx_quot_rsqure(rho):

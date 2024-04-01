@@ -1,0 +1,19 @@
+#%Module1.0###
+###
+### modules modulefile
+###
+proc ModulesHelp {  } {
+puts stderr "/home/meena/packages/monitobs/site/mihir/modules/meena/monitobs"
+}
+module-whatis   "monitobs"
+set     TOP     /home/meena/packages/monitobs
+setenv	monitobs $TOP
+setenv	monitobs_lib	$TOP/pylib
+setenv	monitobs_dic	$TOP/pydic
+setenv	monitobs_nml	$TOP/nml
+prepend-path    PATH    $TOP/jobs:$TOP/site/mihir/bin
+prepend-path    PYTHONPATH    $TOP/pylib:$TOP/pydic:$TOP/nml
+
+if { [ module-info mode load ] } {
+puts stdout ""
+}

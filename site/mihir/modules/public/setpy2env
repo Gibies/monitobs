@@ -1,0 +1,11 @@
+#!/bin/bash
+SELF=$(realpath $0)
+SELF=${SELF:-"/home/gibies/packages/monitobs/site/mihir/modules/public/setpy2env"}
+SITEFLDR=${SELF%/modules/*}
+
+echo ${SITEFLDR}
+
+module load ${SITEFLDR}/modules/public/py2env
+module load ${SITEFLDR}/modules/${USER}/monitobs
+
+module list

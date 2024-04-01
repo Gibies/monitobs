@@ -1,6 +1,10 @@
 #!/bin/bash
 SELF=$(realpath $0)
+SITEBIN="${SELF%/*}"
+SITEFLDR=${SITEBIN%/bin*}
+SITE=${SITEFLDR##*/}
 PKGHOME=${SELF%/site*}
+PKGNAM=${PKGHOME##*/}
 JOBSDIR="${PKGHOME}/jobs"
 
 TYPE=${1##*.}
@@ -9,7 +13,8 @@ if [[ ${TYPE} == "sh" ]]; then
 	shift
 	export HOSTPKG=${BASHJOB%/jobs/*}
 else
-	export BASHJOB="${JOBSDIR}/py2launch.sh"
+	export BASHJOB="python $1"
+	shift
 fi
 export ARGS=$@
 
@@ -38,11 +43,21 @@ export PBSDIR=${PBSDIR}
 export TASKNAM=${TASKNAM}
 export PKGHOME=${PKGHOME}
 export HOSTPKG=${HOSTPKG}
+export MODULEPATH="${PKGHOME}/site/${SITE}/modules:\${MODULEPATH}"
+module load public/py2env
+module load ${USER}/${PKGNAM} 
 
+export CUSLIB="\${PYSCRIPT%/jobs/*}/customlib"
+if [ ! -d \${CUSLIB} ]; then export CUSLIB="\${PKGHOME}/customlib"; fi
+export PYTHONPATH=\${CUSLIB}:\${PYTHONPATH}
+
+echo \${MODULEPATH}
+module list
+
+which python
 
 BASHJOB=${BASHJOB}
 ARGS=${ARGS}
-
 aprun \${BASHJOB} \${ARGS}
 EOF
 
