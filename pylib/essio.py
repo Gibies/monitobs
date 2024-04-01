@@ -64,19 +64,27 @@ def pyg_get_file_varlst(infile):
 		varlst.append(varnam)
 	return(varlst)
 
-def pyg_read_file(infile,varlst=None):
+def pyg_read_file(infile,varlst=None,coords=None,dimlst=None):
 	if varlst is None: varlst=pyg_get_file_varlst(infile)
 	grbptr=pygrib.open(infile)
+	datset=xarray.Dataset()
+	if coords is None: 
+		coords=datset.coords
+	dimlst=["lon","lat"]
 	for varnam in varlst:
 		print(varnam)
 		grbmsg=grbptr.select(name=varnam)[0]
 		print(grbmsg)
-		data,lat,lon=grbmsg.data()
-		print(lat)
-		print(lon)
-		print(data)
-		datray=xarray.DataArray(data)
-	return(datray)
+		data1,lat1,lon1=grbmsg.data()
+		print(lat.shape)
+		print(lon.shape)
+		coords.update({"lats":(dimlst,lat1),})
+		coords.update({"lons":(dimlst,lon1),})
+		if dimlst is None: dimlst=coords.keys()		#["lat","lon"]
+		print(dimlst)
+		#print(data1)
+		datset[varnam]=xarray.DataArray(data=data1,dims=dimlst,coords=coords,name=varnam)
+	return(datset)
 
 
 #############################################################################################################################
