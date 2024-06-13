@@ -30,10 +30,10 @@ done
 ###########################################################################################
 options $(echo $@  | tr "=" " ")
 ###########################################################################################
-sh ${JOBSDIR}/update_pkg.sh 
-sh ${JOBSDIR}/addfilesto_pkg.sh 
+${JOBSDIR}/update_pkg.sh 
+${JOBSDIR}/addfilesto_pkg.sh 
 if [ ${HOST:0:6} == "elogin" ]; then
 ssh -x utility01 'cd '${GITROOT}'; git commit -a -m "Updated '${PKG_NAME}' for '$(echo ${MSGKEY} | tr "_" " " )'"; git push'
 else
-cd '${GITROOT}'; git commit -a -m "Updated '${PKG_NAME}' for '$(echo ${MSGKEY} | tr "_" " " )'"; git push
+cd ${GITROOT}; git commit -a -m "Updated '${PKG_NAME}' for '$(echo ${MSGKEY} | tr "_" " " )'"; git push
 fi
